@@ -42,7 +42,7 @@
                         </li>
                         <!-- End Dashboards -->
 
-                        @if(Helpers::module_permission_check(MANAGEMENT_SECTION['pos_management']))
+                        {{-- @if(Helpers::module_permission_check(MANAGEMENT_SECTION['pos_management']))
                             <!-- POS Section -->
                             <li class="nav-item">
                                 <small
@@ -77,7 +77,7 @@
                                 </ul>
                             </li>
                             <!-- End POS -->
-                        @endif
+                        @endif --}}
                         @if(Helpers::module_permission_check(MANAGEMENT_SECTION['order_management']))
                             <li class="nav-item">
                                 <small
