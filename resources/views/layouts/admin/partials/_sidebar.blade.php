@@ -349,7 +349,7 @@
                             <!-- End Pages -->
 
                             <!-- Pages -->
-                            <li class="navbar-vertical-aside-has-menu {{Request::is('admin/message*')?'active':''}}">
+                            {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/message*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
                                 href="{{route('admin.message.list')}}"
                                 >
@@ -358,18 +358,18 @@
                                         {{\App\CentralLogics\translate('messages')}}
                                     </span>
                                 </a>
-                            </li>
+                            </li> --}}
                             <!-- End Pages -->
-                            <li class="navbar-vertical-aside-has-menu {{Request::is('admin/timeSlot*')?'active':''}}">
+                            {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/timeSlot*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link" href="{{route('admin.timeSlot.add-new')}}"
                                 title="Pages">
                                     <i class="tio-clock nav-icon"></i>
                                     <span
                                         class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{\App\CentralLogics\translate('Set')}} {{\App\CentralLogics\translate('Time Slot')}} </span>
                                 </a>
-                            </li>
+                            </li> --}}
 
-                            <!-- Pages -->
+                            {{-- <!-- Pages -->
                             <li class="navbar-vertical-aside-has-menu {{Request::is('admin/reviews*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
                                 href="{{route('admin.reviews.list')}}"
@@ -379,7 +379,7 @@
                                         {{\App\CentralLogics\translate('product')}} {{\App\CentralLogics\translate('reviews')}}
                                     </span>
                                 </a>
-                            </li>
+                            </li> --}}
                             <!-- End Pages -->
 
 
