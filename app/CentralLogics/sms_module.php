@@ -63,7 +63,7 @@ class SMS_module
                     );
                 $response = 'success';
             } catch (\Exception $exception) {
-                dd($exception);
+                //dd($exception);
                 $response = 'error';
             }
         }
