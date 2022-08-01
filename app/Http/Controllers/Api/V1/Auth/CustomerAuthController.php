@@ -148,7 +148,7 @@ class CustomerAuthController extends Controller
             'phone' => 'required|unique:users',
             'password' => 'required|min:6',
         ], [
-            'nick_name.required' => 'The first name field is required.',
+            'nick_name.required' => 'The nick name  field is required.',
         ]);
 
         if ($validator->fails()) {
