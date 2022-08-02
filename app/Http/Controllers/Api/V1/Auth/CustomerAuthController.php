@@ -143,12 +143,12 @@ class CustomerAuthController extends Controller
     public function registration(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'nick_name' => 'required',
+            'f_name' => 'required',
             'email' => '',
             'phone' => 'required|unique:users',
             'password' => 'required|min:6',
         ], [
-            'nick_name.required' => 'The nick name  field is required.',
+            'f_name.required' => 'The first name  field is required.',
         ]);
 
         if ($validator->fails()) {
@@ -156,8 +156,8 @@ class CustomerAuthController extends Controller
         }
         $temporary_token = Str::random(40);
         $user = User::create([
-            'f_name' => $request->nick_name,
-            'l_name' => $request->nick_name,
+            'f_name' => $request->f_name,
+            'l_name' => $request->l_name,
             'email' => $request->email??'',
             'phone' => $request->phone,
             'password' => bcrypt($request->password),
