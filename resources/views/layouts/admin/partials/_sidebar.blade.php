@@ -384,7 +384,7 @@
 
 
                             <!-- Pages -->
-                            <li class="navbar-vertical-aside-has-menu {{Request::is('admin/notification*')?'active':''}}">
+                            {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/notification*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
                                 href="{{route('admin.notification.add-new')}}"
                                 >
@@ -393,11 +393,11 @@
                                         {{\App\CentralLogics\translate('send')}} {{\App\CentralLogics\translate('notification')}}
                                     </span>
                                 </a>
-                            </li>
+                            </li> --}}
                             <!-- End Pages -->
 
                             <!-- Pages -->
-                            <li class="navbar-vertical-aside-has-menu {{Request::is('admin/coupon*')?'active':''}}">
+                            {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/coupon*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link"
                                 href="{{route('admin.coupon.add-new')}}"
                                 >
@@ -405,7 +405,7 @@
                                     <span
                                         class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{\App\CentralLogics\translate('coupon')}}</span>
                                 </a>
-                            </li>
+                            </li> --}}
                             <!-- End Pages -->
 
                             <!-- Pages -->
@@ -439,7 +439,7 @@
                                 </ul>
                             </li>
                             <!-- End Pages -->
-                            <li class="navbar-vertical-aside-has-menu {{Request::is('admin/business-settings/web-app*')?'active':''}}">
+                            {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/business-settings/web-app*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:"
                                 >
                                     <i class="tio-website nav-icon"></i>
@@ -562,9 +562,9 @@
                                     </li>
    
                                 </ul>
-                            </li>
+                            </li> --}}
                             <!-- PAGE SETUP -->
-                            <li class="navbar-vertical-aside-has-menu {{Request::is('admin/business-settings/page-setup/*')?'active':''}}">
+                            {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/business-settings/page-setup/*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:">
                                     <i class="tio-pages nav-icon"></i>
                                     <span class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{translate('Page Setup')}}</span>
@@ -595,7 +595,7 @@
                                         </a>
                                     </li>
                                 </ul>
-                            </li>
+                            </li> --}}
                             <!-- Pages -->
                             {{-- <li class="navbar-vertical-aside-has-menu {{Request::is('admin/business-settings*')?'active':''}}">
                                 <a class="js-navbar-vertical-aside-menu-link nav-link nav-link-toggle" href="javascript:"
@@ -841,7 +841,7 @@
                         @endif
 
                         
-                        @if(Helpers::module_permission_check(MANAGEMENT_SECTION['report_management']))
+                        {{-- @if(Helpers::module_permission_check(MANAGEMENT_SECTION['report_management']))
                             <li class="nav-item">
                                 <small class="nav-subtitle"
                                     title="Documentation">{{\App\CentralLogics\translate('report_and_analytics')}}</small>
@@ -883,7 +883,7 @@
                                 </ul>
                             </li>
                             <!-- End Pages -->
-                        @endif
+                        @endif --}}
 
                         <li class="nav-item">
                             <div class="nav-divider"></div>
