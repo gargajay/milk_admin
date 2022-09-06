@@ -8,6 +8,7 @@ use App\Model\CustomerAddress;
 use App\Model\Newsletter;
 use App\Model\Order;
 use App\Model\OrderDetail;
+use App\Model\WalletHistory;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -228,6 +229,46 @@ class CustomerController extends Controller
 
         return response()->json(['status_code' => 200, 'message' => translate('Successfully deleted')], 200);
     }
+
+
+    // wallet work 
+
+
+    public function addMoney(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
+            'amount' => 'required',
+            'transaction_id' => 'required',
+            
+
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+
+         $wallet =  new WalletHistory();
+
+         $wallet->user_id = $request->user_id;
+         $wallet->amount = $request->amount;
+         $wallet->transaction_id = $request->transaction_id;
+         $wallet->type_id = WalletHistory::TYPE_ADDED;
+         $wallet->info = 'Added new balance to wallet  '.$this->amount;
+
+         if($wallet->save())
+         {
+            return response()->json(['message' => 'Added balance sucessfully'], 200);
+
+         }else{
+            return response()->json(['message' => $wallet->error], 200);
+
+         }
+
+
+
+    }
+
 
 
 

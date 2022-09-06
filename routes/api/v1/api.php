@@ -87,7 +87,8 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::get('products/{category_id}/all', 'CategoryController@get_all_products');
     });
 
-    Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () {
+    Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () 
+    {
         Route::get('info', 'CustomerController@info');
         Route::put('update-profile', 'CustomerController@update_profile');
         Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
@@ -97,6 +98,13 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::group(['prefix' => 'address'], function () {
             Route::get('list', 'CustomerController@address_list');
             Route::post('add', 'CustomerController@add_new_address');
+            Route::put('update/{id}', 'CustomerController@update_address');
+            Route::delete('delete', 'CustomerController@delete_address');
+        });
+
+        Route::group(['prefix' => 'mywallet'], function () {
+            Route::get('list', 'CustomerController@address_list');
+            Route::post('adding', 'CustomerController@addmoney');
             Route::put('update/{id}', 'CustomerController@update_address');
             Route::delete('delete', 'CustomerController@delete_address');
         });

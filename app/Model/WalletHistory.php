@@ -10,6 +10,32 @@ class WalletHistory extends Model
     protected $table = "wallet_history";
 
 
+    const TYPE_ADDED = 1;
+    const TYPE_USED = 2;
+
+
+
+    protected $key;
+
+    
+    function __construct()
+    {
+      
+    }
+
+    protected static function boot()
+    {
+        
+        parent::boot();
+
+
+        WalletHistory::creating(function($model) {
+            $key =  $model->id.$model->user_id;
+            $model->verifyToken = base64_encode($key);
+        });
+    }
+
+
     protected $casts = [
         'type_id'                => 'integer',
         'amount'                 =>  'float',
