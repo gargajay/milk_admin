@@ -239,9 +239,7 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'amount' => 'required',
-            'transaction_id' => 'required',
-            
-
+            'transaction_id' => 'required'
         ]);
 
         if ($validator->fails()) {

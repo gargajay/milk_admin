@@ -104,7 +104,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
 
         Route::group(['prefix' => 'mywallet'], function () {
             Route::get('list', 'CustomerController@address_list');
-            Route::post('adding', 'CustomerController@addmoney');
+            Route::post('adding', 'CustomerController@addMoney');
             Route::put('update/{id}', 'CustomerController@update_address');
             Route::delete('delete', 'CustomerController@delete_address');
         });
