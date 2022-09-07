@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Facades\Image;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
@@ -237,7 +238,6 @@ class CustomerController extends Controller
     public function addMoney(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_id' => 'required',
             'amount' => 'required',
             'transaction_id' => 'required'
         ]);
@@ -246,9 +246,10 @@ class CustomerController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
 
+        $user = Auth::user();
          $wallet =  new WalletHistory();
 
-         $wallet->user_id = $request->user_id;
+         $wallet->user_id = $user->id;
          $wallet->amount = $request->amount;
          $wallet->transaction_id = $request->transaction_id;
          $wallet->type_id = WalletHistory::TYPE_ADDED;
