@@ -253,10 +253,13 @@ class CustomerController extends Controller
          $wallet->amount = $request->amount;
          $wallet->transaction_id = $request->transaction_id;
          $wallet->type_id = WalletHistory::TYPE_ADDED;
-         $wallet->info = 'Added new balance to wallet  '.$this->amount;
+         $wallet->info = 'Added new balance to wallet  '.$request->amount;
 
          if($wallet->save())
          {
+            $key = $wallet->id.$wallet->user_id."579";
+            $wallet->verifyToken = base64_encode($key);
+            $wallet->save();
             return response()->json(['message' => 'Added balance sucessfully'], 200);
 
          }else{
@@ -265,6 +268,50 @@ class CustomerController extends Controller
          }
 
 
+
+    }
+
+
+    // use wallet blance
+
+    public function useMoney(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required',
+            'transaction_id' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+
+         $user = Auth::user();
+         $wallet =  new WalletHistory();
+
+         $balance =  $wallet->walletBalance();
+
+         if($request->amount>$balance){
+            return response()->json(['message' => "Wallet balance is low then order amount"], 403);
+
+         }
+
+         $wallet->user_id = $user->id;
+         $wallet->amount = - $request->amount;
+         $wallet->transaction_id = $request->transaction_id;
+         $wallet->type_id = WalletHistory::TYPE_USED;
+         $wallet->info = ' balance withdraw from  wallet  '.$request->amount;
+
+         if($wallet->save())
+         {
+            $key = $wallet->id.$wallet->user_id."579";
+            $wallet->verifyToken = base64_encode($key);
+            $wallet->save();
+            return response()->json(['message' => 'balance withdraw sucessfully'], 200);
+
+         }else{
+            return response()->json(['message' => $wallet->error], 200);
+
+         }
 
     }
 

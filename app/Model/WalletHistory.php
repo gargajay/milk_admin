@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class WalletHistory extends Model
 {
@@ -18,23 +19,21 @@ class WalletHistory extends Model
     protected $key;
 
     
-    function __construct()
-    {
-      
-    }
+    
 
-    protected static function boot()
-    {
+
+    // protected static function boot()
+    // {
+    //     parent::boot();
         
-        parent::boot();
+    //     WalletHistory::saved(function($model) {
+               
+            
+             
+    //       });
+    // }
 
-
-        WalletHistory::creating(function($model) {
-            $key =  $model->id.$model->user_id;
-            $model->verifyToken = base64_encode($key);
-        });
-    }
-
+ 
 
     protected $casts = [
         'type_id'                => 'integer',
@@ -55,6 +54,34 @@ class WalletHistory extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    static function walletBalance()
+    {
+        $user = Auth::user();
+
+       $records =  WalletHistory::where('verifyToken','!=', null)->where('user_id',$user->id)->get();
+
+
+        $bal = 0;
+       if(!$records->isEmpty())
+       {
+            foreach($records as  $record)
+            {
+               
+            $keyset = $record->id.$record->user_id."579";
+
+                if($record->verifyToken == base64_encode($keyset)){
+
+                  
+                 $bal = $bal + $record->amount;
+                }
+                
+            }
+        }
+
+        return $bal;
+
     
+
+    }
 
 }
