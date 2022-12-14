@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
+use App\Model\Conversation;
 use App\Model\CustomerAddress;
 use App\Model\Newsletter;
 use App\Model\Order;
 use App\Model\OrderDetail;
-use App\Model\WalletHistory;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Intervention\Image\Facades\Image;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+
 
 class CustomerController extends Controller
 {
@@ -45,6 +45,9 @@ class CustomerController extends Controller
             'contact_person_number' => $request->contact_person_number,
             'address_type' => $request->address_type,
             'address' => $request->address,
+            'road' => $request->road,
+            'house' => $request->house,
+            'floor' => $request->floor,
             'longitude' => $request->longitude,
             'latitude' => $request->latitude,
             'created_at' => now(),
@@ -73,6 +76,9 @@ class CustomerController extends Controller
             'contact_person_number' => $request->contact_person_number,
             'address_type' => $request->address_type,
             'address' => $request->address,
+            'road' => $request->road,
+            'house' => $request->house,
+            'floor' => $request->floor,
             'longitude' => $request->longitude,
             'latitude' => $request->latitude,
             'created_at' => now(),
@@ -125,18 +131,22 @@ class CustomerController extends Controller
 
     public function info(Request $request)
     {
-        return response()->json($request->user(), 200);
+       return response()->json($request->user(), 200);
     }
 
     public function update_profile(Request $request)
     {
+        //dd(auth()->user()->id);
         $validator = Validator::make($request->all(), [
             'f_name' => 'required',
             'l_name' => 'required',
-            'phone' => 'required',
+            //'phone' => 'required',
+            'phone' => ['required', 'unique:users,phone,'.auth()->user()->id]
         ], [
             'f_name.required' => 'First name is required!',
             'l_name.required' => 'Last name is required!',
+            'phone.required' => 'Phone is required!',
+            'phone.unique' => translate('Phone must be unique!'),
         ]);
 
         if ($validator->fails()) {
@@ -228,93 +238,23 @@ class CustomerController extends Controller
             return response()->json(['status_code' => 404, 'message' => translate('Not found')], 200);
         }
 
+        $conversations = Conversation::where('user_id', $customer->id)->get();
+        foreach ($conversations as $conversation){
+            if ($conversation->checked == 0){
+                $conversation->checked = 1;
+                $conversation->save();
+            }
+        }
+
         return response()->json(['status_code' => 200, 'message' => translate('Successfully deleted')], 200);
     }
 
-
-    // wallet work 
-
-
-    public function addMoney(Request $request)
+   /* public function unsubscribe_topic(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'amount' => 'required',
-            'transaction_id' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
-        }
-
-        $user = Auth::user();
-         $wallet =  new WalletHistory();
-
-         $wallet->user_id = $user->id;
-         $wallet->amount = $request->amount;
-         $wallet->transaction_id = $request->transaction_id;
-         $wallet->type_id = WalletHistory::TYPE_ADDED;
-         $wallet->info = 'Added new balance to wallet  '.$request->amount;
-
-         if($wallet->save())
-         {
-            $key = $wallet->id.$wallet->user_id."579";
-            $wallet->verifyToken = base64_encode($key);
-            $wallet->save();
-            return response()->json(['message' => 'Added balance sucessfully'], 200);
-
-         }else{
-            return response()->json(['message' => $wallet->error], 200);
-
-         }
-
-
-
-    }
-
-
-    // use wallet blance
-
-    public function useMoney(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'amount' => 'required',
-            'transaction_id' => 'required'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
-        }
-
-         $user = Auth::user();
-         $wallet =  new WalletHistory();
-
-         $balance =  $wallet->walletBalance();
-
-         if($request->amount>$balance){
-            return response()->json(['message' => "Wallet balance is low then order amount"], 403);
-
-         }
-
-         $wallet->user_id = $user->id;
-         $wallet->amount = - $request->amount;
-         $wallet->transaction_id = $request->transaction_id;
-         $wallet->type_id = WalletHistory::TYPE_USED;
-         $wallet->info = ' balance withdraw from  wallet  '.$request->amount;
-
-         if($wallet->save())
-         {
-            $key = $wallet->id.$wallet->user_id."579";
-            $wallet->verifyToken = base64_encode($key);
-            $wallet->save();
-            return response()->json(['message' => 'balance withdraw sucessfully'], 200);
-
-         }else{
-            return response()->json(['message' => $wallet->error], 200);
-
-         }
-
-    }
-
+        $user = User::where('id',$request->user()->id)->first();
+        'https://iid.googleapis.com/iid/v1/'. $user->cm_firebase_token .'/rel/topics/'. $request['topic'];
+        return response()->json(['status_code' => 200, 'message' => translate('Unsubscribed')], 200);
+    }*/
 
 
 

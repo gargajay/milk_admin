@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
+use App\Model\BusinessSetting;
 use App\Model\Category;
 use App\Model\Product;
 use App\Model\Review;
@@ -87,7 +88,18 @@ class ProductController extends Controller
         }else{
             $query = Product::latest();
         }
-        $products = $query->paginate(Helpers::getPagination())->appends($query_param);
+        $products = $query->with('order_details.order')->paginate(Helpers::getPagination())->appends($query_param);
+
+        foreach ($products as $product) {
+            $total_sold = 0;
+            foreach ($product->order_details as $detail) {
+                if ($detail->order->order_status == 'delivered'){
+                    $total_sold += $detail->quantity;
+                }
+            }
+             $product->total_sold = $total_sold;
+        }
+
         return view('admin-views.product.list', compact('products','search'));
     }
 
@@ -113,12 +125,13 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        //dd($request->status);
         $validator = Validator::make($request->all(), [
             'name' => 'required|unique:products',
             'category_id' => 'required',
             'images' => 'required',
             'total_stock' => 'required|numeric|min:1',
-            'price' => 'required|numeric|min:1',
+            'price' => 'required|numeric|min:0',
         ], [
             'name.required' => translate('Product name is required!'),
             'name.unique' => translate('Product name must be unique!'),
@@ -246,6 +259,8 @@ class ProductController extends Controller
         $p->total_stock = $request->total_stock;
 
         $p->attributes = $request->has('attribute_id') ? json_encode($request->attribute_id) : json_encode([]);
+        $p->status = $request->status? $request->status:0;
+
         $p->save();
 
         $data = [];
@@ -307,10 +322,10 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required',
+            'name' => 'required|unique:products,name,'.$request->id,
             'category_id' => 'required',
             'total_stock' => 'required|numeric|min:1',
-            'price' => 'required|numeric|min:1',
+            'price' => 'required|numeric|min:0',
         ], [
             'name.required' => 'Product name is required!',
             'category_id.required' => 'category  is required!',
@@ -331,7 +346,7 @@ class ProductController extends Controller
         if (!empty($request->file('images'))) {
             foreach ($request->images as $img) {
                 $image_data = Helpers::upload('product/', 'png', $img);
-                array_push($images, $image_data);
+                $images[] = $image_data;
             }
 
         }
@@ -344,22 +359,22 @@ class ProductController extends Controller
 
         $category = [];
         if ($request->category_id != null) {
-            array_push($category, [
+            $category[] = [
                 'id' => $request->category_id,
                 'position' => 1,
-            ]);
+            ];
         }
         if ($request->sub_category_id != null) {
-            array_push($category, [
+            $category[] = [
                 'id' => $request->sub_category_id,
                 'position' => 2,
-            ]);
+            ];
         }
         if ($request->sub_sub_category_id != null) {
-            array_push($category, [
+            $category[] = [
                 'id' => $request->sub_sub_category_id,
                 'position' => 3,
-            ]);
+            ];
         }
 
         $p->category_ids = json_encode($category);
@@ -376,7 +391,7 @@ class ProductController extends Controller
                 $item['name'] = 'choice_' . $no;
                 $item['title'] = $request->choice[$key];
                 $item['options'] = explode(',', implode('|', preg_replace('/\s+/', ' ', $request[$str])));
-                array_push($choice_options, $item);
+                $choice_options[] = $item;
             }
         }
         $p->choice_options = json_encode($choice_options);
@@ -386,7 +401,7 @@ class ProductController extends Controller
             foreach ($request->choice_no as $key => $no) {
                 $name = 'choice_options_' . $no;
                 $my_str = implode('|', $request[$name]);
-                array_push($options, explode(',', $my_str));
+                $options[] = explode(',', $my_str);
             }
         }
 
@@ -441,6 +456,9 @@ class ProductController extends Controller
         $p->total_stock = $request->total_stock;
 
         $p->attributes = $request->has('attribute_id') ? json_encode($request->attribute_id) : json_encode([]);
+        $p->status = $request->status? $request->status:0;
+
+
         $p->save();
 
 
@@ -524,16 +542,21 @@ class ProductController extends Controller
             Toastr::error(translate('You have uploaded a wrong format file, please upload the right file.'));
             return back();
         }
-
+        $col_key = ['name','description','price','tax','category_id','sub_category_id','discount','discount_type','tax_type','unit','total_stock','capacity','daily_needs'];
         foreach ($collections as $key => $collection) {
-            if ($collection['name'] === "") {
+
+            foreach ($collection as $key => $value) {
+                if ($key!="" && !in_array($key, $col_key)) {
+                    Toastr::error('Please upload the correct format file.');
+                    return back();
+                }
+            }
+
+            /*if ($collection['name'] === "") {
                 Toastr::error('Please fill row:' . ($key + 2) . ' field: name ');
                 return back();
             } elseif ($collection['description'] === "") {
                 Toastr::error('Please fill row:' . ($key + 2) . ' field: description ');
-                return back();
-            } elseif (!is_numeric($collection['price'])) {
-                Toastr::error('Price of row ' . ($key + 2) . ' must be number');
                 return back();
             } elseif (!is_numeric($collection['price'])) {
                 Toastr::error('Price of row ' . ($key + 2) . ' must be number');
@@ -592,7 +615,7 @@ class ProductController extends Controller
             if ($collection['price'] <= Helpers::discount_calculate($product, $collection['price'])) {
                 Toastr::error('Discount can not be more or equal to the price in row '. ($key + 2));
                 return back();
-            }
+            }*/
         }
         $data = [];
         foreach ($collections as $collection) {
@@ -624,9 +647,23 @@ class ProductController extends Controller
         return back();
     }
 
-    public function bulk_export_data()
+    public function bulk_export_index()
     {
-        $products = Product::get();
+        return view('admin-views.product.bulk-export-index');
+    }
+
+    public function bulk_export_data(Request $request)
+    {
+        $start_date = $request->type == 'date_wise' ? $request['start_date'] : null;
+        $end_date = $request->type == 'date_wise' ? $request['end_date'] : null;
+
+        //dd($start_date, $end_date);
+
+        $products = Product::when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->get();
+
         $storage = [];
         foreach($products as $item){
             $category_id = 0;
@@ -671,4 +708,66 @@ class ProductController extends Controller
         }
         return (new FastExcel($storage))->download('products.xlsx');
     }
+
+    public function limited_stock(Request $request)
+    {
+        $stock_limit = BusinessSetting::where('key','minimum_stock_limit')->first()->value;
+        $query_param = [];
+        $search = $request['search'];
+        if ($request->has('search')) {
+            $key = explode(' ', $request['search']);
+            $query = Product::where(function ($q) use ($key) {
+                foreach ($key as $value) {
+                    $q->orWhere('id', 'like', "%{$value}%")
+                        ->orWhere('name', 'like', "%{$value}%");
+                }
+            })->where('total_stock', '<', $stock_limit)->latest();
+            $query_param = ['search' => $request['search']];
+        }else{
+            $query = Product::where('total_stock', '<', $stock_limit)->latest();
+        }
+
+        $products = $query->paginate(Helpers::getPagination())->appends($query_param);
+
+        return view('admin-views.product.limited-stock', compact('products', 'search', 'stock_limit'));
+    }
+
+    public function get_variations(Request $request)
+    {
+        $product = Product::find($request['id']);
+        return response()->json([
+            'view' => view('admin-views.product.partials._update_stock', compact('product'))->render()
+        ]);
+    }
+
+    public function update_quantity(Request $request)
+    {
+        //dd($request->all());
+        $variations = [];
+        $stock_count = $request['total_stock'];
+        $product_price = $request['product_price'];
+        if ($request->has('type')) {
+            foreach ($request['type'] as $key => $str) {
+                $item = [];
+                $item['type'] = $str;
+                //$item['price'] = BackEndHelper::currency_to_usd(abs($request['price_' . str_replace('.', '_', $str)]));
+                $item['price'] = (abs($request['price_' . str_replace('.', '_', $str)]));
+                $item['stock'] = abs($request['qty_' . str_replace('.', '_', $str)]);
+                array_push($variations, $item);
+            }
+        }
+
+        $product = Product::find($request['product_id']);
+        if ($stock_count >= 0) {
+            $product->total_stock = $stock_count;
+            $product->variations = json_encode($variations);
+            $product->save();
+            Toastr::success(translate('product_quantity_updated_successfully!'));
+            return back();
+        } else {
+            Toastr::warning(translate('product_quantity_can_not_be_less_than_0_!'));
+            return back();
+        }
+    }
+
 }

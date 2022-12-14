@@ -8,7 +8,7 @@ use App\Model\Branch;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 
-class BranchController extends Controller
+class   BranchController extends Controller
 {
     public function index(Request $request)
     {
@@ -27,7 +27,28 @@ class BranchController extends Controller
            $branches = Branch::orderBy('id', 'desc');
         }
         $branches = $branches->paginate(Helpers::getPagination())->appends($query_param);
-        return view('admin-views.branch.index', compact('branches','search'));
+        return view('admin-views.branch.add-new', compact('branches','search'));
+    }
+
+    public function list(Request $request)
+    {
+        $query_param = [];
+        $search = $request['search'];
+        if($request->has('search'))
+        {
+            $key = explode(' ', $request['search']);
+            $branches = Branch::where(function ($q) use ($key) {
+                foreach ($key as $value) {
+                    $q->orWhere('name', 'like', "%{$value}%");
+                    $q->orWhere('id', 'like', "%{$value}%");
+                }
+            })->orderBy('id', 'desc');
+            $query_param = ['search' => $request['search']];
+        }else{
+            $branches = Branch::orderBy('id', 'desc');
+        }
+        $branches = $branches->paginate(Helpers::getPagination())->appends($query_param);
+        return view('admin-views.branch.list', compact('branches','search'));
     }
 
     public function store(Request $request)
@@ -36,7 +57,7 @@ class BranchController extends Controller
             'name' => 'required|max:255|unique:branches',
             'email' => 'required|max:255|unique:branches',
             'password' => 'required|min:8|max:255',
-            'image' => 'required|max:255',
+            'image' => 'required|max:2048',
         ], [
             'name.required' => translate('Name is required!'),
             'name.unique' => translate('Name must be unique'),
@@ -56,6 +77,7 @@ class BranchController extends Controller
         $branch = new Branch();
         $branch->name = $request->name;
         $branch->email = $request->email;
+        $branch->phone = $request->phone;
         $branch->longitude = $request->longitude;
         $branch->latitude = $request->latitude;
         $branch->coverage = $request->coverage ? $request->coverage : 0;
@@ -64,7 +86,7 @@ class BranchController extends Controller
         $branch->image = $image_name;
         $branch->save();
         Toastr::success(translate('Branch added successfully!'));
-        return back();
+        return redirect('admin/branch/list');
     }
 
     public function edit($id)
@@ -87,6 +109,7 @@ class BranchController extends Controller
         $branch = Branch::find($id);
         $branch->name = $request->name;
         $branch->email = $request->email;
+        $branch->phone = $request->phone;
         $branch->longitude = $request->longitude;
         $branch->latitude = $request->latitude;
         $branch->coverage = $request->coverage ? $request->coverage : 0;
@@ -103,9 +126,22 @@ class BranchController extends Controller
 
     public function delete(Request $request)
     {
+        $branch = Branch::where('id', $request->id)->whereNotIn('id', [1])->first();
+        if ($branch){
+            $branch->delete();
+            Toastr::success(translate('Branch removed!'));
+        }else{
+            Toastr::warning(translate('Access denied!'));
+        }
+        return back();
+    }
+
+    public function status(Request $request)
+    {
         $branch = Branch::find($request->id);
-        $branch->delete();
-        Toastr::success(translate('Branch removed!'));
+        $branch->status = $request->status;
+        $branch->save();
+        Toastr::success(translate('Branch status updated!'));
         return back();
     }
 }

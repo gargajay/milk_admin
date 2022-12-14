@@ -28,7 +28,7 @@ class CategoryLogic
                 }
             }
         }
-        return Product::active()->withCount(['wishlist'])->with('rating')->whereIn('id', $product_ids)->get();
+        return Product::active()->withCount(['wishlist', 'active_reviews'])->with('rating')->whereIn('id', $product_ids)->get();
     }
 
     public static function all_products($id)
@@ -42,7 +42,7 @@ class CategoryLogic
             }
         }
 
-        $products = Product::active()->get();
+        $products = Product::active()->with('rating', 'active_reviews')->get();
         $product_ids = [];
         foreach ($products as $product) {
             foreach (json_decode($product['category_ids'], true) as $category) {
@@ -52,6 +52,6 @@ class CategoryLogic
             }
         }
 
-        return Product::active()->withCount(['wishlist'])->with('rating')->whereIn('id', $product_ids)->get();
+        return Product::active()->withCount(['wishlist'])->with('rating', 'active_reviews')->whereIn('id', $product_ids)->get();
     }
 }

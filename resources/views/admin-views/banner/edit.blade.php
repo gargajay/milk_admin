@@ -10,83 +10,90 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title"><i class="tio-edit"></i> {{translate('Update Banner')}} </h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/edit.png')}}" class="w--20" alt="">
+                </span>
+                <span>
+                    {{translate('Update Banner')}}
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
-        <div class="row gx-2 gx-lg-3">
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
+        <div class="card">
+            <div class="card-body">
                 <form action="{{route('admin.banner.update',[$banner['id']])}}" method="post"
                       enctype="multipart/form-data">
                     @csrf @method('put')
-
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('title')}}</label>
-                                <input type="text" name="title" value="{{$banner['title']}}" class="form-control"
-                                       placeholder="{{ translate('New banner') }}" required>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-group mb-0">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('title')}}</label>
+                                        <input type="text" name="title" value="{{$banner['title']}}" class="form-control"
+                                            placeholder="{{ translate('New banner') }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group mb-0">
+                                        <label class="input-label" for="exampleFormControlSelect1">{{translate('item')}} {{translate('type')}}<span
+                                                class="input-label-secondary">*</span></label>
+                                        <select name="item_type" class="form-control" onchange="show_item(this.value)">
+                                            <option value="product" {{$banner['product_id']==null?'':'selected'}}>{{translate('product')}}</option>
+                                            <option value="category" {{$banner['category_id']==null?'':'selected'}}>{{translate('category')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group mb-0" id="type-product"
+                                        style="display: {{$banner['product_id']==null?'none':'block'}}">
+                                        <label class="input-label" for="exampleFormControlSelect1">{{translate('product')}} <span
+                                                class="input-label-secondary">*</span></label>
+                                        <select name="product_id" class="form-control js-select2-custom">
+                                            @foreach($products as $product)
+                                                <option
+                                                    value="{{$product['id']}}" {{$banner['product_id']==$product['id']?'selected':''}}>
+                                                    {{$product['name']}}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group mb-0" id="type-category"
+                                        style="display: {{$banner['category_id']==null?'none':'block'}}">
+                                        <label class="input-label" for="exampleFormControlSelect1">{{translate('category')}} <span
+                                                class="input-label-secondary">*</span></label>
+                                        <select name="category_id" class="form-control js-select2-custom">
+                                            @foreach($categories as $category)
+                                                <option value="{{$category['id']}}" {{$banner['category_id']==$category['id']?'selected':''}}>{{$category['name']}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlSelect1">{{translate('item')}} {{translate('type')}}<span
-                                        class="input-label-secondary">*</span></label>
-                                <select name="item_type" class="form-control" onchange="show_item(this.value)">
-                                    <option value="product" {{$banner['product_id']==null?'':'selected'}}>{{translate('product')}}</option>
-                                    <option value="category" {{$banner['category_id']==null?'':'selected'}}>{{translate('category')}}</option>
-                                </select>
+
+                        <div class="col-md-6">
+                            <div class="d-flex flex-column justify-content-center h-100">
+                                <div class="text-center mb-3">
+                                    {{translate('banner')}} {{translate('image')}}
+                                    <small class="text-danger">* ( {{translate('ratio')}} 3:1 )</small>
+                                </div>
+                                <label class="upload--vertical">
+                                    <input type="file" name="image" id="customFileEg1" class=""
+                                            accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" hidden>
+                                    <img id="viewer" onerror="this.src='{{asset('public/assets/admin/img/upload-vertical.png')}}'" src="{{asset('storage/app/public/banner')}}/{{$banner['image']}}" alt="banner image"/>
+                                </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-6">
-                            <div class="form-group">
-                                <label>{{translate('banner')}} {{translate('image')}}</label><small style="color: red">* ( {{translate('ratio')}} 3:1 )</small>
-                                <div class="custom-file">
-                                    <input type="file" name="image" id="customFileEg1" class="custom-file-input"
-                                           accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
-                                    <label class="custom-file-label" for="customFileEg1">{{translate('choose')}} {{translate('file')}}</label>
-                                </div>
-                                <div class="text-center mt-2">
-                                    <img style="width: 80%;border: 1px solid; border-radius: 10px;" id="viewer"
-                                         onerror="this.src='{{asset('public/assets/admin/img/900x400/img1.jpg')}}'"
-                                         src="{{asset('storage/app/public/banner')}}/{{$banner['image']}}" alt="banner image"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="form-group" id="type-product"
-                                 style="display: {{$banner['product_id']==null?'none':'block'}}">
-                                <label class="input-label" for="exampleFormControlSelect1">{{translate('product')}} <span
-                                        class="input-label-secondary">*</span></label>
-                                <select name="product_id" class="form-control js-select2-custom">
-                                    @foreach($products as $product)
-                                        <option
-                                            value="{{$product['id']}}" {{$banner['product_id']==$product['id']?'selected':''}}>
-                                            {{$product['name']}}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group" id="type-category"
-                                 style="display: {{$banner['category_id']==null?'none':'block'}}">
-                                <label class="input-label" for="exampleFormControlSelect1">{{translate('category')}} <span
-                                        class="input-label-secondary">*</span></label>
-                                <select name="category_id" class="form-control js-select2-custom">
-                                    @foreach($categories as $category)
-                                        <option value="{{$category['id']}}" {{$banner['category_id']==$category['id']?'selected':''}}>{{$category['name']}}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                    <div class="col-12">
+                        <div class="btn--container justify-content-end">
+                            <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('update')}}</button>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary">{{translate('update')}}</button>
                 </form>
             </div>
         </div>
@@ -122,4 +129,6 @@
             }
         }
     </script>
+
+
 @endpush

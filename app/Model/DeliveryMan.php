@@ -21,4 +21,15 @@ class DeliveryMan extends Authenticatable
             ->select(DB::raw('avg(rating) average, delivery_man_id'))
             ->groupBy('delivery_man_id');
     }
+
+    public function orders(){
+        return $this->hasMany(Order::class,'delivery_man_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+
 }

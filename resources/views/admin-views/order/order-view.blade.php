@@ -2,392 +2,309 @@
 
 @section('title', translate('Order Details'))
 
-@push('css_or_js')
-
-@endpush
-
 @section('content')
 
     <div class="content container-fluid">
+
+
         <!-- Page Header -->
-        <div class="page-header d-print-none">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-no-gutter">
-                            <li class="breadcrumb-item">
-                                <a class="breadcrumb-link"
-                                   href="{{route('admin.orders.list',['status'=>'all'])}}">
-                                    {{ translate('Orders') }}
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active"
-                                aria-current="page">{{translate('order')}} {{translate('details')}}</li>
-                        </ol>
-                    </nav>
-
-                    <div class="d-sm-flex align-items-sm-center">
-                        <h1 class="page-header-title">{{translate('order')}} #{{$order['id']}}</h1>
-
-                        @if($order['payment_status']=='paid')
-                            <span class="badge badge-soft-success ml-sm-3">
-                                <span class="legend-indicator bg-success"></span>{{translate('paid')}}
-                            </span>
-                        @else
-                            <span class="badge badge-soft-danger ml-sm-3">
-                                <span class="legend-indicator bg-danger"></span>{{translate('unpaid')}}
-                            </span>
-                        @endif
-
-                        @if($order['order_status']=='pending')
-                            <span class="badge badge-soft-info ml-2 ml-sm-3 text-capitalize">
-                              <span class="legend-indicator bg-info text"></span>{{translate('pending')}}
-                            </span>
-                        @elseif($order['order_status']=='confirmed')
-                            <span class="badge badge-soft-info ml-2 ml-sm-3 text-capitalize">
-                              <span class="legend-indicator bg-info"></span>{{translate('confirmed')}}
-                            </span>
-                        @elseif($order['order_status']=='processing')
-                            <span class="badge badge-soft-warning ml-2 ml-sm-3 text-capitalize">
-                              <span class="legend-indicator bg-warning"></span>{{translate('processing')}}
-                            </span>
-                        @elseif($order['order_status']=='out_for_delivery')
-                            <span class="badge badge-soft-warning ml-2 ml-sm-3 text-capitalize">
-                              <span class="legend-indicator bg-warning"></span>{{translate('out_for_delivery')}}
-                            </span>
-                        @elseif($order['order_status']=='delivered')
-                            <span class="badge badge-soft-success ml-2 ml-sm-3 text-capitalize">
-                              <span class="legend-indicator bg-success"></span>{{translate('delivered')}}
-                            </span>
-                        @else
-                            <span class="badge badge-soft-danger ml-2 ml-sm-3 text-capitalize">
-                              <span class="legend-indicator bg-danger"></span>{{str_replace('_',' ',$order['order_status'])}}
-                            </span>
-                        @endif
-                        <span class="ml-2 ml-sm-3">
-                        <i class="tio-date-range"></i> {{date('d M Y',strtotime($order['created_at']))}} {{ date(config('time_format'), strtotime($order['created_at'])) }}
+        <div class="page-header d-flex justify-content-between">
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/order.png')}}" class="w--20" alt="">
                 </span>
-
-                    </div>
-
-                    <div class="mt-2">
-                        <a class="text-body mr-3" target="_blank"
-                           href={{route('admin.orders.generate-invoice',[$order['id']])}}>
-                            <i class="tio-print mr-1"></i> {{translate('print')}} {{translate('invoice')}}
-                        </a>
-
-                        <!-- Unfold -->
-                        @if($order['order_type']!='self_pickup' && $order['order_type'] != 'pos')
-                            <div class="hs-unfold">
-                                <select class="form-control js-select2-custom" name="delivery_man_id"
-                                        onchange="addDeliveryMan(this.value)">
-                                    <option
-                                        value="0">{{translate('select')}} {{translate('deliveryman')}}</option>
-                                    @foreach(\App\Model\DeliveryMan::whereIn('branch_id',['all',$order['branch_id']])->get() as $deliveryMan)
-                                        <option
-                                            value="{{$deliveryMan['id']}}" {{$order['delivery_man_id']==$deliveryMan['id']?'selected':''}}>
-                                            {{$deliveryMan['f_name'].' '.$deliveryMan['l_name']}}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="hs-unfold ml-1">
-                                @if($order['order_status']=='out_for_delivery')
-                                    @php($origin=\App\Model\DeliveryHistory::where(['deliveryman_id'=>$order['delivery_man_id'],'order_id'=>$order['id']])->first())
-                                    @php($current=\App\Model\DeliveryHistory::where(['deliveryman_id'=>$order['delivery_man_id'],'order_id'=>$order['id']])->latest()->first())
-                                    @if(isset($origin))
-                                        {{--<a class="btn btn-outline-primary" target="_blank"
-                                           title="Delivery Boy Last Location" data-toggle="tooltip" data-placement="top"
-                                           href="http://maps.google.com/maps?z=12&t=m&q=loc:{{$location['latitude']}}+{{$location['longitude']}}">
-                                            <i class="tio-map"></i>
-                                        </a>--}}
-                                        <a class="btn btn-outline-primary" target="_blank"
-                                           title="Delivery Boy Last Location" data-toggle="tooltip" data-placement="top"
-                                           href="https://www.google.com/maps/dir/?api=1&origin={{$origin['latitude']}},{{$origin['longitude']}}&destination={{$current['latitude']}},{{$current['longitude']}}">
-                                            <i class="tio-map"></i>
-                                        </a>
-                                    @else
-                                        <a class="btn btn-outline-primary" href="javascript:" data-toggle="tooltip"
-                                           data-placement="top" title="Waiting for location...">
-                                            <i class="tio-map"></i>
-                                        </a>
-                                    @endif
-                                @else
-                                    <a class="btn btn-outline-dark" href="javascript:" onclick="last_location_view()"
-                                       data-toggle="tooltip" data-placement="top"
-                                       title="Only available when order is out for delivery!">
-                                        <i class="tio-map"></i>
-                                    </a>
-                                @endif
-                            </div>
-                        @endif
-
-                        <div class="hs-unfold ml-1">
-                            <h5>
-                                <i class="tio-shop"></i>
-                                {{translate('branch')}} : <label
-                                    class="badge badge-secondary">{{$order->branch?$order->branch->name:'Branch deleted!'}}</label>
-                            </h5>
-                        </div>
-
-
-                        <div class="hs-unfold float-right">
-                            @if($order['order_type'] != 'pos')
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
-                                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                        {{translate('status')}}
-                                    </button>
-                                    <div class="dropdown-menu text-capitalize" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'pending'])}}','{{ translate("Change status to pending ?") }}')"
-                                           href="javascript:">{{translate('pending')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'confirmed'])}}','{{ translate("Change status to confirmed ?") }}')"
-                                           href="javascript:">{{translate('confirmed')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'processing'])}}','{{ translate("Change status to processing ?") }}')"
-                                           href="javascript:">{{translate('processing')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'out_for_delivery'])}}','{{ translate("Change status to out for delivery ?") }}')"
-                                           href="javascript:">{{translate('out_for_delivery')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'delivered'])}}','{{ translate("Change status to delivered ?") }}')"
-                                           href="javascript:">{{translate('delivered')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'returned'])}}','{{ translate("Change status to returned ?") }}')"
-                                           href="javascript:">{{translate('returned')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'failed'])}}','{{ translate("Change status to failed ?") }}')"
-                                           href="javascript:">{{translate('failed')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'canceled'])}}','{{ translate("Change status to canceled ?") }}')"
-                                           href="javascript:">{{translate('canceled')}}</a>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        <div class="hs-unfold float-right pr-2">
-                            @if($order['order_type'] != 'pos')
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
-                                            id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                            aria-expanded="false">
-                                        {{translate('payment')}}
-                                    </button>
-                                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.payment-status',['id'=>$order['id'],'payment_status'=>'paid'])}}','{{ translate("Change status to paid ?") }}')"
-                                           href="javascript:">{{translate('paid')}}</a>
-                                        <a class="dropdown-item"
-                                           onclick="route_alert('{{route('admin.orders.payment-status',['id'=>$order['id'],'payment_status'=>'unpaid'])}}','{{ translate("Change status to unpaid ?") }}')"
-                                           href="javascript:">{{translate('unpaid')}}</a>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        <!-- End Unfold -->
-                    </div>
-                    @if($order['order_type'] != 'pos')
-                        <div class="mt-2">
-                            <div class="hs-unfold">
-                                <span>{{translate('Delivery')}} {{translate('date')}}:</span>
-                            </div>
-                            <div class="hs-unfold ml-4">
-
-                                <input type="date" value="{{ $order['delivery_date'] }}" name="from" id="from_date"
-                                       data-id="{{ $order['id'] }}"
-                                       class="form-control" required>
-
-                            </div>
-                            <div class="hs-unfold ml-2">
-                                <select class="custom-select custom-select time_slote" name="timeSlot"
-                                        data-id="{{$order['id']}}">
-                                    <option disabled>
-                                        --- {{translate('select')}} {{translate('Time Slot')}}
-                                        ---
-                                    </option>
-
-                                    @foreach(\App\Model\TimeSlot::all() as $timeSlot)
-
-
-                                        <option
-                                            value="{{$timeSlot['id']}}" {{$timeSlot->id == $order->time_slot_id ?'selected':''}}>{{date(config('time_format'), strtotime($timeSlot['start_time']))}}
-                                            - {{date(config('time_format'), strtotime($timeSlot['end_time']))}}</option>
-
-
-                                    @endforeach
-
-                                </select>
-                            </div>
-                        </div>
-                    @endif
-                </div>
-
-                <div class="col-sm-auto">
-                    <a class="btn btn-icon btn-sm btn-ghost-secondary rounded-circle mr-1"
-                       href="{{route('admin.orders.details',[$order['id']-1])}}"
-                       data-toggle="tooltip" data-placement="top" title="Previous order">
-                        <i class="tio-arrow-backward"></i>
-                    </a>
-                    <a class="btn btn-icon btn-sm btn-ghost-secondary rounded-circle"
-                       href="{{route('admin.orders.details',[$order['id']+1])}}" data-toggle="tooltip"
-                       data-placement="top" title="Next order">
-                        <i class="tio-arrow-forward"></i>
-                    </a>
-                </div>
+                <span>
+                    {{translate('order details')}}
+                </span>
+            </h1>
+            <div class="d-flex justify-content-end d-print-none">
+                <a class="btn btn-icon btn-sm btn-soft-info rounded-circle mr-1"
+                    href="{{route('admin.orders.details',[$order['id']-1])}}"
+                    data-toggle="tooltip" data-placement="top" title="Previous order">
+                    <i class="tio-arrow-backward"></i>
+                </a>
+                <a class="btn btn-icon btn-sm btn-soft-info rounded-circle"
+                    href="{{route('admin.orders.details',[$order['id']+1])}}" data-toggle="tooltip"
+                    data-placement="top" title="Next order">
+                    <i class="tio-arrow-forward"></i>
+                </a>
             </div>
         </div>
         <!-- End Page Header -->
 
         <div class="row" id="printableArea">
-            <div class="col-lg-{{$order->customer!=null ? 8 : 12}} mb-3 mb-lg-0">
+            <div class="col-lg-8 order-print-area-left">
                 <!-- Card -->
                 <div class="card mb-3 mb-lg-5">
                     <!-- Header -->
-                    <div class="card-header" style="display: block!important;">
-                        <div class="row">
-                            <div class="col-12 pb-2 border-bottom">
-                                <h4 class="card-header-title">
-                                    {{translate('order')}} {{translate('details')}}
-                                    <span
-                                        class="badge badge-soft-dark rounded-circle ml-1">{{$order->details->count()}}</span>
-                                </h4>
+                    <div class="card-header flex-wrap align-items-start border-0">
+                        <div class="order-invoice-left">
+                            <h1 class="page-header-title">
+                                <span class="mr-3">{{translate('order ID')}} #{{$order['id']}}</span>
+                                <span class="badge badge-soft-info py-2 px-3">{{$order->branch?$order->branch->name:'Branch deleted!'}}</span>
+                            </h1>
+                            <span><i class="tio-date-range"></i>
+                                {{date('d M Y',strtotime($order['created_at']))}} {{ date(config('time_format'), strtotime($order['created_at'])) }}</span>
+                        </div>
+                        <div class="order-invoice-right mt-3 mt-sm-0">
+                            <div class="btn--container ml-auto align-items-center justify-content-end">
+                                @if($order['order_type']!='self_pickup' && $order['order_type'] != 'pos')
+                                    @if($order['order_status']=='out_for_delivery')
+                                        @php($origin=\App\Model\DeliveryHistory::where(['deliveryman_id'=>$order['delivery_man_id'],'order_id'=>$order['id']])->first())
+                                        @php($current=\App\Model\DeliveryHistory::where(['deliveryman_id'=>$order['delivery_man_id'],'order_id'=>$order['id']])->latest()->first())
+                                        @if(isset($origin))
+                                            <a class="btn btn-outline-info font-semibold" target="_blank"
+                                            title="Delivery Boy Last Location" data-toggle="tooltip" data-placement="top"
+                                            href="https://www.google.com/maps/dir/?api=1&origin={{$origin['latitude']}},{{$origin['longitude']}}&destination={{$current['latitude']}},{{$current['longitude']}}">
+                                                <i class="tio-map"></i>
+                                                {{translate('Show Location in Map')}}
+                                            </a>
+                                        @else
+                                            <a class="btn btn-outline-info font-semibold" href="javascript:" data-toggle="tooltip"
+                                            data-placement="top" title="Waiting for location...">
+                                                <i class="tio-map"></i>
+                                                {{translate('Show Location in Map')}}
+                                            </a>
+                                        @endif
+                                    @else
+                                        <a class="btn btn-outline-info font-semibold" href="javascript:" onclick="last_location_view()"
+                                        data-toggle="tooltip" data-placement="top"
+                                        title="Only available when order is out for delivery!">
+                                            <i class="tio-map"></i>
+                                            {{translate('Show Location in Map')}}
+                                        </a>
+                                    @endif
+                                @endif
+                                <a class="btn btn--info print--btn" target="_blank" href={{route('admin.orders.generate-invoice',[$order['id']])}}>
+                                    <i class="tio-print mr-1"></i> {{translate('print')}} {{translate('invoice')}}
+                                </a>
                             </div>
-                            <div class="col-6 pt-2">
-                                <h6 style="color: #8a8a8a;">
-                                    {{translate('order')}} {{translate('note')}}
-                                    : {{$order['order_note']}}
+                            <div class="text-right mt-3 order-invoice-right-contents text-capitalize">
+                                <h6>
+                                    {{translate('Status ')}} :
+                                    @if($order['order_status']=='pending')
+                                        <span class="badge badge-soft-info ml-2 ml-sm-3 text-capitalize">
+                                        {{translate('pending')}}
+                                        </span>
+                                    @elseif($order['order_status']=='confirmed')
+                                        <span class="badge badge-soft-info ml-2 ml-sm-3 text-capitalize">
+                                        {{translate('confirmed')}}
+                                        </span>
+                                    @elseif($order['order_status']=='processing')
+                                        <span class="badge badge-soft-warning ml-2 ml-sm-3 text-capitalize">
+                                        {{translate('packaging')}}
+                                        </span>
+                                    @elseif($order['order_status']=='out_for_delivery')
+                                        <span class="badge badge-soft-warning ml-2 ml-sm-3 text-capitalize">
+                                        {{translate('out_for_delivery')}}
+                                        </span>
+                                    @elseif($order['order_status']=='delivered')
+                                        <span class="badge badge-soft-success ml-2 ml-sm-3 text-capitalize">
+                                        {{translate('delivered')}}
+                                        </span>
+                                    @else
+                                        <span class="badge badge-soft-danger ml-2 ml-sm-3 text-capitalize">
+                                        {{str_replace('_',' ',$order['order_status'])}}
+                                        </span>
+                                    @endif
+                                </h6>
+                                <h6 class="text-capitalize">
+                                    <span class="text-body mr-2">{{translate('payment')}} {{translate('method')}}
+                                    :</span> <span class="text--title font-bold">{{str_replace('_',' ',$order['payment_method'])}}</span>
+                                </h6>
+                                <h6 class="text-capitalize">
+                                    @if($order['transaction_reference']==null && $order['order_type']!='pos')
+                                        <span class="text-body mr-2"> {{translate('reference')}} {{translate('code')}}
+                                        :</span>
+                                        <button class="btn btn-outline-primary py-1 btn-sm" data-toggle="modal"
+                                                data-target=".bd-example-modal-sm">
+                                            {{translate('add')}}
+                                        </button>
+                                    @elseif($order['order_type']!='pos')
+                                        <span class="text-body mr-2">{{translate('reference')}} {{translate('code')}}
+                                        :</span> <span class="text--title font-bold"> {{$order['transaction_reference']}}</span>
+                                    @endif
+                                </h6>
+                                <h6>
+                                    <span class="text-body mr-2">{{translate('Payment Status ')}} : </span>
+
+                                    @if($order['payment_status']=='paid')
+                                        <span class="badge badge-soft-success ml-sm-3">
+                                            {{translate('paid')}}
+                                        </span>
+                                    @else
+                                        <span class="badge badge-soft-danger ml-sm-3">
+                                            {{translate('unpaid')}}
+                                        </span>
+                                    @endif
+                                </h6>
+                                <h6 class="text-capitalize">
+                                    <span class="text-body">{{translate('order')}} {{translate('type')}}</span>
+                                    :<label class="badge badge-soft-primary ml-3">{{str_replace('_',' ',$order['order_type'])}}</label>
                                 </h6>
                             </div>
-                            <div class="col-6 pt-2">
-                                <div class="text-right">
-                                    <h6 class="text-capitalize" style="color: #8a8a8a;">
-                                        {{translate('payment')}} {{translate('method')}}
-                                        : {{str_replace('_',' ',$order['payment_method'])}}
-                                    </h6>
-                                    <h6 class="" style="color: #8a8a8a;">
-                                        @if($order['transaction_reference']==null && $order['order_type']!='pos')
-                                            {{translate('reference')}} {{translate('code')}}
-                                            :
-                                            <button class="btn btn-outline-primary btn-sm" data-toggle="modal"
-                                                    data-target=".bd-example-modal-sm">
-                                                {{translate('add')}}
-                                            </button>
-                                        @elseif($order['order_type']!='pos')
-                                            {{translate('reference')}} {{translate('code')}}
-                                            : {{$order['transaction_reference']}}
-                                        @endif
-                                    </h6>
-                                    <h6 class="text-capitalize"
-                                        style="color: #8a8a8a;">{{translate('order')}} {{translate('type')}}
-                                        : <label style="font-size: 10px"
-                                                 class="badge badge-soft-primary">{{str_replace('_',' ',$order['order_type'])}}</label>
-                                    </h6>
-                                </div>
-                            </div>
                         </div>
+                        @if($order['order_type'] != 'pos')
+                        <div class="w-100">
+                            <h6>
+                                <strong>{{translate('order')}} {{translate('note')}}</strong>
+                                : <span class="text-body"> {{$order['order_note']}} </span>
+                            </h6>
+                        </div>
+                        @endif
                     </div>
                     <!-- End Header -->
 
                     <!-- Body -->
                     <div class="card-body">
                     @php($sub_total=0)
+                    @php($amount=0)
                     @php($total_tax=0)
                     @php($total_dis_on_pro=0)
-                    @foreach($order->details as $detail)
-                        @if($detail->product)
-                            <!-- Media -->
-                                <div class="media">
-                                    <div class="avatar avatar-xl mr-3">
-                                        @if (!empty(json_decode($detail->product['image'],true)))
-                                        <img class="img-fluid"
-                                             src="{{asset('storage/app/public/product')}}/{{json_decode($detail->product['image'],true)[0]}}"
-                                             onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'"
-                                             alt="Image Description">
-                                        @else
-                                             <img
-                                             src="{{asset('public/assets/admin/img/160x160/img2.jpg')}}"
-                                             style="width: 100px"
-                                             >
-                                        @endif
-                                    </div>
+                    @php($total_item_discount=0)
+                    @php($price_after_discount=0)
+                    <div class="table-responsive">
+                        <table class="table table-borderless table-nowrap table-align-middle card-table dataTable no-footer mb-0">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th class="border-0">{{translate('SL')}}</th>
+                                    <th class="border-0">{{translate('Item details')}}</th>
+                                    <th class="border-0 text-right">{{translate('Price')}}</th>
+                                    <th class="border-0 text-right">{{translate('Discount')}}</th>
+                                    <th class="text-right border-0">{{translate('Total Price')}}</th>
+                                </tr>
+                            </thead>
+                            @foreach($order->details as $detail)
 
-                                    <div class="media-body">
-                                        <div class="row">
-                                            <div class="col-md-3 mb-3 mb-md-0">
-                                                <strong> {{$detail->product['name']}}</strong><br>
-                                                @if(count(json_decode($detail['variation'],true))>0)
-                                                    <strong><u>{{translate('variation')}}
-                                                            : </u></strong>
-                                                    {{-- production purpose solution --}}
-                                                    @foreach(json_decode($detail['variation'],true)[0]??json_decode($detail['variation'],true) as $key1 =>$variation)
-                                                        <div class="font-size-sm text-body">
-                                                            <span>{{$key1}} :  </span>
-                                                            <span class="font-weight-bold">{{$variation}}</span>
-                                                        </div>
-                                                    @endforeach
-                                                @endif
-
+                                @if($detail->product_details !=null)
+                                    @php($product = json_decode($detail->product_details, true))
+                                    <!-- Media -->
+                                    <tr>
+                                        <td>
+                                            {{$loop->iteration}}
+                                        </td>
+                                        <td>
+                                            <div class="media media--sm">
+                                                <div class="avatar avatar-xl mr-3">
+                                                    @if($detail->product && $detail->product['image'] != null )
+                                                    <img class="img-fluid rounded aspect-ratio-1"
+                                                         src="{{asset('storage/app/public/product')}}/{{json_decode($detail->product['image'],true)[0]?? ''}}"
+                                                        onerror="this.src='{{asset('public/assets/admin/img/160x160/2.png')}}'"
+                                                        alt="Image Description">
+                                                    @else
+                                                        <img
+                                                        src="{{asset('public/assets/admin/img/160x160/2.png')}}"
+                                                        class="img-fluid rounded aspect-ratio-1"
+                                                        >
+                                                    @endif
+                                                </div>
+                                                <div class="media-body">
+                                                    <h5 class="line--limit-1">{{$product['name']}}</h5>
+                                                    @if(count(json_decode($detail['variation'],true)) > 0)
+                                                        @foreach(json_decode($detail['variation'],true)[0]??json_decode($detail['variation'],true) as $key1 =>$variation)
+                                                            <div class="font-size-sm text-body text-capitalize">
+                                                                @if($variation != null)
+                                                                <span>{{$key1}} :  </span>
+                                                                @endif
+                                                                <span class="font-weight-bold">{{$variation}}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    @endif
+                                                    <h5 class="mt-1"><span class="text-body">{{translate('Unit')}}</span> : {{$detail['unit']}} </h5>
+                                                    <h5 class="mt-1"><span class="text-body">{{translate('Unit Price')}}</span> : {{$detail['price']}} </h5>
+                                                    <h5 class="mt-1"><span class="text-body">{{translate('QTY')}}</span> : {{$detail['quantity']}} </h5>
+                                                </div>
                                             </div>
-
-                                            <div class="col col-md-2 align-self-center">
-
-                                                <h6>{{ Helpers::set_symbol($detail['price']-$detail['discount_on_product']) }}</h6>
-                                            </div>
-                                            <div class="col col-md-2 align-self-center">
-                                                <h5>{{$detail['quantity']}} </h5>
-                                            </div>
-
-                                            <div class="col col-md-2 align-self-center">
-                                                <h5>{{$detail->product['capacity']}} {{$detail['unit']}}</h5>
-                                            </div>
-
-
-                                            <div class="col col-md-3 align-self-center text-right">
-                                                @php($amount=($detail['price']-$detail['discount_on_product'])*$detail['quantity'])
-                                                <h5>{{ Helpers::set_symbol($amount) }}</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @php($sub_total+=$amount)
-                            @php($total_tax+=$detail['tax_amount']*$detail['quantity'])
-                            <!-- End Media -->
-                                <hr>
-                            @endif
-                        @endforeach
-
-                        <div class="row justify-content-md-end mb-3">
-                            <div class="col-md-9 col-lg-8">
-                                <dl class="row text-sm-right">
-                                    <dt class="col-sm-6">{{translate('items')}} {{translate('price')}}
-                                        :
-                                    </dt>
-                                    <dd class="col-sm-6">{{ Helpers::set_symbol($sub_total) }}</dd>
-                                    <dt class="col-sm-6">{{translate('tax')}}
-                                        / {{translate('vat')}}:
-                                    </dt>
-                                    <dd class="col-sm-6">{{ Helpers::set_symbol($total_tax) }}</dd>
-
-                                    <dt class="col-sm-6">{{translate('subtotal')}}:</dt>
-                                    <dd class="col-sm-6">
-                                        {{ Helpers::set_symbol($sub_total+$total_tax) }}</dd>
-                                    <dt class="col-sm-6">{{translate('coupon')}} {{translate('discount')}}
-                                        :
-                                    </dt>
-                                    <dd class="col-sm-6">
-                                        - {{ Helpers::set_symbol($order['coupon_discount_amount']) }}</dd>
-                                    @if($order['order_type'] == 'pos')
-                                        <dt class="col-sm-6">{{translate('extra Discount')}}:</dt>
-                                        <dd class="col-sm-6">
-                                            - {{ Helpers::set_symbol($order['extra_discount']) }}</dd>
+                                        </td>
+                                        <td class="text-right">
+                                            <h6>{{ Helpers::set_symbol($detail['price'] * $detail['quantity']) }}</h6>
+                                        </td>
+                                        <td class="text-right">
+                                            <h6>{{ Helpers::set_symbol($detail['discount_on_product'] * $detail['quantity']) }}</h6>
+                                        </td>
+                                        <td class="text-right">
+                                            {{--@php($amount=($detail['price']-$detail['discount_on_product'])*$detail['quantity'])--}}
+                                            @php($amount+=$detail['price']*$detail['quantity'])
+                                            @php($total_tax+=$detail['tax_amount']*$detail['quantity'])
+                                            @php($total_item_discount += $detail['discount_on_product'] * $detail['quantity'])
+                                            @php($price_after_discount+=$amount-$total_item_discount)
+                                            @php($sub_total+=$price_after_discount)
+                                            <h5>{{ Helpers::set_symbol(($detail['price'] * $detail['quantity']) - ($detail['discount_on_product'] * $detail['quantity'])) }}</h5>
+                                        </td>
+                                    </tr>
                                     @endif
-                                    <dt class="col-sm-6">{{translate('delivery')}} {{translate('fee')}}
-                                        :
+                                    @endforeach
+                                    <tr>
+                                        <td colspan="12" class="td-p-0">
+                                            <hr class="m-0" >
+                                        </td>
+                                    </tr>
+                            </table>
+                        </div>
+
+                        <div class="row justify-content-md-end mb-3 mt-4">
+                            <div class="col-md-9 col-lg-8">
+                                <dl class="row text-right justify-content-end">
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('items')}} {{translate('price')}} :
+                                        </div>
                                     </dt>
-                                    <dd class="col-sm-6">
+                                    <dd class="col-6 col-xl-5 pr-5">
+                                            {{--{{ Helpers::set_symbol($sub_total) }}--}}
+                                            {{ Helpers::set_symbol($amount) }}
+                                    </dd>
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('Item Discount')}} :
+                                        </div>
+                                    </dt>
+                                    <dd class="col-6 col-xl-5 pr-5">
+                                        - {{ Helpers::set_symbol($total_item_discount) }}
+                                    </dd>
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('Sub Total')}} :
+                                        </div>
+                                    </dt>
+                                    <dd class="col-6 col-xl-5 pr-5">
+                                        {{--{{ Helpers::set_symbol($price_after_discount) }}--}}
+                                        {{ Helpers::set_symbol($total = $amount-$total_item_discount) }}
+                                    </dd>
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('TAX')}} / {{translate('VAT')}} :
+                                        </div>
+                                    </dt>
+                                    <dd class="col-6 col-xl-5 pr-5">
+                                        {{ Helpers::set_symbol($total_tax) }}
+                                    </dd>
+                                    @if($order['order_type'] != 'pos')
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('coupon')}} {{translate('discount')}} :
+                                        </div>
+                                    </dt>
+                                    <dd class="col-6 col-xl-5 pr-5">
+                                        - {{ Helpers::set_symbol($order['coupon_discount_amount']) }}
+                                    </dd>
+                                    @endif
+                                    @if($order['order_type'] == 'pos')
+                                        <dt class="col-6 text-left">
+                                            <div class="ml-auto max-w-130px">
+                                                {{translate('extra Discount')}} :
+                                            </div>
+                                        </dt>
+                                        <dd class="col-6 col-xl-5 pr-5">
+                                            - {{ Helpers::set_symbol($order['extra_discount']) }}
+                                        </dd>
+                                    @endif
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('delivery')}} {{translate('fee')}} :
+                                        </div>
+                                    </dt>
+                                    <dd class="col-6 col-xl-5 pr-5">
                                         @if($order['order_type']=='self_pickup')
                                             @php($del_c=0)
                                         @else
@@ -397,8 +314,12 @@
                                         <hr>
                                     </dd>
 
-                                    <dt class="col-sm-6">{{translate('total')}}:</dt>
-                                    <dd class="col-sm-6">{{ Helpers::set_symbol($sub_total+$del_c+$total_tax-$order['coupon_discount_amount']-$order['extra_discount']) }}</dd>
+                                    <dt class="col-6 text-left">
+                                        <div class="ml-auto max-w-130px">
+                                            {{translate('total')}}:
+                                        </div>
+                                        </dt>
+                                    <dd class="col-6 col-xl-5 pr-5">{{ Helpers::set_symbol($total+$del_c+$total_tax-$order['coupon_discount_amount']-$order['extra_discount']) }}</dd>
                                 </dl>
                                 <!-- End Row -->
                             </div>
@@ -410,94 +331,305 @@
                 <!-- End Card -->
             </div>
 
-            @if($order->customer)
-            <div class="col-lg-4">
+
+            <div class="col-lg-4 order-print-area-right">
                 <!-- Card -->
+                @if($order['order_type'] != 'pos')
                 <div class="card">
-                    <!-- Header -->
-                    <div class="card-header">
-                        <h4 class="card-header-title">{{translate('customer')}}</h4>
+
+                    <div class="card-header border-0 pb-0 justify-content-center">
+                        <h4 class="card-title">{{translate('Order Setup')}}</h4>
                     </div>
-                    <!-- End Header -->
 
-                    <!-- Body -->
-                        <div class="card-body">
-                            <div class="media align-items-center" href="javascript:">
-                                <div class="avatar avatar-circle mr-3">
-                                    <img
-                                        class="avatar-img" style="width: 75px"
-                                        onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                                        src="{{asset('storage/app/public/profile/'.$order->customer->image)}}"
-                                        alt="Image Description">
-                                </div>
-                                <div class="media-body">
-                                <span
-                                    class="text-body text-hover-primary">{{$order->customer['f_name'].' '.$order->customer['l_name']}}</span>
-                                </div>
-                                <div class="media-body text-right">
-                                    {{--<i class="tio-chevron-right text-body"></i>--}}
+                    <div class="card-body">
+                        @if($order['order_type'] != 'pos')
+                        <div class="hs-unfold w-100">
+                            <span class="d-block form-label font-bold mb-2">{{translate('Change Order Status')}}:</span>
+                            <div class="dropdown">
+                                <button class="form-control h--45px dropdown-toggle d-flex justify-content-between align-items-center w-100" type="button"
+                                        id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                    {{$order['order_status'] == 'processing' ? translate('packaging') : translate($order['order_status'])}}
+                                </button>
+                                <div class="dropdown-menu text-capitalize" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'pending'])}}','{{ translate("Change status to pending ?") }}')"
+                                        href="javascript:">{{translate('pending')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'confirmed'])}}','{{ translate("Change status to confirmed ?") }}')"
+                                        href="javascript:">{{translate('confirmed')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'processing'])}}','{{ translate("Change status to packaging ?") }}')"
+                                        href="javascript:">{{translate('packaging')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'out_for_delivery'])}}','{{ translate("Change status to out for delivery ?") }}')"
+                                        href="javascript:">{{translate('out_for_delivery')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'delivered'])}}','{{ translate("Change status to delivered ?") }}')"
+                                        href="javascript:">{{translate('delivered')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'returned'])}}','{{ translate("Change status to returned ?") }}')"
+                                        href="javascript:">{{translate('returned')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'failed'])}}','{{ translate("Change status to failed ?") }}')"
+                                        href="javascript:">{{translate('failed')}}</a>
+                                    <a class="dropdown-item"
+                                        onclick="route_alert('{{route('admin.orders.status',['id'=>$order['id'],'order_status'=>'canceled'])}}','{{ translate("Change status to canceled ?") }}')"
+                                        href="javascript:">{{translate('canceled')}}</a>
                                 </div>
                             </div>
+                        </div>
 
-                            <hr>
-
-                            <div class="media align-items-center" href="javascript:">
-                                <div class="icon icon-soft-info icon-circle mr-3">
-                                    <i class="tio-shopping-basket-outlined"></i>
-                                </div>
-                                <div class="media-body">
-                                    <span class="text-body text-hover-primary">{{\App\Model\Order::where('user_id',$order['user_id'])->count()}} {{translate("orders")}}</span>
-                                </div>
-                                <div class="media-body text-right">
-                                    {{--<i class="tio-chevron-right text-body"></i>--}}
+                        <div class="hs-unfold w-100 mt-3">
+                            <span class="d-block form-label font-bold mb-2">{{translate('Payment Status')}}:</span>
+                            <div class="dropdown">
+                                <button class="form-control h--45px dropdown-toggle d-flex justify-content-between align-items-center w-100" type="button"
+                                        id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                        aria-expanded="false">
+                                    {{translate($order['payment_status'])}}
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item"
+                                    onclick="route_alert('{{route('admin.orders.payment-status',['id'=>$order['id'],'payment_status'=>'paid'])}}','{{ translate("Change status to paid ?") }}')"
+                                    href="javascript:">{{translate('paid')}}</a>
+                                    <a class="dropdown-item"
+                                    onclick="route_alert('{{route('admin.orders.payment-status',['id'=>$order['id'],'payment_status'=>'unpaid'])}}','{{ translate("Change status to unpaid ?") }}')"
+                                    href="javascript:">{{translate('unpaid')}}</a>
                                 </div>
                             </div>
+                        </div>
+                        <!-- End Unfold -->
 
-                            <hr>
-
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5>{{translate('contact')}} {{translate('info')}}</h5>
-                            </div>
-
-                            <ul class="list-unstyled list-unstyled-py-2">
-                                <li>
-                                    <i class="tio-online mr-2"></i>
-                                    {{$order->customer['email']}}
-                                </li>
-                                <li>
-                                    <i class="tio-android-phone-vs mr-2"></i>
-                                    {{$order->customer['phone']}}
-                                </li>
-                            </ul>
-
-                            @if($order['order_type']!='self_pickup')
-                                <hr>
-                                @php($address=\App\Model\CustomerAddress::find($order['delivery_address_id']))
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5>{{translate('delivery')}} {{translate('address')}}</h5>
-                                    @if(isset($address))
-                                        <a class="link" data-toggle="modal" data-target="#shipping-address-modal"
-                                           href="javascript:">{{translate('edit')}}</a>
-                                    @endif
+                        <div class="mt-3">
+                            <span class="d-block form-label mb-2 font-bold">{{translate('Delivery Date & Time')}}:</span>
+                            <div class="d-flex flex-wrap g-2">
+                                <div class="hs-unfold w-0 flex-grow min-w-160px">
+                                    <label class="input-date">
+                                        <input class="js-flatpickr form-control flatpickr-custom min-h-45px" type="text" value="{{ date('d M Y',strtotime($order['delivery_date'])) }}"
+                                               name="deliveryDate" id="from_date" data-id="{{ $order['id'] }}" class="form-control" required>
+                                    </label>
                                 </div>
-                                @if(isset($address))
-                                    <span class="d-block">
-                                    {{$address['contact_person_name']}}<br>
-                                    {{$address['contact_person_number']}}<br>
-                                    {{$address['address_type']}}<br>
-                                    <a target="_blank"
-                                       href="http://maps.google.com/maps?z=12&t=m&q=loc:{{$address['latitude']}}+{{$address['longitude']}}">
-                                       <i class="tio-map"></i> {{$address['address']}}<br>
-                                    </a>
-                                </span>
+                                <div class="hs-unfold w-0 flex-grow min-w-160px">
+                                    <select class="custom-select custom-select time_slote" name="timeSlot" data-id="{{$order['id']}}">
+                                        <option disabled selected>{{translate('select')}} {{translate('Time Slot')}}</option>
+                                        @foreach(\App\Model\TimeSlot::all() as $timeSlot)
+                                            <option value="{{$timeSlot['id']}}" {{$timeSlot->id == $order->time_slot_id ?'selected':''}}>{{date(config('time_format'), strtotime($timeSlot['start_time']))}}
+                                                - {{date(config('time_format'), strtotime($timeSlot['end_time']))}}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @if(($order['order_type'] !='self_pickup') && ($order['order_type'] !='pos'))
+                                @if (!$order->delivery_man)
+                                    <div class="mt-3">
+                                        <button class="btn btn--primary w-100" type="button" data-target="#assign_delivey_man_modal" data-toggle="modal">{{translate('assign delivery man manually')}}</button>
+                                    </div>
                                 @endif
+                                @if ($order->delivery_man)
+                                    <div class="card mt-2">
+                                        <div class="card-body">
+                                            <h5 class="card-title mb-3 d-flex flex-wrap align-items-center">
+                                    <span class="card-header-icon">
+                                        <i class="tio-user"></i>
+                                    </span>
+                                                <span>{{ translate('deliveryman') }}</span>
+                                                @if ($order->order_status != 'delivered')
+                                                    <a type="button" href="#assign_delivey_man_modal" class="text--base cursor-pointer ml-auto text-sm"
+                                                       data-toggle="modal" data-target="#assign_delivey_man_modal">
+                                                        {{ translate('change') }}
+                                                    </a>
+                                                @endif
+                                            </h5>
+                                            <div class="media align-items-center deco-none customer--information-single">
+
+                                                <div class="avatar avatar-circle">
+                                                    <img class="avatar-img"
+                                                         onerror="this.src='{{ asset('public/assets/admin/img/160x160/img1.jpg') }}'"
+                                                         src="{{ asset('storage/app/public/delivery-man/' . $order->delivery_man->image) }}"
+                                                         alt="Image Description">
+                                                </div>
+                                                <div class="media-body">
+                                                    <a href="{{ route('admin.delivery-man.preview', [$order->delivery_man['id']]) }}">
+                                                        <span class="text-body d-block text-hover-primary mb-1">{{ $order->delivery_man['f_name'] . ' ' . $order->delivery_man['l_name'] }}</span>
+                                                    </a>
+
+                                                    <span class="text--title font-semibold d-flex align-items-center">
+                                                    <i class="tio-shopping-basket-outlined mr-2"></i>
+                                                    {{\App\Model\Order::where('delivery_man_id',$order['delivery_man_id'])->count()}} {{ translate('orders_delivered') }}
+                                                    </span>
+                                                    <span class="text--title font-semibold d-flex align-items-center">
+                                                       <i class="tio-call-talking-quiet mr-2"></i>
+                                                        <a href="Tel:{{ $order->delivery_man['phone'] }}">{{ $order->delivery_man['phone'] }}</a>
+                                                    </span>
+                                                    <span class="text--title font-semibold d-flex align-items-center">
+                                                        <i class="tio-email-outlined mr-2"></i>
+                                                        <a href="mailto:{{$order->delivery_man['email']}}">{{$order->delivery_man['email']}}</a>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                        @endif
+
+
+                        @if($order['order_type']!='self_pickup')
+                            @php($address=\App\Model\CustomerAddress::find($order['delivery_address_id']))
+                            @if(isset($address))
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title">
+                                    <span class="card-header-icon">
+                                        <i class="tio-user"></i>
+                                    </span>
+                                    <span>{{translate('delivery information')}}</span>
+                                </h5>
+                                @if(isset($address))
+                                    <a class="link" data-toggle="modal" data-target="#shipping-address-modal"
+                                    href="javascript:"><i class="tio-edit"></i></a>
+                                @endif
+                            </div>
+                            @endif
+
+                            @if(isset($address))
+                            <div class="delivery--information-single flex-column mt-3">
+                                <div class="d-flex">
+                                    <span class="name">
+                                        {{translate('name')}}
+                                    </span>
+                                    <span class="info">{{ $address['contact_person_name']}}</span>
+                                </div>
+                                <div class="d-flex">
+                                    <span class="name">{{translate('phone')}}</span>
+                                    <span class="info">{{ $address['contact_person_number']}}</span>
+                                </div>
+                                <div class="d-flex">
+                                    <span class="name">{{translate('road')}}</span>
+                                    <span class="info">#{{ $address['road']}}</span>
+                                </div>
+                                <div class="d-flex">
+                                    <span class="name">{{translate('house')}}</span>
+                                    <span class="info">#{{ $address['house']}}</span>
+                                </div>
+                                <div class="d-flex">
+                                    <span class="name">{{translate('floor')}}</span>
+                                    <span class="info">#{{ $address['floor']}}</span>
+                                </div>
+                                <hr class="w-100">
+                                <div>
+                                    <a target="_blank"
+                                    href="http://maps.google.com/maps?z=12&t=m&q=loc:{{ $address['latitude']}}+{{$address['longitude']}}">
+                                        <i class="tio-poi"></i> {{ $address['address']}}
+                                    </a>
+                                </div>
+                            </div>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+
+                @endif
+
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <h5 class="form-label mb-3">
+                            <span class="card-header-icon">
+                            <i class="tio-user"></i>
+                            </span>
+                                <span>{{translate('Customer information')}}</span>
+                            </h5>
+                            @if($order->user_id == null)
+                                <div class="media align-items-center deco-none customer--information-single">
+                                    <div class="avatar avatar-circle">
+                                        <img class="avatar-img" src="{{asset('public/assets/admin/img/admin.jpg')}}" alt="Image Description">
+                                    </div>
+                                    <div class="media-body">
+                                    <span class="fz--14px text--title font-semibold text-hover-primary d-block">
+                                        {{translate('Walking Customer')}}
+                                    </span>
+                                </div>
+                            @endif
+                                    @if($order->user_id != null && !isset($order->customer) )
+                                        <div class="media align-items-center deco-none customer--information-single">
+                                            <div class="avatar avatar-circle">
+                                                <img class="avatar-img" src="{{asset('public/assets/admin/img/admin.jpg')}}" alt="Image Description">
+                                            </div>
+                                            <div class="media-body">
+                                            <span class="fz--14px text--title font-semibold text-hover-primary d-block">
+                                                {{translate('Customer_not_available')}}
+                                            </span>
+                                        </div>
+                                    @endif
+                            @if(isset($order->customer) )
+                                <div class="media align-items-center deco-none customer--information-single">
+                                <div class="avatar avatar-circle">
+                                    <img class="avatar-img" onerror="this.src='{{asset('public/assets/admin/img/admin.jpg')}}'" src="{{asset('storage/app/public/profile/'.$order->customer->image)}}" alt="Image Description">
+                                </div>
+                                <div class="media-body">
+                                    <span class="fz--14px text--title font-semibold text-hover-primary d-block">
+                                        <a href="{{route('admin.customer.view',[$order['user_id']])}}">{{$order->customer['f_name'].' '.$order->customer['l_name']}}</a>
+                                    </span>
+                                    <span>{{\App\Model\Order::where('user_id',$order['user_id'])->count()}} {{translate("orders")}}</span>
+                                    <span class="text--title font-semibold d-block">
+                                <i class="tio-call-talking-quiet mr-2"></i>
+                                <a href="Tel:{{$order->customer['phone']}}">{{$order->customer['phone']}}</a>
+                            </span>
+                                    <span class="text--title">
+                                <i class="tio-email mr-2"></i>
+                                <a href="mailto:{{$order->customer['email']}}">{{$order->customer['email']}}</a>
+                            </span>
+                                </div>
+                            </div>
                             @endif
                         </div>
-                <!-- End Body -->
-                </div>
+                        <!-- End Body -->
+                    </div>
+
+
+
                 <!-- End Card -->
+                <div class="card mt-2">
+                    <div class="card-body">
+                    <h5 class="form-label mb-3">
+                        <span class="card-header-icon">
+                        <i class="tio-shop-outlined"></i>
+                        </span>
+                        <span>{{translate('Branch information')}}</span>
+                    </h5>
+                    <div class="media align-items-center deco-none resturant--information-single">
+                        <div class="avatar avatar-circle">
+                        <img class="avatar-img w-75px" onerror="this.src='{{asset("public/assets/admin/img/100x100/1.png")}}'" src="{{asset('storage/app/public/branch/'.$order->branch->image)}}" alt="Image Description">
+                        </div>
+                        <div class="media-body">
+                            <span class="fz--14px text--title font-semibold text-hover-primary d-block">
+                                {{$order->branch->name}}
+                            </span>
+                            <span>{{\App\Model\Order::where('branch_id',$order['branch_id'])->count()}} {{translate('Orders')}}</span>
+                            <span class="text--title font-semibold d-block">
+                                <i class="tio-call-talking-quiet mr-2"></i>
+                                <a href="Tel:{{$order->branch->phone}}">{{$order->branch->phone}}</a>
+                            </span>
+                            <span class="text--title" >
+                                <i class="tio-email mr-2"></i>
+                                <a href="mailto:{{$order->branch->email}}">{{$order->branch->email}}</a>
+                            </span>
+                        </div>
+                    </div>
+                    <hr>
+                    <span class="d-block">
+                        <a target="_blank"
+                           href="http://maps.google.com/maps?z=12&t=m&q=loc:{{ $order->branch['latitude']}}+{{$order->branch['longitude'] }}">
+                            <i class="tio-poi"></i> {{ $order->branch['address']}}
+                        </a>
+                    </span>
+                    </div>
+
+                </div>
             </div>
-            @endif
+
         </div>
         <!-- End Row -->
     </div>
@@ -505,7 +637,7 @@
     <!-- Modal -->
     <div class="modal fade bd-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel"
          aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title h4"
@@ -525,7 +657,10 @@
                                    placeholder="EX : Code123" required>
                         </div>
                         <!-- End Input Group -->
-                        <button class="btn btn-primary">{{translate('submit')}}</button>
+                        <div class="btn--container justify-content-end">
+                            <button class="btn btn--reset" type="reset">{{translate('clear')}}</button>
+                            <button class="btn btn--primary" type="submit">{{translate('submit')}}</button>
+                        </div>
                     </div>
                 </form>
 
@@ -604,9 +739,29 @@
                                     {{translate('address')}}
                                 </label>
                                 <div class="col-md-10 js-form-message">
-                                    <input type="text" class="form-control" name="address"
-                                           value="{{$address['address']}}"
-                                           required>
+                                    <input type="text" class="form-control" name="address" value="{{$address['address']}}" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="requiredLabel" class="col-md-2 col-form-label input-label text-md-right">
+                                    {{translate('road')}}
+                                </label>
+                                <div class="col-md-10 js-form-message">
+                                    <input type="text" class="form-control" name="road" value="{{$address['road']}}">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="requiredLabel" class="col-md-2 col-form-label input-label text-md-right">
+                                    {{translate('house')}}
+                                </label>
+                                <div class="col-md-4 js-form-message">
+                                    <input type="text" class="form-control" name="house" value="{{$address['house']}}">
+                                </div>
+                                <label for="requiredLabel" class="col-md-2 col-form-label input-label text-md-right">
+                                    {{translate('floor')}}
+                                </label>
+                                <div class="col-md-4 js-form-message">
+                                    <input type="text" class="form-control" name="floor" value="{{$address['floor']}}">
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -640,7 +795,40 @@
     </div>
 
 
+    <div class="modal fade" id="assign_delivey_man_modal">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">{{translate('Assign Delivery Man')}}</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 my-2">
+                            <ul class="list-group overflow-auto initial--23">
+                                @foreach ($delivery_man as $dm)
+                                    <li class="list-group-item">
+                                        <span class="dm_list" role='button' data-id="{{ $dm['id'] }}">
+                                            <img class="avatar avatar-sm avatar-circle mr-1"
+                                                 onerror="this.src='{{ asset('public/assets/admin/img/160x160/img1.jpg') }}'"
+                                                 src="{{ asset('storage/app/public/delivery-man') }}/{{ $dm['image'] }}"
+                                                 alt="{{ $dm['f_name'] }}">
+                                            {{ $dm['f_name'] }} {{ $dm['l_name'] }}
+                                        </span>
 
+                                        <a class="btn btn-primary btn-xs float-right"
+                                           onclick="addDeliveryMan({{ $dm['id'] }})">{{ translate('assign') }}</a>
+                                    </li>
+                                @endforeach
+
+                            </ul>
+                        </div>
+<!--                        <div class="col-md-7 modal_body_map">
+                        </div>-->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- End Modal -->
 @endsection
@@ -654,6 +842,7 @@
                 data: $('#product_form').serialize(),
                 success: function (data) {
                     //console.log(data);
+                    location.reload();
                     if(data.status == true) {
                         toastr.success('{{ translate("Deliveryman successfully assigned/changed") }}', {
                             CloseButton: true,
@@ -686,7 +875,9 @@
     <script>
         $(document).on('change', '#from_date', function () {
             var id = $(this).attr("data-id");
+            console.log(id);
             var value = $(this).val();
+            console.log(value);
             Swal.fire({
                 title: '{{ translate("Are you sure Change this Delivery date?") }}',
                 text: "{{ translate("You won't be able to revert this!") }}",
@@ -763,4 +954,15 @@
             });
         });
     </script>
+    <script>
+        $(document).on('ready', function () {
+            // INITIALIZATION OF FLATPICKR
+            // =======================================================
+            $('.js-flatpickr').each(function () {
+                $.HSCore.components.HSFlatpickr.init($(this));
+            });
+        });
+
+    </script>
+
 @endpush

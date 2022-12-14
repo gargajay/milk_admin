@@ -10,121 +10,88 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-sm-0">
-                    <h1 class="page-header-title">{{translate('reCaptcha')}} {{translate('credentials')}} {{translate('setup')}}</h1>
-                </div>
-            </div>
+            @include('admin-views.business-settings.partial.third-party-api-navmenu')
         </div>
         <!-- End Page Header -->
 
-        <div class="row" style="padding-bottom: 20px">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body" style="padding: 20px">
-                        <div class="flex-between">
-                            <h3>{{translate('reCaptcha')}}</h3>
-                            <div class="btn-sm btn-dark p-2" data-toggle="modal" data-target="#recaptcha-modal"
-                                 style="cursor: pointer">
-                                <i class="tio-info-outined"></i> {{translate('Credentials SetUp')}}
-                            </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="flex-between">
+                    <h3>{{translate('Google Recapcha Information')}}</h3>
+                    <a class="cmn--btn btn--primary-2 btn-outline-primary-2" href="https://www.google.com/recaptcha/admin/create">
+                        <i class="tio-info-outined"></i> {{translate('Credentials SetUp')}}
+                    </a>
+                </div>
+                <div class="mt-4">
+                    @php($config=\App\CentralLogics\Helpers::get_business_settings('recaptcha'))
+                    <form
+                        action="{{env('APP_MODE')!='demo'?route('admin.business-settings.web-app.third-party.recaptcha_update',['recaptcha']):'javascript:'}}"
+                        method="post">
+                        @csrf
+                        <div class="mb-4">
+                           <h4>{{translate('status')}}</h4>
                         </div>
-                        <div class="mt-4">
-                            @php($config=\App\CentralLogics\Helpers::get_business_settings('recaptcha'))
-                            <form
-                                action="{{env('APP_MODE')!='demo'?route('admin.business-settings.web-app.third-party.recaptcha_update',['recaptcha']):'javascript:'}}"
-                                method="post">
-                                @csrf
-
-                                <div class="form-group mb-2 mt-2">
-                                    <input type="radio" name="status"
-                                           value="1" {{isset($config) && $config['status']==1?'checked':''}}>
-                                    <label style="padding-left: 10px">{{translate('active')}}</label>
-                                    <br>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <input type="radio" name="status"
-                                           value="0" {{isset($config) && $config['status']==0?'checked':''}}>
-                                    <label
-                                        style="padding-left: 10px">{{translate('inactive')}} </label>
-                                    <br>
-                                </div>
-                                <div class="form-group mb-2">
-                                    <label class="text-capitalize"
-                                           style="padding-left: 10px">{{translate('Site Key')}}</label><br>
+                        <div class="d-flex flex-wrap mb-4">
+                            <label class="form-check form--check mr-2 mr-md-4">
+                                <input type="radio" class="form-check-input" name="status"
+                                    value="1" {{isset($config) && $config['status']==1?'checked':''}}>
+                                <span class="form-check-label text--title pl-2">{{translate('active')}}</span>
+                            </label>
+                            <label class="form-check form--check">
+                                <input type="radio" class="form-check-input" name="status"
+                                    value="0" {{isset($config) && $config['status']==0?'checked':''}}>
+                                <span class="form-check-label text--title pl-2">{{translate('inactive')}} </span>
+                            </label>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="form-label">{{translate('Site Key')}}</label>
                                     <input type="text" class="form-control" name="site_key"
-                                           value="{{env('APP_MODE')!='demo'?$config['site_key']??"":''}}">
+                                            value="{{env('APP_MODE')!='demo'?$config['site_key']??"":''}}">
                                 </div>
-
-                                <div class="form-group mb-2">
-                                    <label class="text-capitalize"
-                                           style="padding-left: 10px">{{translate('Secret Key')}}</label><br>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label class="form-label">{{translate('Secret Key')}}</label>
                                     <input type="text" class="form-control" name="secret_key"
-                                           value="{{env('APP_MODE')!='demo'?$config['secret_key']??"":''}}">
-                                </div>
-
-                                <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                        onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
-                                        class="btn btn-primary mb-2">{{translate('save')}}</button>
-                            </form>
-                            {{-- Modal --}}
-                            <div class="modal fade" id="recaptcha-modal" data-backdrop="static" data-keyboard="false"
-                                 tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content"
-                                         style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title"
-                                                id="staticBackdropLabel">{{translate('reCaptcha credential Set up Instructions')}}</h5>
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <ol>
-                                                <li>{{translate('Go to the Credentials page')}}
-                                                    ({{translate('Click')}} <a
-                                                        href="https://www.google.com/recaptcha/admin/create"
-                                                        target="_blank">{{translate('here')}}</a>)
-                                                </li>
-                                                <li>{{translate('Add a ')}}
-                                                    <b>{{translate('label')}}</b> {{translate('(Ex: Test Label)')}}
-                                                </li>
-                                                <li>
-                                                    {{translate('Select reCAPTCHA v2 as ')}}
-                                                    <b>{{translate('reCAPTCHA Type')}}</b>
-                                                    ({{translate("Sub type: I'm not a robot Checkbox")}}
-                                                    )
-                                                </li>
-                                                <li>
-                                                    {{translate('Add')}}
-                                                    <b>{{translate('domain')}}</b>
-                                                    {{translate('(For ex: demo.6amtech.com)')}}
-                                                </li>
-                                                <li>
-                                                    {{translate('Check in ')}}
-                                                    <b>{{translate('Accept the reCAPTCHA Terms of Service')}}</b>
-                                                </li>
-                                                <li>
-                                                    {{translate('Press')}}
-                                                    <b>{{translate('Submit')}}</b>
-                                                </li>
-                                                <li>{{translate('Copy')}} <b>Site
-                                                        Key</b> {{translate('and')}} <b>Secret
-                                                        Key</b>, {{translate('paste in the input filed below and')}}
-                                                    <b>Save</b>.
-                                                </li>
-                                            </ol>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-primary"
-                                                    data-dismiss="modal">{{translate('Close')}}</button>
-                                        </div>
-                                    </div>
+                                            value="{{env('APP_MODE')!='demo'?$config['secret_key']??"":''}}">
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        <h5>Instructions</h5>
+                        <ol class="pl-3">
+                            <li class="mb-1">{{translate('To  get site key and secret keyGo to the Credentials page')}} <a
+                                    href="https://www.google.com/recaptcha/admin/create" class="text--base"
+                                    target="_blank">{{translate('(Click Here)')}}</a>)
+                            </li>
+                            <li class="mb-1">{{translate('Add a Label (Ex: abc company)')}}
+                            </li>
+                            <li class="mb-1">
+                                {{translate('Select reCAPTCHA v2  as  ReCAPTCHA Type')}}
+                            </li>
+                            <li class="mb-1">
+                                {{translate('Select Sub type: I m not a robot Checkbox')}}
+                            </li>
+                            <li class="mb-1">
+                                {{translate('Add Domain (For ex: demo.6amtech.com)')}}
+                            </li>
+                            <li class="mb-1">
+                                {{translate('Check in “Accept the reCAPTCHA Terms of Service”')}}
+                            </li>
+                            <li class="mb-1">
+                                {{translate('Press Submit')}}
+                            </li>
+                            <li class="mb-1">{{translate('Copy Site Key and Secret Key, Paste in the input filed below and Save.')}}
+                            </li>
+                        </ol>
+
+                        <div class="text-right">
+                            <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
+                            onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
+                            class="btn btn--primary px-5">{{translate('save')}}</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

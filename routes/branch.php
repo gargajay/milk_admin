@@ -13,13 +13,15 @@ Route::group(['namespace' => 'Branch', 'as' => 'branch.'], function () {
     });
     /*authentication*/
 
-    Route::group(['middleware' => ['branch']], function () {
+    Route::group(['middleware' => ['branch', 'active_branch_check']], function () {
         Route::get('/', 'DashboardController@dashboard')->name('dashboard');
         Route::get('settings', 'SystemController@settings')->name('settings');
         Route::post('settings', 'SystemController@settings_update');
         Route::post('settings-password', 'SystemController@settings_password_update')->name('settings-password');
         Route::post('order-stats', 'DashboardController@order_stats')->name('order-stats');
         Route::get('/get-restaurant-data', 'SystemController@restaurant_data')->name('get-restaurant-data');
+        Route::get('dashboard/order-statistics', 'DashboardController@get_order_statitics')->name('dashboard.order-statistics');
+        Route::get('dashboard/earning-statistics', 'DashboardController@get_earning_statitics')->name('dashboard.earning-statistics');
 
         Route::group(['prefix' => 'pos', 'as' => 'pos.'], function () {
             Route::get('/', 'POSController@index')->name('index');
@@ -38,6 +40,8 @@ Route::group(['namespace' => 'Branch', 'as' => 'branch.'], function () {
             Route::get('order-details/{id}', 'POSController@order_details')->name('order-details');
             Route::get('invoice/{id}', 'POSController@generate_invoice');
             Route::any('store-keys', 'POSController@store_keys')->name('store-keys');
+            Route::any('customer.store', 'POSController@new_customer_store')->name('customer.store');
+            Route::get('orders/export', 'POSController@export_orders')->name('orders.export');
         });
 
         Route::group(['prefix' => 'orders', 'as' => 'orders.'], function () {
@@ -49,6 +53,8 @@ Route::group(['namespace' => 'Branch', 'as' => 'branch.'], function () {
             Route::post('productStatus', 'OrderController@productStatus')->name('productStatus');
             Route::get('generate-invoice/{id}', 'OrderController@generate_invoice')->name('generate-invoice');
             Route::post('add-payment-ref-code/{id}', 'OrderController@add_payment_ref_code')->name('add-payment-ref-code');
+            Route::get('export/{status}', 'OrderController@export_orders')->name('export');
+
         });
 
         Route::group(['prefix' => 'order', 'as' => 'order.'], function () {
@@ -58,6 +64,8 @@ Route::group(['namespace' => 'Branch', 'as' => 'branch.'], function () {
             Route::post('update-shipping/{id}', 'OrderController@update_shipping')->name('update-shipping');
             Route::delete('delete/{id}', 'OrderController@delete')->name('delete');
             Route::post('search', 'OrderController@search')->name('search');
+            Route::post('update-timeSlot', 'OrderController@update_time_slot')->name('update-timeSlot');
+            Route::post('update-deliveryDate', 'OrderController@update_deliveryDate')->name('update-deliveryDate');
         });
     });
 });

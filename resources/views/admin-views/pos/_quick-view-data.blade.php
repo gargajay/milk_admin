@@ -1,58 +1,22 @@
-<style>
-    .btn-check {
-        position: absolute;
-        clip: rect(0, 0, 0, 0);
-        pointer-events: none;
-    }
-
-    .choice-input {
-        width: 7rem;
-    }
-
-    .check-label {
-        background-color: #F3F3F3;
-        color: #000000;
-        border-width: 2px;
-        border-color: #BABFC4;
-        font-weight: bold;
-    }
-
-    .btn-check:checked + .check-label {
-        background-color: #EF7822;
-        color: #FFFFFF;
-        border: none;
-    }
-    .product-name {
-        word-break: break-all;
-    }
-</style>
-<div class="modal-header p-2">
-    <h4 class="modal-title product-title">
-    </h4>
+<div class="modal-body position-relative">
     <button class="close call-when-done" type="button" data-dismiss="modal" aria-label="Close">
         <span aria-hidden="true">&times;</span>
     </button>
-</div>
-<div class="modal-body">
-    <div class="d-flex flex-row">
+    <div class="modal--media">
         <!-- Product gallery-->
-        <div class="d-flex align-items-center justify-content-center active" style="height:9.5rem;">
+        <div class="modal--media-avatar">
             @if (!empty(json_decode($product['image'],true)))
-                <img class="img-responsive" style="height:100%;width:auto;overflow:hidden;border-radius: 5%;"
-                 src="{{asset('storage/app/public/product')}}/{{json_decode($product['image'], true)[0]}}"
-                 onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'"
+                <img class="img-responsive" src="{{asset('storage/app/public/product')}}/{{json_decode($product['image'], true)[0]}}"
+                 onerror="this.src='{{asset('public/assets/admin/img/160x160/2.png')}}'"
                  data-zoom="{{asset('storage/app/public/product')}}/{{json_decode($product['image'], true)[0]}}"
                  alt="Product image" width="">
             @else
-                 <img
-                 src="{{asset('public/assets/admin/img/160x160/img2.jpg')}}"
-                 class="img-responsive" style="height:100%;width:auto;overflow:hidden;border-radius: 5%;"
-                 >
+                 <img src="{{asset('public/assets/admin/img/160x160/2.png')}}" >
              @endif
             <div class="cz-image-zoom-pane"></div>
         </div>
         <!-- Product details-->
-        <div class="details pl-2">
+        <div class="details">
             <span class="product-name"><a href="#" class="h3 mb-2 product-title">{{ Str::limit($product->name, 100) }}</a></span>
 
             <div class="mb-3 text-dark">
@@ -91,9 +55,16 @@
 
             ?>
             <h2>{{translate('description')}}</h2>
-            <span class="d-block text-break text-dark">
-                {!! $product->description !!}
-            </span>
+            <div class="d-block text-break text-dark __descripiton-txt __not-first-hidden">
+                <div>
+                    {!! $product->description !!}
+                </div>
+                <div class="show-more text-info text-center">
+                    <span>
+                        {{translate('see more')}}
+                    </span>
+                </div>
+            </div>
             <form id="add-to-cart-form" class="mb-2">
                 @csrf
                 <input type="hidden" name="id" value="{{ $product->id }}">
@@ -173,3 +144,16 @@
     });
 </script>
 
+<script>
+    $('.show-more span').on('click', function(){
+        $('.__descripiton-txt').toggleClass('__not-first-hidden')
+        if($(this).hasClass('active')) {
+            $('.show-more span').text('{{translate('See More')}}')
+            $(this).removeClass('active')
+        }else {
+            $('.show-more span').text('{{translate('See Less')}}')
+            $(this).addClass('active')
+        }
+    })
+
+</script>

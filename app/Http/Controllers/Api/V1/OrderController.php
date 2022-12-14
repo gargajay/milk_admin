@@ -57,8 +57,10 @@ class OrderController extends Controller
         }
 
         try {
+            //DB::beginTransaction();
+            $order_id = 100000 + Order::all()->count() + 1;
             $or = [
-                'id' => 100000 + Order::all()->count() + 1,
+                'id' => $order_id,
                 'user_id' => $request->user()->id,
                 'order_amount' => $request['order_amount'],
                 'coupon_discount_amount' => $request->coupon_discount_amount,
@@ -77,14 +79,15 @@ class OrderController extends Controller
                 'delivery_address' => json_encode(CustomerAddress::find($request->delivery_address_id) ?? null),
 
                 'date' => date('Y-m-d'),
-                'delivery_charge' => Helpers::get_delivery_charge($request['distance']),
+                'delivery_charge' => $request['order_type'] == 'self_pickup' ? 0 : Helpers::get_delivery_charge($request['distance']),
                 'created_at' => now(),
                 'updated_at' => now(),
             ];
 
-            $o_id = DB::table('orders')->insertGetId($or);
             $o_time = $or['time_slot_id'];
             $o_delivery = $or['delivery_date'];
+
+            $total_tax_amount = 0;
 
             foreach ($request['cart'] as $c) {
                 $product = Product::find($c['product_id']);
@@ -94,7 +97,8 @@ class OrderController extends Controller
                     $price = $product['price'];
                 }
                 $or_d = [
-                    'order_id' => $o_id,
+                    //'order_id' => $o_id,
+                    'order_id' => $order_id,
                     'product_id' => $c['product_id'],
                     'time_slot_id' => $o_time,
                     'delivery_date' => $o_delivery,
@@ -113,13 +117,15 @@ class OrderController extends Controller
                     'updated_at' => now(),
                 ];
 
+                $total_tax_amount += $or_d['tax_amount'] * $c['quantity'];
+
                 $type = $c['variation'][0]['type'];
                 $var_store = [];
                 foreach (json_decode($product['variations'], true) as $var) {
                     if ($type == $var['type']) {
                         $var['stock'] -= $c['quantity'];
                     }
-                    array_push($var_store, $var);
+                    $var_store[] = $var;
                 }
                 Product::where(['id' => $product['id']])->update([
                     'variations' => json_encode($var_store),
@@ -129,7 +135,10 @@ class OrderController extends Controller
 
                 DB::table('order_details')->insert($or_d);
             }
+            $or['total_tax_amount'] = $total_tax_amount;
+            DB::table('orders')->insertGetId($or);
 
+            //push notification
             $fcm_token = $request->user()->cm_firebase_token;
             $order_status_message = $request->payment_method=='cash_on_delivery'?'pending':'confirmed';
             $value = Helpers::order_status_update_message($order_status_message);
@@ -138,8 +147,9 @@ class OrderController extends Controller
                     $data = [
                         'title' => 'Order',
                         'description' => $value,
-                        'order_id' => $o_id,
+                        'order_id' => $order_id,
                         'image' => '',
+                        'type' => 'order'
                     ];
                     Helpers::send_push_notif_to_device($fcm_token, $data);
                 }
@@ -148,7 +158,7 @@ class OrderController extends Controller
                 $emailServices = Helpers::get_business_settings('mail_config');
 
                 if (isset($emailServices['status']) && $emailServices['status'] == 1) {
-                    Mail::to($request->user()->email)->send(new \App\Mail\OrderPlaced($o_id));
+                    Mail::to($request->user()->email)->send(new \App\Mail\OrderPlaced($order_id));
                 }
 
             } catch (\Exception $e) {
@@ -156,11 +166,12 @@ class OrderController extends Controller
 
             return response()->json([
                 'message' => 'Order placed successfully!',
-                'order_id' => $o_id,
+                'order_id' => $order_id,
             ], 200);
 
-
+           // DB::commit();
         } catch (\Exception $e) {
+           // DB::rollBack();
             return response()->json([$e], 403);
         }
     }

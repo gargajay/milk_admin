@@ -10,57 +10,204 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row">
-                <div class="col-6">
-                    <h1 class="page-header-title">{{$dm['f_name'].' '.$dm['f_name']}}</h1>
-                </div>
-                <div class="col-6">
-                    <a href="{{url()->previous()}}" class="btn btn-primary float-right">
-                        <i class="tio-back-ui"></i> {{translate('back')}}
-                    </a>
-                </div>
-            </div>
-            <!-- Nav -->
-            <ul class="nav nav-tabs page-header-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" href="javascript:">
-                        {{translate('deliveryman')}} {{translate('reviews')}}
-                    </a>
-                </li>
-            </ul>
-            <!-- End Nav -->
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/employee.png')}}" class="w--20" alt="">
+                </span>
+                <span>
+                    {{$dm['f_name'].' '.$dm['f_name']}}
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
 
+<!--        <div class="card">
+            <div class="card-body pt-2">
+                &lt;!&ndash; Nav &ndash;&gt;
+                <ul class="nav nav-tabs page-header-tabs mb-4 Mt-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="javascript:">
+                            {{translate('deliveryman')}} {{translate('reviews')}}
+                        </a>
+                    </li>
+                </ul>
+                &lt;!&ndash; End Nav &ndash;&gt;
+                <div class="row g-3 justify-content-center">
+                    &lt;!&ndash; Earnings (Monthly) Card Example &ndash;&gt;
+                    <div class="col-sm-6 col-md-4">
+                        <div class="resturant-card bg&#45;&#45;2">
+                            <h2 class="title">
+                                560
+                            </h2>
+                            <h5 class="subtitle">
+                                {{translate('total')}} {{translate('delivered')}} {{translate('orders')}}
+                            </h5>
+                            <img class="resturant-icon" src="{{asset('/public/assets/admin/img/tick.png')}}" alt="img">
+                        </div>
+                    </div>
+
+                    &lt;!&ndash; Collected Cash Card Example &ndash;&gt;
+                    <div class="col-sm-6 col-md-4">
+                        <div class="resturant-card bg&#45;&#45;3">
+                            <h2 class="title">
+                                650
+                            </h2>
+                            <h5 class="subtitle">
+                                {{translate('cash_in_hand')}}
+                            </h5>
+                            <img class="resturant-icon" src="{{asset('/public/assets/admin/img/withdraw-amount.png')}}" alt="transactions">
+                        </div>
+                    </div>
+
+                    &lt;!&ndash; Total Earning Card Example &ndash;&gt;
+                    <div class="col-sm-6 col-md-4">
+                        <div class="resturant-card bg&#45;&#45;1">
+                            <h2 class="title">
+                                55
+                            </h2>
+                            <h5 class="subtitle">
+                                {{translate('total_earning')}}
+                            </h5>
+                            <img class="resturant-icon" src="{{asset('/public/assets/admin/img/pending.png')}}" alt="transactions">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>-->
         <!-- Card -->
-        <div class="card mb-3 mb-lg-5">
+        <div class="card my-3">
+<!--            <div class="card-header">
+                <h5 class="card-title mr-auto">
+
+                </h5>
+                <div class="hs-unfold">
+                    <a  href="javascript:" class="btn btn&#45;&#45;danger mr-2">
+                            {{translate('Suspend Deliveryman')}}
+                    </a>
+                </div>
+                <div class="hs-unfold">
+                    <div class="dropdown">
+                        <button class="btn btn&#45;&#45;reset initial-21 dropdown-toggle w-100" type="button"
+                                id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                                aria-expanded="false">
+                            {{translate('type')}} ({{$dm->earning?translate('freelancer'):translate('salary_based')}})
+                        </button>
+                        <div class="dropdown-menu text-capitalize" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item {{$dm->earning?'active':''}}"
+                            onclick="request_alert('{{route('admin.dashboard',[$dm['id'],1])}}','{{translate('want_to_enable_earnings')}}')"
+                                href="javascript:">{{translate('freelancer')}}</a>
+                            <a class="dropdown-item {{$dm->earning?'':'active'}}"
+                            onclick="request_alert('{{route('admin.dashboard',[$dm['id'],0])}}','{{translate('want_to_disable_earnings')}}')"
+                                href="javascript:">{{translate('salary_based')}}</a>
+                        </div>
+                    </div>
+                </div>
+            </div>-->
             <!-- Body -->
             <div class="card-body">
-                <div class="row align-items-md-center gx-md-5">
-                    <div class="col-md-auto mb-3 mb-md-0">
-                        <div class="d-flex align-items-center">
-                            <img class="avatar avatar-xxl avatar-4by3 mr-4"
-                                 onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
+                <div class="row align-items-md-center">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <img class="avatar avatar-xxl avatar-4by3 mr-4 mw-120px initial-22"
+                                 onerror="this.src='{{asset('public/assets/admin/img/admin.png')}}'"
                                  src="{{asset('storage/app/public/delivery-man')}}/{{$dm['image']}}"
                                  alt="Image Description">
                             <div class="d-block">
-                                <h4 class="display-2 text-dark mb-0">{{count($dm->rating)>0?number_format($dm->rating[0]->average, 2, '.', ' '):0}}</h4>
-                                <p> of {{$dm->reviews->count()}} {{translate('reviews')}}
-                                    <span class="badge badge-soft-dark badge-pill ml-1"></span>
-                                </p>
+                                <div class="rating--review">
+                                    <h1 class="title">{{count($dm->rating)>0?number_format($dm->rating[0]->average, 1):0}}<span class="out-of">/5</span></h1>
+                                    @if (count($dm->rating)>0)
+                                    @if ($dm->rating[0]->average == 5)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average < 5 && $dm->rating[0]->average > 4.5)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star-half"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average < 4.5 && $dm->rating[0]->average > 4)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average < 4 && $dm->rating[0]->average > 3)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average < 3 && $dm->rating[0]->average > 2)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average < 2 && $dm->rating[0]->average > 1)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average < 1 && $dm->rating[0]->average > 0)
+                                    <div class="rating">
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average == 1)
+                                    <div class="rating">
+                                        <span><i class="tio-star"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @elseif ($dm->rating[0]->average == 0)
+                                    <div class="rating">
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                        <span><i class="tio-star-outlined"></i></span>
+                                    </div>
+                                    @endif
+                                    @endif
+                                    <div class="info">
+                                        {{-- <span class="mr-3">{{$dm->rating->count()}} {{translate('rating')}}</span> --}}
+                                        <span>{{$dm->reviews->count()}} {{translate('reviews')}}</span>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
 
-                    <div class="col-md">
-                        <ul class="list-unstyled list-unstyled-py-2 mb-0">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled list-unstyled-py-2 mb-0 rating--review-right py-3">
 
                         @php($total=$dm->reviews->count())
                         <!-- Review Ratings -->
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($five=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],5))
-                                <span
-                                    class="mr-3">{{translate('5 star')}}</span>
+                                <span class="progress-name mr-3">{{ translate('excellent') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($five/$total)*100}}%;"
@@ -74,7 +221,7 @@
                             <!-- Review Ratings -->
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($four=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],4))
-                                <span class="mr-3">{{translate('4 star')}}</span>
+                                <span class="progress-name mr-3">{{ translate('good') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($four/$total)*100}}%;"
@@ -88,7 +235,7 @@
                             <!-- Review Ratings -->
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($three=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],3))
-                                <span class="mr-3">{{translate('3 star')}}</span>
+                                <span class="progress-name mr-3">{{ translate('average') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($three/$total)*100}}%;"
@@ -102,7 +249,7 @@
                             <!-- Review Ratings -->
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($two=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],2))
-                                <span class="mr-3">{{translate('2 star')}}</span>
+                                <span class="progress-name mr-3">{{ translate('below_average') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($two/$total)*100}}%;"
@@ -116,7 +263,7 @@
                             <!-- Review Ratings -->
                             <li class="d-flex align-items-center font-size-sm">
                                 @php($one=\App\CentralLogics\Helpers::dm_rating_count($dm['id'],1))
-                                <span class="mr-3">{{translate('1 star')}}</span>
+                                <span class="progress-name mr-3">{{ translate('poor') }}</span>
                                 <div class="progress flex-grow-1">
                                     <div class="progress-bar" role="progressbar"
                                          style="width: {{$total==0?0:($one/$total)*100}}%;"
@@ -135,10 +282,10 @@
         <!-- End Card -->
 
         <!-- Card -->
-        <div class="card">
+        <div class="card border-top-0">
             <!-- Table -->
             <div class="table-responsive datatable-custom">
-                <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap card-table"
+                <table id="datatable" class="table table-borderless table-thead-bordered table-nowrap card-table mb-0"
                        data-hs-datatables-options='{
                      "columnDefs": [{
                         "targets": [0, 3, 6],
@@ -159,7 +306,6 @@
                     <tr>
                         <th>{{translate('reviewer')}}</th>
                         <th>{{translate('review')}}</th>
-                        <th>{{translate('attachment')}}</th>
                         <th>{{translate('date')}}</th>
                     </tr>
                     </thead>
@@ -192,22 +338,17 @@
                                 @endif
                             </td>
                             <td>
-                                <div class="text-wrap" style="width: 18rem;">
-                                    <div class="d-flex mb-2">
-                                        <label class="badge badge-soft-info">
+                                <div class="text-wrap w-18rem">
+                                    <div class="d-flex">
+                                        <span class="rating">
                                             {{$review->rating}} <i class="tio-star"></i>
-                                        </label>
+                                        </span>
                                     </div>
 
                                     <p>
                                         {{$review['comment']}}
                                     </p>
                                 </div>
-                            </td>
-                            <td>
-                                @foreach(json_decode($review['attachment'],true) as $attachment)
-                                    <img width="100" onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'" src="{{asset('storage/app/public')}}/{{$attachment}}">
-                                @endforeach
                             </td>
                             <td>
                                 {{date('d M Y H:i:s',strtotime($review['created_at']))}}
@@ -220,13 +361,9 @@
             <!-- End Table -->
 
             <!-- Footer -->
-            <div class="card-footer">
+            <div class="card-footer border-0">
                 <!-- Pagination -->
-                <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
-                    <div class="col-12">
-                        {!! $reviews->links() !!}
-                    </div>
-                </div>
+                    {!! $reviews->links() !!}
                 <!-- End Pagination -->
             </div>
             <!-- End Footer -->
@@ -236,5 +373,23 @@
 @endsection
 
 @push('script_2')
-
+<script>
+    function request_alert(url, message) {
+        Swal.fire({
+            title: '{{translate('are_you_sure')}}',
+            text: message,
+            type: 'warning',
+            showCancelButton: true,
+            cancelButtonColor: 'default',
+            confirmButtonColor: '#FC6A57',
+            cancelButtonText: '{{translate('no')}}',
+            confirmButtonText: '{{translate('yes')}}',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.value) {
+                location.href = url;
+            }
+        })
+    }
+</script>
 @endpush

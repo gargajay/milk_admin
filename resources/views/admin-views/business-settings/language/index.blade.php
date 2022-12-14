@@ -2,207 +2,74 @@
 
 @section('title', translate('language'))
 
-@push('css_or_js')
-<style>
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 48px;
-        height: 23px;
-    }
-
-    .switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-    }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        -webkit-transition: .4s;
-        transition: .4s;
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 15px;
-        width: 15px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        -webkit-transition: .4s;
-        transition: .4s;
-    }
-
-    input:checked + .slider {
-        background-color: #377dff;
-    }
-
-    input:focus + .slider {
-        box-shadow: 0 0 1px #377dff;
-    }
-
-    input:checked + .slider:before {
-        -webkit-transform: translateX(26px);
-        -ms-transform: translateX(26px);
-        transform: translateX(26px);
-    }
-
-    /* Rounded sliders */
-    .slider.round {
-        border-radius: 34px;
-    }
-
-    .slider.round:before {
-        border-radius: 50%;
-    }
-
-</style>
-@endpush
 
 @section('content')
 <div class="content container-fluid">
-    <!-- Page Heading -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a
-                    href="{{route('admin.dashboard')}}">{{translate('Dashboard')}}</a>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-header-title">
+            <span class="page-header-icon">
+                <img src="{{asset('public/assets/admin/img/lang.png')}}" class="w--24" alt="">
+            </span>
+            <span>
+                {{translate('system settings')}}
+            </span>
+        </h1>
+        <ul class="nav nav-tabs border-0 mb-3">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{route('admin.business-settings.web-app.system-setup.language.index')}}">
+                    Language Setup
+                </a>
             </li>
-            <li class="breadcrumb-item"
-                aria-current="page">{{translate('language_setting')}}</li>
-        </ol>
-    </nav>
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.app_setting')}}">
+                    App Settings
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.firebase_message_config_index')}}">
+                    Firebase Configuration
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.db-index')}}">
+                    Clean Database
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- End Page Header -->
 
-    <div class="row" style="margin-top: 20px">
+    <div class="row">
         <div class="col-md-12">
-            <div class="alert alert-danger mb-3" role="alert">
-                {{translate('changing_some_settings_will_take_time_to_show_effect_please_clear_session_or_wait_for_60_minutes_else_browse_from_incognito_mode')}}
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h5>{{translate('language_table')}}</h5>
-                    <button class="btn btn-primary btn-icon-split float-right" data-toggle="modal"
-                            data-target="#lang-modal">
-                        <i class="tio-add-circle"></i>
-                        <span class="text">{{translate('add_new_language')}}</span>
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="display table table-hover "
-                               style="width:100%; text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
-                            <thead>
-                            <tr>
-                                <th scope="col">{{ translate('SL#')}}</th>
-                                <th scope="col">{{translate('Id')}}</th>
-                                <th scope="col">{{translate('name')}}</th>
-                                <th scope="col">{{translate('Code')}}</th>
-                                <th scope="col">{{translate('status')}}</th>
-                                <th scope="col">{{translate('default')}} {{translate('status')}}</th>
-                                <th scope="col" style="width: 100px"
-                                    class="text-center">{{translate('action')}}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @php($language = App\CentralLogics\Helpers::get_business_settings('language'))
-                            @if(isset($language) && array_key_exists('code', $language[0]))
-                                @foreach($language as $key =>$data)
-                                    <tr>
-                                        <td>{{$key+1}}</td>
-                                        <td>{{$data['id']}}</td>
-                                        <td>{{$data['name']}}
-{{--                                                ( {{isset($data['direction'])?$data['direction']:'ltr'}} )--}}
-                                        </td>
-                                        <td>{{$data['code']}}</td>
-                                        <td>
-                                            <label class="switch">
-                                                <input type="checkbox"
-                                                       onclick="updateStatus('{{route('admin.business-settings.web-app.system-setup.language.update-status')}}','{{$data['code']}}','{{$data['default']}}')"
-                                                       class="status" {{$data['status']==1?'checked':''}}>
-                                                <span class="slider round"></span>
-                                            </label>
-                                        </td>
-                                        <td>
-                                            <label class="switch">
-                                                <input type="checkbox"
-                                                       onclick="window.location.href ='{{route('admin.business-settings.web-app.system-setup.language.update-default-status', ['code'=>$data['code']])}}'"
-                                                       class="status" {{ ((array_key_exists('default', $data) && $data['default']==true) ? 'checked': ((array_key_exists('default', $data) && $data['default']==false) ? '' : 'disabled')) }}>
-                                                <span class="slider round"></span>
-                                            </label>
-                                        </td>
-                                        <td class="text-center">
-
-                                            <div class="dropdown float-right">
-                                                <button class="btn btn-seconary btn-sm dropdown-toggle"
-                                                        type="button"
-                                                        id="dropdownMenuButton" data-toggle="dropdown"
-                                                        aria-haspopup="true"
-                                                        aria-expanded="false">
-                                                    <i class="tio-settings"></i>
-                                                </button>
-                                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                    @if($data['code']!='en')
-                                                        <a class="dropdown-item" data-toggle="modal" style="cursor: pointer;"
-                                                           data-target="#lang-modal-update-{{$data['code']}}">{{translate('update')}}</a>
-                                                        @if($data['default'] != true)
-                                                            <button class="dropdown-item" id="delete"
-                                                                    onclick="delete_language('{{ route('admin.business-settings.web-app.system-setup.language.delete',[$data['code']]) }}')">{{translate('Delete')}}</button>
-                                                        @endif
-                                                    @endif
-                                                    <a class="dropdown-item"
-                                                       href="{{route('admin.business-settings.web-app.system-setup.language.translate',[$data['code']])}}">{{translate('Translate')}}</a>
-                                                </div>
-                                            </div>
-
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @endif
-                            </tbody>
-                        </table>
+            <div class="alert alert--danger alert-danger mb-3" role="alert">
+                <div class="d-flex">
+                    <span class="alert--icon"><i class="tio-info"></i></span>
+                    <strong class="text--title word-nobreak">{{translate('Note : ')}}</strong>
+                    <div class="w-0 flex-grow align-self-center pl-2">
+                        {{translate('changing_some_settings_will_take_time_to_show_effect_please_clear_session_or_wait_for_60_minutes_else_browse_from_incognito_mode')}}
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="modal fade" id="lang-modal" tabindex="-1" role="dialog"
-         aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"
-                        id="exampleModalLabel">{{translate('new_language')}}</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form action="{{route('admin.business-settings.web-app.system-setup.language.add-new')}}" method="post"
-                      style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
-                    @csrf
-                    <div class="modal-body">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <form action="{{route('admin.business-settings.web-app.system-setup.language.add-new')}}" method="post"
+                        style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+                        @csrf
                         <div class="row">
-                            <div class="col-12">
+                            <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label for="recipient-name"
-                                           class="col-form-label">{{translate('language')}} </label>
-                                    <input type="text" class="form-control" id="recipient-name" name="name">
+                                    <label for="recipient-name" class="col-form-label">{{translate('Language Name')}}</label>
+                                    <input type="text" class="form-control" id="recipient-name" name="name" placeholder="{{translate('Ex : English')}}" required>
                                 </div>
                             </div>
-                            <div class="col-12">
+                            <div class="col-sm-6">
                                 <div class="form-group">
-                                    <label for="message-text"
-                                           class="col-form-label">{{translate('country_code')}}</label>
-                                    <select class="form-control js-select2-custom" name="code" style="width: 100%">
-                                        {{--<option value="en">English(default)</option>--}}
+                                    <label class="col-form-label">{{translate('Country Code')}} </label>
+                                    <select class="form-control js-select2-custom w-100" name="code">
+                                        <option value="en">English(default)</option>
                                         <option value="af">Afrikaans</option>
                                         <option value="sq">Albanian - shqip</option>
                                         <option value="am">Amharic - አማርኛ</option>
@@ -347,25 +214,80 @@
                                     </select>
                                 </div>
                             </div>
-{{--                                <div class="col-6">--}}
-{{--                                    <div class="form-group">--}}
-{{--                                        <label class="col-form-label">{{translate('direction')}}--}}
-{{--                                            :</label>--}}
-{{--                                        <select class="form-control" name="direction">--}}
-{{--                                            <option value="ltr">LTR</option>--}}
-{{--                                            <option value="rtl">RTL</option>--}}
-{{--                                        </select>--}}
-{{--                                    </div>--}}
-{{--                                </div>--}}
                         </div>
+                        <div class="btn--container justify-content-end">
+                            <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                            <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="display table table-borderless table-hover min-w-980px"
+                               style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+                            <thead class="thead-light">
+                            <tr>
+                                <th class="border-0">{{translate('SL')}}</th>
+                                <th class="border-0">{{translate('name')}}</th>
+                                <th class="border-0">{{translate('Code')}}</th>
+                                <th class="border-0 text-center">{{translate('status')}}</th>
+                                <th class="border-0 text-center">{{translate('default')}} {{translate('status')}}</th>
+                                <th class="border-0 w-260px text-center">{{translate('action')}}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @php($language = App\CentralLogics\Helpers::get_business_settings('language'))
+                            @if(isset($language) && array_key_exists('code', $language[0]))
+                                @foreach($language as $key =>$data)
+                                    <tr>
+                                        <td>{{$key+1}}</td>
+                                        <td>{{$data['name']}}
+                                        </td>
+                                        <td>{{$data['code']}}</td>
+                                        <td>
+                                            <label class="toggle-switch toggle-switch-sm">
+                                                <input type="checkbox"
+                                                       onclick="updateStatus('{{route('admin.business-settings.web-app.system-setup.language.update-status')}}','{{$data['code']}}','{{$data['default']}}')"
+                                                       class="toggle-switch-input" {{$data['status']==1?'checked':''}}>
+                                                <span class="toggle-switch-label text mx-auto">
+                                                    <span class="toggle-switch-indicator"></span>
+                                                </span>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            <label class="toggle-switch toggle-switch-sm">
+                                                <input type="checkbox"
+                                                       onclick="window.location.href ='{{route('admin.business-settings.web-app.system-setup.language.update-default-status', ['code'=>$data['code']])}}'"
+                                                       class="toggle-switch-input" {{ ((array_key_exists('default', $data) && $data['default']==true) ? 'checked': ((array_key_exists('default', $data) && $data['default']==false) ? '' : 'disabled')) }}>
+                                                <span class="toggle-switch-label text mx-auto">
+                                                    <span class="toggle-switch-indicator"></span>
+                                                </span>
+                                            </label>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn--container justify-content-end">
+                                                <a class="btn--primary-2 btn-outline-primary-2 btn-35px"
+                                                    href="{{route('admin.business-settings.web-app.system-setup.language.translate',[$data['code']])}}">{{translate('translated data')}}</a>
+                                                @if($data['code']!='en')
+                                                    <a class="action-btn btn--primary btn-outline-primary" data-toggle="modal"
+                                                        data-target="#lang-modal-update-{{$data['code']}}" href="javascript:void(0)"><i class="tio-edit"></i></a>
+                                                    @if($data['default'] != true)
+                                                        <button class="action-btn btn--danger btn-outline-danger" id="delete"
+                                                                onclick="delete_language('{{ route('admin.business-settings.web-app.system-setup.language.delete',[$data['code']]) }}')"><i class="tio-delete-outlined"></i></button>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary"
-                                data-dismiss="modal">{{translate('close')}}</button>
-                        <button type="submit" class="btn btn-primary">{{translate('Add')}} <i
-                                class="fa fa-plus"></i></button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -376,7 +298,7 @@
                  aria-hidden="true">
                 <div class="modal-dialog" role="document">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header pb-3 border-bottom">
                             <h5 class="modal-title"
                                 id="exampleModalLabel">{{translate('update_language')}}</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -389,10 +311,8 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="form-group">
-                                            <label for="recipient-name"
-                                                   class="col-form-label">{{translate('language')}} </label>
-                                            <input type="text" class="form-control" value="{{$data['name']}}"
-                                                   name="name">
+                                            <label for="recipient-name" class="col-form-label">{{translate('language')}} </label>
+                                            <input type="text" class="form-control" value="{{$data['name']}}" name="name" required>
                                         </div>
                                     </div>
                                     <div class="col-12">
@@ -419,12 +339,10 @@
                                 <input type="hidden" class="form-control" value="{{$data['status']}}" name="status">
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary"
+                                <button type="button" class="btn btn--reset"
                                         data-dismiss="modal">{{translate('close')}}</button>
                                 <button type="submit"
-                                        class="btn btn-primary">{{translate('update')}}
-                                    <i
-                                        class="fa fa-plus"></i></button>
+                                        class="btn btn--primary">{{translate('update')}}</button>
                             </div>
                         </form>
                     </div>

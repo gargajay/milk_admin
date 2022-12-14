@@ -10,15 +10,18 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title"><i class="tio-edit"></i> {{translate('attribute')}} {{translate('update')}}</h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/attribute.png')}}" class="w--24" alt="">
+                </span>
+                <span>
+                    {{translate('attribute')}} {{translate('update')}}
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
-        <div class="row gx-2 gx-lg-3">
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
+        <div class="card">
+            <div class="card-body pt-2">
                 <form action="{{route('admin.attribute.update',[$attribute['id']])}}" method="post">
                     @csrf
                     @php($data = Helpers::get_business_settings('language'))
@@ -26,7 +29,7 @@
 
                     @if($data && array_key_exists('code', $data[0]))
                         
-                        <ul class="nav nav-tabs mb-4">
+                        <ul class="nav nav-tabs mb-4 d-inline-flex">
                             @foreach($data as $lang)
                                 <li class="nav-item">
                                     <a class="nav-link lang_link {{$lang['default'] == true ? 'active':''}}" href="#" id="{{$lang['code']}}-link">
@@ -72,10 +75,12 @@
                             </div>
                         </div>
                     @endif
-                    <button type="submit" class="btn btn-primary">{{translate('update')}}</button>
+                    <div class="btn--container justify-content-end">
+                        <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                        <button type="submit" class="btn btn--primary">{{translate('update')}}</button>
+                    </div>
                 </form>
             </div>
-            <!-- End Table -->
         </div>
     </div>
 

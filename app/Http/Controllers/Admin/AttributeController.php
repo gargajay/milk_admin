@@ -84,7 +84,7 @@ class AttributeController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required',
+            'name' => 'required|unique:attributes,name,'.$request->id,
         ],[
             'name.required'=>translate('Name is required'),
         ]);
@@ -125,4 +125,5 @@ class AttributeController extends Controller
         Toastr::success(translate('Attribute removed!'));
         return back();
     }
+
 }

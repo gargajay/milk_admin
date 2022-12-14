@@ -1,170 +1,101 @@
 
-<div class="col-sm-6 col-lg-3 mb-3 mb-lg-5">
-    <!-- Card -->
-    <a class="card card-hover-shadow h-100" href="{{route('branch.orders.list',['pending'])}}" style="background: #3E215D">
-        <div class="card-body">
-            <h6 class="card-subtitle"
-                style="color: white!important;">{{translate('pending')}}</h6>
-            <div class="row align-items-center gx-2 mb-1">
-                <div class="col-6">
-                                    <span class="card-title h2" style="color: white!important;">
-                                        {{$data['pending']}}
-                                    </span>
-                </div>
-                <div class="col-6 mt-2">
-                    <i class="tio-shopping-cart ml-6" style="font-size: 30px;color: white"></i>
-                </div>
-            </div>
-            <!-- End Row -->
-        </div>
+<div class="col-sm-6 col-lg-3">
+    <a class="dashboard--card h-100" href="{{route('branch.orders.list',['pending'])}}">
+        <h6 class="subtitle">{{translate('pending')}}</h6>
+        <h2 class="title">
+            {{$data['pending']}}
+        </h2>
+        <img src="{{asset('/public/assets/admin/img/dashboard/pending.png')}}" alt="" class="dashboard-icon">
     </a>
-    <!-- End Card -->
 </div>
 
-<div class="col-sm-6 col-lg-3 mb-3 mb-lg-5">
-    <!-- Card -->
-    <a class="card card-hover-shadow h-100" href="{{route('branch.orders.list',['confirmed'])}}" style="background: #001E6C">
-        <div class="card-body">
-            <h6 class="card-subtitle"
-                style="color: white!important;">{{translate('confirmed')}}</h6>
-
-            <div class="row align-items-center gx-2 mb-1">
-                <div class="col-6">
-                                    <span class="card-title h2" style="color: white!important;">
-                                        {{$data['confirmed']}}
-                                    </span>
-                </div>
-
-                <div class="col-6 mt-2">
-                    <i class="tio-checkmark-circle ml-6" style="font-size: 30px;color: white"></i>
-                </div>
-            </div>
-            <!-- End Row -->
-        </div>
+<div class="col-sm-6 col-lg-3">
+    <a class="dashboard--card h-100" href="{{route('branch.orders.list',['confirmed'])}}">
+        <h6 class="subtitle">{{translate('confirmed')}}</h6>
+        <h2 class="title">
+            {{$data['confirmed']}}
+        </h2>
+        <img src="{{asset('/public/assets/admin/img/dashboard/confirmed.png')}}" alt="" class="dashboard-icon">
     </a>
-    <!-- End Card -->
 </div>
 
-<div class="col-sm-6 col-lg-3 mb-3 mb-lg-5">
-    <!-- Card -->
-    <a class="card card-hover-shadow h-100" href="{{route('branch.orders.list',['processing'])}}" style="background: #053742">
-        <div class="card-body">
-            <h6 class="card-subtitle"
-                style="color: white!important;">{{translate('processing')}}</h6>
-
-            <div class="row align-items-center gx-2 mb-1">
-                <div class="col-6">
-                                    <span class="card-title h2" style="color: white!important;">
-                                        {{$data['processing']}}
-                                    </span>
-                </div>
-
-                <div class="col-6 mt-2">
-                    <i class="tio-time ml-6" style="font-size: 30px;color: white"></i>
-                </div>
-            </div>
-            <!-- End Row -->
-        </div>
+<div class="col-sm-6 col-lg-3">
+    <a class="dashboard--card h-100" href="{{route('branch.orders.list',['processing'])}}">
+        <h6 class="subtitle">{{translate('packaging')}}</h6>
+        <h2 class="title">
+            {{$data['processing']}}
+        </h2>
+        <img src="{{asset('/public/assets/admin/img/dashboard/packaging.png')}}" alt="" class="dashboard-icon">
     </a>
-    <!-- End Card -->
 </div>
 
-<div class="col-sm-6 col-lg-3 mb-3 mb-lg-5">
-    <!-- Card -->
-    <a class="card card-hover-shadow h-100" href="{{route('branch.orders.list',['out_for_delivery'])}}" style="background: #343A40">
-        <div class="card-body">
-            <h6 class="card-subtitle"
-                style="color: white!important;">{{translate('out_for_delivery')}}</h6>
-
-            <div class="row align-items-center gx-2 mb-1">
-                <div class="col-6">
-                                    <span class="card-title h2" style="color: white!important;">
-                                        {{$data['out_for_delivery']}}
-                                    </span>
-                </div>
-
-                <div class="col-6 mt-2">
-                    <i class="tio-bike ml-6" style="font-size: 30px;color: white"></i>
-                </div>
-            </div>
-            <!-- End Row -->
-        </div>
+<div class="col-sm-6 col-lg-3">
+    <a class="dashboard--card h-100" href="{{route('branch.orders.list',['out_for_delivery'])}}">
+        <h6 class="subtitle">{{translate('out_for_delivery')}}</h6>
+        <h2 class="title">
+            {{$data['out_for_delivery']}}
+        </h2>
+        <img src="{{asset('/public/assets/admin/img/dashboard/out-for-delivery.png')}}" alt="" class="dashboard-icon">
     </a>
-    <!-- End Card -->
 </div>
 
 
-<div class="col-12">
-    <div class="card card-body" style="background: #FEF7DC!important;">
-        <div class="row gx-lg-4">
-            <div class="col-sm-6 col-lg-3">
-                <div class="media" style="cursor: pointer"
-                     onclick="location.href='{{route('branch.orders.list',['all'])}}'">
-                    <div class="media-body">
-                        <h6 class="card-subtitle">{{translate('All')}}</h6>
-                        <span
-                            class="card-title h3">{{$data['all']}}</span>
-                    </div>
-                    <span class="icon icon-sm icon-soft-secondary icon-circle ml-3">
-                      <i class="tio-remove-from-trash"></i>
-                    </span>
-                </div>
-                <div class="d-lg-none">
-                    <hr>
-                </div>
-            </div>
 
-            <div class="col-sm-6 col-lg-3 column-divider-sm">
-                <div class="media" style="cursor: pointer"
-                     onclick="location.href='{{route('branch.orders.list',['delivered'])}}'">
-                    <div class="media-body">
-                        <h6 class="card-subtitle">{{translate('delivered')}}</h6>
-                        <span class="card-title h3">
-                         {{$data['delivered']}}
-                        </span>
-                    </div>
-                    <span class="icon icon-sm icon-soft-secondary icon-circle ml-3">
-                      <i class="tio-checkmark-circle-outlined"></i>
-                    </span>
-                </div>
-                <div class="d-lg-none">
-                    <hr>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-lg-3 column-divider-lg">
-                <div class="media" style="cursor: pointer"
-                     onclick="location.href='{{route('branch.orders.list',['returned'])}}'">
-                    <div class="media-body">
-                        <h6 class="card-subtitle">{{translate('returned')}}</h6>
-                        <span
-                            class="card-title h3">{{$data['returned']}}</span>
-                    </div>
-                    <span class="icon icon-sm icon-soft-secondary icon-circle ml-3">
-                      <i class="tio-history"></i>
-                    </span>
-                </div>
-                <div class="d-lg-none">
-                    <hr>
-                </div>
-            </div>
-
-            <div class="col-sm-6 col-lg-3 column-divider-sm">
-                <div class="media" style="cursor: pointer"
-                     onclick="location.href='{{route('branch.orders.list',['failed'])}}'">
-                    <div class="media-body">
-                        <h6 class="card-subtitle">{{translate('failed')}}</h6>
-                        <span
-                            class="card-title h3">{{$data['failed']}}</span>
-                    </div>
-                    <span class="icon icon-sm icon-soft-secondary icon-circle ml-3">
-                      <i class="tio-message-failed"></i>
-                    </span>
-                </div>
-                <div class="d-lg-none">
-                    <hr>
-                </div>
-            </div>
+<div class="col-sm-6 col-lg-3">
+    <a class="order--card h-100" href="{{route('branch.orders.list',['delivered'])}}">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="card-subtitle d-flex justify-content-between m-0 align-items-center">
+                <img src="{{asset('public/assets/admin/img/delivery/1.png')}}" alt="dashboard" class="oder--card-icon">
+                <span>{{translate('delivered')}}</span>
+            </h6>
+            <span class="card-title text-success">
+                {{$data['delivered']}}
+            </span>
         </div>
-    </div>
+    </a>
+</div>
+
+
+<!-- Static Cancel -->
+<div class="col-sm-6 col-lg-3">
+    <a class="order--card h-100" href="{{route('branch.orders.list',['canceled'])}}">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="card-subtitle d-flex justify-content-between m-0 align-items-center">
+                <img src="{{asset('public/assets/admin/img/delivery/2.png')}}" alt="dashboard" class="oder--card-icon">
+                <span>{{translate('Canceled')}}</span>
+            </h6>
+            <span class="card-title text-danger">
+                {{$data['canceled']}}
+            </span>
+        </div>
+    </a>
+</div>
+<!-- Static Cancel -->
+
+
+<div class="col-sm-6 col-lg-3">
+    <a class="order--card h-100" href="{{route('branch.orders.list',['returned'])}}">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="card-subtitle d-flex justify-content-between m-0 align-items-center">
+                <img src="{{asset('public/assets/admin/img/delivery/3.png')}}" alt="dashboard" class="oder--card-icon">
+                <span>{{translate('returned')}}</span>
+            </h6>
+            <span class="card-title text-warning">
+                {{$data['returned']}}
+            </span>
+        </div>
+    </a>
+</div>
+<div class="col-sm-6 col-lg-3">
+    <a class="order--card h-100" href="{{route('branch.orders.list',['failed'])}}">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="card-subtitle d-flex justify-content-between m-0 align-items-center">
+                <img src="{{asset('public/assets/admin/img/delivery/4.png')}}" alt="dashboard" class="oder--card-icon">
+                <span>{{translate('failed_to_deliver')}}</span>
+            </h6>
+            <span class="card-title text-danger">
+                {{$data['failed']}}
+            </span>
+        </div>
+    </a>
 </div>

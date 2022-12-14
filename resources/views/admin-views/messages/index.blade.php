@@ -1,103 +1,98 @@
 @extends('layouts.admin.app')
 
 @section('title', translate('Messages'))
-
 @push('css_or_js')
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <style>
-        .conv-active {
-            background: #f3f3f3 !important;
-        }
-    </style>
+<link rel="stylesheet" href="{{asset('/public/assets/admin/css/lightbox.min.css')}}">
 @endpush
-
 @section('content')
 
-    <div class="content container-fluid">
+<div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-no-gutter">
-                            <li class="breadcrumb-item"><a class="breadcrumb-link"
-                                                           href="javascript:">{{translate('customers')}}</a>
-                            </li>
-                            <li class="breadcrumb-item active"
-                                aria-current="page">{{translate('customer Messages')}}</li>
-                        </ol>
-                    </nav>
-
-                    <h1 class="page-header-title">{{translate('conversation list')}}</h1>
-                </div>
-
-                <div class="col-sm-auto">
-
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/messages.png')}}" class="w--24" alt="">
+                </span>
+                <span>
+                    {{translate('Messages')}} <span class="badge badge-soft-primary ml-2" id="conversation_count"></span>
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
 
-        <div class="row">
-            <div class="col-lg-4 col-4">
-                <div class="input-group-overlay input-group-sm mb-1">
-                    <input style="background: aliceblue; border-radius: 15px" placeholder="{{ translate('Search user') }}"
-                           class="cz-filter-search form-control form-control-sm appended-form-control"
-                           type="text" id="search-conversation-user" autocomplete="off">
-                </div>
-                <!-- Card -->
-                <div class="card mb-3 mb-lg-5">
+        <div class="row g-0">
+            <div class="col-md-4 col-xxl-3">
+                <div class="card h-100 conv--sidebar--card rounded-right-0">
                     <!-- Body -->
-                    <div class="card-body p-md-4 p-2" style="overflow-y: scroll;height: 600px"
-                         id="conversation_sidebar">
-                        <div class="border-bottom"></div>
-                        @php($array=[])
-                        @foreach($conversations as $conv)
-                            @if(in_array($conv->user_id,$array)==false)
-                                @php(array_push($array,$conv->user_id))
-                                @php($user=\App\User::find($conv->user_id))
-
-                                @if(isset($user))
-                                @php($unchecked=\App\Model\Conversation::where(['user_id'=>$conv->user_id,'checked'=>0])->count())
-                                    <div
-                                        class="sidebar_primary_div d-flex border-bottom pb-2 pt-2 pl-md-1 pl-0 justify-content-between align-items-center customer-list {{$unchecked!=0?'conv-active':''}}"
-                                        onclick="viewConvs('{{route('admin.message.view',[$conv->user_id])}}','customer-{{$conv->user_id}}')"
-                                        style="cursor: pointer; border-radius: 10px;margin-top: 2px;"
-                                        id="customer-{{$conv->user_id}}">
-                                        <div class="avatar avatar-lg avatar-circle">
-                                            <img class="avatar-img" style="width: 54px;height: 54px"
-                                                 src="{{asset('storage/app/public/profile/'.$user['image'])}}"
-                                                 onerror="this.src='{{asset('public/assets/admin')}}/img/160x160/img1.jpg'"
-                                                 alt="Image Description">
+                    <div class="card-header border-0 px-0 mx-20px">
+                        <div class="conv-open-user w-100">
+                            <img class="w-47px" src="{{asset('storage/app/public/admin')}}/{{auth('admin')->user()->image}}"
+                                 onerror="this.src='{{asset('public/assets/admin')}}/img/160x160/img1.jpg'"
+                                    alt="Image Description">
+                            <div class="info">
+                                <h6 class="subtitle mb-0">{{auth('admin')->user()->f_name}} {{auth('admin')->user()->l_name}}</h6>
+                                <span>{{auth('admin')->user()->role->name}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0 px-0">
+                        <div class="input-group-overlay input-group-sm mb-3 mx-20px">
+                            <input placeholder="{{ translate('Search user') }}"
+                                class="cz-filter-search form-control form-control-sm appended-form-control"
+                                type="text" id="search-conversation-user" autocomplete="off">
+                        </div>
+                        <div class="conv--sidebar"
+                             id="conversation_sidebar">
+                            @php($array=[])
+                            @foreach($conversations as $conv)
+                                @if(in_array($conv->user_id,$array)==false)
+                                    @php(array_push($array,$conv->user_id))
+                                    @php($user=\App\User::find($conv->user_id))
+                                    @if(isset($user))
+                                    @php($unchecked=\App\Model\Conversation::where(['user_id'=>$conv->user_id,'checked'=>0])->count())
+                                        <div
+                                            class="sidebar_primary_div customer-list {{$unchecked!=0?'conv-active':''}}"
+                                            onclick="viewConvs('{{route('admin.message.view',[$conv->user_id])}}','customer-{{$conv->user_id}}')"
+                                            id="customer-{{$conv->user_id}}">
+                                            <div class="conv-open-user w-100">
+                                                <img class="w-47px" src="{{asset('storage/app/public/profile/'.$user['image'])}}"
+                                                onerror="this.src='{{asset('public/assets/admin')}}/img/160x160/img1.jpg'"
+                                                alt="Image Description">
+                                                <span class="status active"></span>
+                                                <div class="info">
+                                                    <h6 class="subtitle mb-0 sidebar_name chat-count">{{$user['f_name'].' '.$user['l_name']}}</h6>
+                                                    <span>{{ translate('customer') }}</span>
+                                                </div>
+                                                <span class="{{$unchecked!=0?'badge badge-info':'badge badge-info'}}" id="counter-{{$conv->user_id}}">{{$unchecked!=0?$unchecked:''}}</span>
+                                            </div>
                                         </div>
-                                        <h5 class="sidebar_name mb-0 mr-3 d-none d-md-block">
-                                            {{$user['f_name'].' '.$user['l_name']}}
-                                            <span class="{{$unchecked!=0?'badge badge-info':''}}" id="counter-{{$conv->user_id}}">{{$unchecked!=0?$unchecked:''}}</span>
-                                        </h5>
-                                    </div>
-                                @endif
+                                    @endif
 
-                            @endif
-                        @endforeach
+                                @endif
+                            @endforeach
+                        </div>
                     </div>
                     <!-- End Body -->
                 </div>
                 <!-- End Card -->
             </div>
-            <div class="col-lg-8 col-8 pl-0 pl-md-3" id="view-conversation">
-                <center style="margin-top: 10%">
-                    <h4 style="color: rgba(113,120,133,0.62)">{{translate('view Conversation')}}</h4>
+            <div class="col-md-8 col-xxl-9 pl-0 view-conversion" id="view-conversation">
+                <center class="h-100 d-flex justify-content-center align-items-center card __shadow rounded-left-0 py-5 py-md-0">
+                    <img src="{{asset('/public/assets/admin/img/view-conv.png')}}" class="mw-100" alt="">
+                    <div>
+                        {{translate('Click from the customer list to view conversation')}}
+                    </div>
                 </center>
-                {{--view here--}}
             </div>
         </div>
         <!-- End Row -->
     </div>
-
 @endsection
 
 @push('script_2')
     {{-- Search --}}
+
+
     <script>
         $("#search-conversation-user").on("keyup", function () {
             var input_value = this.value.toLowerCase().trim();
@@ -146,7 +141,7 @@
         }
 
         function replyConvs(url) {
-            var form = document.querySelector('form');
+            var form = document.querySelector('#reply-form');
             var formdata = new FormData(form);
 
             if (!formdata.get('reply') && !formdata.get('images[]')) {
@@ -292,6 +287,16 @@
                 }
             });
         }
+
+        $(document).ready(function() {
+            $('#con_value_set').this(val)
+        });
+
+    </script>
+
+    <script>
+        let count = $('.chat-count').length;
+        $('#conversation_count').text(count);
 
     </script>
 

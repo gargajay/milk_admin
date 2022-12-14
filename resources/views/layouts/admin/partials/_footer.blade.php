@@ -17,6 +17,7 @@
                         <a class="list-separator-link" href="{{route('admin.settings')}}">{{\App\CentralLogics\translate('profile')}}</a>
                     </li>
 
+
                     <li class="list-inline-item">
                         <!-- Keyboard Shortcuts Toggle -->
                         <div class="hs-unfold">
@@ -27,6 +28,13 @@
                         </div>
                         <!-- End Keyboard Shortcuts Toggle -->
                     </li>
+
+                    <li class="list-inline-item">
+                        <label class="badge badge-success text-capitalize">
+                            {{translate('Software Version')}} {{ env('SOFTWARE_VERSION') }}
+                        </label>
+                    </li>
+
                 </ul>
                 <!-- End List Dot -->
             </div>

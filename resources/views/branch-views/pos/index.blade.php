@@ -1,275 +1,106 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- Title -->
-    <title>{{ translate('POS') }} @yield('title')</title>
-    <!-- Favicon -->
-    <link rel="shortcut icon" href="">
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&amp;display=swap" rel="stylesheet">
-    <!-- CSS Implementing Plugins -->
-    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/vendor.min.css">
-    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/vendor/icon-set/style.css">
-    <!-- CSS Front Template -->
-    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/theme.minc619.css?v=1.0">
-    @stack('css_or_js')
+@extends('layouts.branch.app')
 
-    <style>
-        .scroll-bar {
-            max-height: calc(100vh - 100px);
-            overflow-y: auto !important;
-        }
+@section('title', translate('POS'))
 
-        ::-webkit-scrollbar-track {
-            box-shadow: inset 0 0 1px #cfcfcf;
-            /*border-radius: 5px;*/
-        }
+@push('css_or_js')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+@endpush
 
-        ::-webkit-scrollbar {
-            width: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #c1c1c1;
-            /*border-radius: 5px;*/
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #FC6A57;
-        }
-        .deco-none {
-            color: inherit;
-            text-decoration: inherit;
-        }
-        .qcont{
-            text-transform: lowercase;
-        }
-        .qcont:first-letter {
-            text-transform: capitalize;
-        }
-
-
-
-        .navbar-vertical .nav-link {
-            color: #ffffff;
-        }
-
-        .navbar .nav-link:hover {
-            color: #C6FFC1;
-        }
-
-        .navbar .active > .nav-link, .navbar .nav-link.active, .navbar .nav-link.show, .navbar .show > .nav-link {
-            color: #C6FFC1;
-        }
-
-        .navbar-vertical .active .nav-indicator-icon, .navbar-vertical .nav-link:hover .nav-indicator-icon, .navbar-vertical .show > .nav-link > .nav-indicator-icon {
-            color: #C6FFC1;
-        }
-
-        .nav-subtitle {
-            display: block;
-            color: #fffbdf91;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .03125rem;
-        }
-
-        .navbar-vertical .navbar-nav.nav-tabs .active .nav-link, .navbar-vertical .navbar-nav.nav-tabs .active.nav-link {
-            border-left-color: #C6FFC1;
-        }
-        .item-box{
-            height:250px;
-            width:150px;
-            padding:3px;
-        }
-
-        .header-item{
-            width:10rem;
-        }
-    </style>
-
-    <script src="{{asset('public/assets/admin')}}/vendor/hs-navbar-vertical-aside/hs-navbar-vertical-aside-mini-cache.js"></script>
-    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/toastr.css">
-</head>
-
-<body class="footer-offset">
-
-{{--loader--}}
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div id="loading" style="display: none;">
-                <div style="position: fixed;z-index: 9999; left: 40%;top: 37% ;width: 100%">
-                    <img width="200" src="{{asset('public/assets/admin/img/loader.gif')}}">
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{{--loader--}}
-
-<!-- JS Preview mode only -->
-    <header id="header"
-            class="navbar navbar-expand-lg navbar-fixed navbar-height navbar-flush navbar-container navbar-bordered">
-        <div class="navbar-nav-wrap">
-            <div class="navbar-brand-wrapper">
-                <!-- Logo Div-->
-                <a class="navbar-brand" href="{{route('branch.dashboard')}}" aria-label="Front" style="padding-top: 0!important;padding-bottom: 0!important;">
-                    <img class="navbar-brand-logo"
-                         style="border-radius: 50%;height: 55px;width: 55px!important; border: 5px solid #80808012"
-                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'"
-                         src="{{asset('storage/app/public/branch')}}/{{auth('branch')->user()->image??''}}"
-                         alt="Logo">
-                </a>
-                {{\Illuminate\Support\Str::limit($branch->name,15)}}
-            </div>
-
-            <!-- Secondary Content -->
-            <div class="navbar-nav-wrap-content-right">
-                <!-- Navbar -->
-                <ul class="navbar-nav align-items-center flex-row">
-                    <li class="nav-item d-none d-sm-inline-block">
-                        <!-- Notification -->
-                        <div class="hs-unfold">
-                            <a class="js-hs-unfold-invoker btn btn-icon btn-ghost-secondary rounded-circle"
-                               href="{{route('branch.order.list',['status'=>'pending'])}}">
-                                <i class="tio-shopping-cart-outlined"></i>
-                                {{--<span class="btn-status btn-sm-status btn-status-danger"></span>--}}
-                            </a>
-                        </div>
-                        <!-- End Notification -->
-                    </li>
-
-                    <li class="nav-item">
-                        <!-- Account -->
-                        <div class="hs-unfold">
-                            <a class="js-hs-unfold-invoker navbar-dropdown-account-wrapper" href="javascript:;"
-                               data-hs-unfold-options='{
-                                     "target": "#accountNavbarDropdown",
-                                     "type": "css-animation"
-                                   }'>
-                                <div class="avatar avatar-sm avatar-circle">
-                                    @php($restaurant_logo=\App\Model\BusinessSetting::where(['key'=>'logo'])->first()->value)
-                                    <img class="avatar-img"
-                                        onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                                         src="{{asset('storage/app/public/restaurant/'.$restaurant_logo)}}"
-                                        alt="Image">
-                                    <span class="avatar-status avatar-sm-status avatar-status-success"></span>
-                                </div>
-                            </a>
-
-                            <div id="accountNavbarDropdown"
-                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account"
-                                 style="width: 16rem;">
-                                <div class="dropdown-item-text">
-                                    <div class="media align-items-center">
-                                        <div class="avatar avatar-sm avatar-circle mr-2">
-                                            <img class="avatar-img"
-                                                 onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                                                 src="{{asset('storage/app/public/branch')}}/{{auth('branch')->user()->image??''}}"
-                                                 alt="Owner image">
-                                        </div>
-                                        <div class="media-body">
-                                            <span class="card-title h5">{{ \Illuminate\Support\Str::limit($branch->name, 7) }}</span>
-                                            <span class="card-text">{{ \Illuminate\Support\Str::limit($branch->email, 15) }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="dropdown-divider"></div>
-
-                                <a class="dropdown-item" href="javascript:" onclick="Swal.fire({
-                                    title: '{{translate('Do you want to logout')}}?',
-                                    showDenyButton: true,
-                                    showCancelButton: true,
-                                    confirmButtonColor: '#FC6A57',
-                                    cancelButtonColor: '#363636',
-                                    confirmButtonText: '{{translate("Yes")}}',
-                                    denyButtonText: `{{translate('Do not Logout')}}`,
-                                    }).then((result) => {
-                                    if (result.value) {
-                                    location.href='{{route('branch.auth.logout')}}';
-                                    } else{
-                                    Swal.fire('Canceled', '', 'info')
-                                    }
-                                    })">
-                                    <span class="text-truncate pr-2" title="Sign out">{{translate('sign_out')}}</span>
-                                </a>
-                            </div>
-                        </div>
-                        <!-- End Account -->
-                    </li>
-                </ul>
-                <!-- End Navbar -->
-            </div>
-            <!-- End Secondary Content -->
-        </div>
-    </header>
-<!-- END ONLY DEV -->
-
-<main id="content" role="main" class="main pointer-event">
-<!-- Content -->
-	<!-- ========================= SECTION CONTENT ========================= -->
-	<section class="section-content padding-y-sm bg-default mt-1">
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-md-8 card padding-y-sm card ">
-                    <div class="card-header d-flex flex-wrap justify-content-between ">
-                        <form id="search-form" class="header-item">
-                            <!-- Search -->
-                            <div class="input-group input-group-merge input-group-flush">
-                                <div class="input-group-prepend">
-                                    <div class="input-group-text">
-                                        <i class="tio-search"></i>
-                                    </div>
-                                </div>
-                                <input id="datatableSearch" type="search" value="{{$keyword?$keyword:''}}" name="search" class="form-control" placeholder="{{translate('Search here')}}" aria-label="Search here">
-                            </div>
-                            <!-- End Search -->
-                        </form>
-                        <div class="input-group header-item" style="width: auto">
-                            <select name="category" id="category" class="form-control js-select2-custom mx-1" title="select category" onchange="set_category_filter(this.value)">
-                                <option value="">{{ translate('All Categories') }}</option>
-                                @foreach ($categories as $item)
-                                <option value="{{$item->id}}" {{$category==$item->id?'selected':''}}>{{$item->name}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                    </div>
-					<div class="card-body" id="items">
-                        <div class="d-flex flex-wrap mt-2 mb-3" style="justify-content: space-around;">
-                            @foreach($products as $product)
-                                <div class="item-box">
-                                    @include('branch-views.pos._single_product',['product'=>$product])
-                                    {{--<hr class="d-sm-none">--}}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        {!!$products->withQueryString()->links()!!}
-                    </div>
-				</div>
-				<div class="col-md-4">
+@section('content')
+        <div class="content container-fluid">
+            <div class="d-flex flex-wrap">
+                <div class="order--pos-left">
                     <div class="card">
-                        <div class="w-100">
-                            <div class="d-flex flex-row p-1">
-                                <select onchange="store_key('customer_id',this.value)" id='customer' name="customer_id" data-placeholder="{{translate('Walk In Customer')}}" class="js-data-example-ajax form-control">
-
-                                </select>
+                        <div class="card-header m-1 bg-light border-0">
+                            <h5 class="card-title">
+                                <span>
+                                {{translate('Product section')}}
+                            </span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-sm-6">
+                                    <div class="input-group header-item">
+                                        <select name="category" id="category" class="form-control js-select2-custom mx-1" title="select category" onchange="set_category_filter(this.value)">
+                                            <option value="">{{ translate('All Categories') }}</option>
+                                            @foreach ($categories as $item)
+                                            <option value="{{$item->id}}" {{$category==$item->id?'selected':''}}>{{$item->name}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <form id="search-form">
+                                        <!-- Search -->
+                                        <div class="input-group input-group-merge input-group-flush">
+                                            <div class="input-group-prepend w--30 justify-content-center">
+                                                <div class="input-group-text">
+                                                    <i class="tio-search"></i>
+                                                </div>
+                                            </div>
+                                            <input id="datatableSearch" type="search" value="{{$keyword?$keyword:''}}" name="search"  class="form-control rounded border" placeholder="{{translate('Search by product name')}}" aria-label="Search here">
+                                        </div>
+                                        <!-- End Search -->
+                                    </form>
+                                </div>
+                            </div>
+                            <div id="items">
+                                <div class="row g-1">
+                                    @foreach($products as $product)
+                                        <div class="order--item-box item-box">
+                                            @include('branch-views.pos._single_product',['product'=>$product])
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            <div class="pt-4">
+                                {!!$products->withQueryString()->links()!!}
                             </div>
                         </div>
-                        <div class='w-100' id="cart">
-                            @include('branch-views.pos._cart')
+                    </div>
+                </div>
+                <div class="order--pos-right">
+                    <div class="card">
+                        <div class="card-header bg-light border-0 m-1">
+                            <h5 class="card-title">
+                                <span>
+                                    {{translate('Billing section')}}
+                                </span>
+                            </h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="px-4">
+                                <div class="d-flex flex-wrap flex-row py-2 add--customer-btn">
+                                    <select onchange="store_key('customer_id',this.value)" id='customer' name="customer_id" data-placeholder="{{translate('Walk In Customer')}}" class="js-data-example-ajax form-control">
+                                        <option selected disabled>{{ translate('select customer') }}</option>
+                                        @foreach($users as $user)
+                                            <option value="{{$user['id']}}" {{session('customer_id') == $user['id'] ? 'selected' : '' }}>{{$user['f_name'].' '.$user['l_name'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button class="btn btn--primary rounded font-regular" data-toggle="modal" data-target="#add-customer" type="button">{{translate('Add New Customer')}}</button>
+                                </div>
+<!--                                <div class="my-3">
+                                    <div class="btn&#45;&#45;container order-select-btn-grp">
+                                        <select class="js-data-example-ajax-2 form-control">
+                                            <option>0ff20s</option>
+                                            <option>0ff20s</option>
+                                            <option>0ff20s</option>
+                                            <option>0ff20s</option>
+                                        </select>
+                                        <button type="button" class="btn btn&#45;&#45;reset">{{translate(('Clear Cart'))}}</button>
+                                        <button type="button" class="btn btn&#45;&#45;primary">{{translate(('New Offer'))}}</button>
+                                    </div>
+                                </div>-->
+                                <div class='w-100' id="cart">
+                                    @include('branch-views.pos._cart')
+                                </div>
+                            </div>
                         </div>
                     </div>
 				</div>
 			</div>
 		</div><!-- container //  -->
-	</section>
 
     <!-- End Content -->
     <div class="modal fade" id="quick-view" tabindex="-1">
@@ -292,16 +123,14 @@
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body row" style="font-family: emoji;">
-                    <div class="col-md-12">
-                        <center>
-                            <input type="button" class="btn btn-primary non-printable" onclick="printDiv('printableArea')"
-                                value="Proceed, If thermal printer is ready."/>
-                            <a href="{{url()->previous()}}" class="btn btn-danger non-printable">{{translate('Back')}}</a>
-                        </center>
-                        <hr class="non-printable">
-                    </div>
-                    <div class="row" id="printableArea" style="margin: auto;">
+                <div class="modal-body">
+                    <center>
+                        <input type="button" class="btn btn-primary non-printable" onclick="printDiv('printableArea')"
+                            value="Proceed, If thermal printer is ready."/>
+                        <a href="{{url()->previous()}}" class="btn btn-danger non-printable">{{translate('Back')}}</a>
+                    </center>
+                    <hr class="non-printable">
+                    <div class="row m-auto" id="printableArea">
                         @include('branch-views.pos.order.invoice')
                     </div>
 
@@ -311,42 +140,63 @@
     </div>
     @endif
 
+        {{--add new customer modal start--}}
+        <div class="modal fade" id="add-customer" style="display: none">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add new customer</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="{{route('branch.pos.customer.store')}}" method="post">
+                            @csrf
+                            <div class="row">
+                                <div class="col-12 col-lg-6">
+                                    <div class="form-group">
+                                        <label class="input-label">First name <span class="input-label-secondary text-danger">*</span></label>
+                                        <input type="text" name="f_name" class="form-control" value="" placeholder="First name" required="">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <div class="form-group">
+                                        <label class="input-label">Last name <span class="input-label-secondary text-danger">*</span></label>
+                                        <input type="text" name="l_name" class="form-control" value="" placeholder="Last name" required="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 col-lg-6">
+                                    <div class="form-group">
+                                        <label class="input-label">Email<span class="input-label-secondary text-danger">*</span></label>
+                                        <input type="email" name="email" class="form-control" value="" placeholder="Ex : ex@example.com" required="">
+                                    </div>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <div class="form-group">
+                                        <label class="input-label">Phone (With country code)<span class="input-label-secondary text-danger">*</span></label>
+                                        <input type="text" name="phone" class="form-control" value="" placeholder="Phone" required="">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="btn--container justify-content-end">
+                                <button type="reset" class="btn btn--reset">Reset</button>
+                                <button type="submit" id="submit_new_customer" class="btn btn--primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{--add new customer modal end--}}
 
 
-</main>
-<!-- ========== END MAIN CONTENT ========== -->
+@endsection
 
-<!-- ========== END SECONDARY CONTENTS ========== -->
 
-<!-- JS Implementing Plugins -->
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
-<!-- JS Front -->
-<script src="{{asset('public/assets/admin')}}/js/vendor.min.js"></script>
-<script src="{{asset('public/assets/admin')}}/js/theme.min.js"></script>
-<script src="{{asset('public/assets/admin')}}/js/sweet_alert.js"></script>
-<script src="{{asset('public/assets/admin')}}/js/toastr.js"></script>
-{!! Toastr::message() !!}
-
-@if ($errors->any())
-    <script>
-        @foreach($errors->all() as $error)
-        toastr.error('{{$error}}', Error, {
-            CloseButton: true,
-            ProgressBar: true
-        });
-        @endforeach
-    </script>
-@endif
-
-<script>
-    $(document).on('ready', function () {
-        // INITIALIZATION OF UNFOLD
-        // =======================================================
-        $('.js-hs-unfold-invoker').each(function () {
-            var unfold = new HSUnfold($(this)).init();
-        });
-    });
-</script>
+@push('script_2')
 <!-- JS Plugins Init. -->
 <script>
     $(document).on('ready', function () {
@@ -406,7 +256,7 @@
     }
 
     function checkAddToCartValidity() {
-        var names = {};
+        /*var names = {};
         $('#add-to-cart-form input:radio').each(function () { // find unique names
             names[$(this).attr('name')] = true;
         });
@@ -417,7 +267,9 @@
         if ($('input:radio:checked').length == count) {
             return true;
         }
-        return false;
+        return false;*/
+
+        return true;
     }
 
     function cartQuantityInitialize() {
@@ -740,10 +592,7 @@
         return true;
     });
 
+
 </script>
 <!-- IE Support -->
-<script>
-    if (/MSIE \d|Trident.*rv:/.test(navigator.userAgent)) document.write('<script src="{{asset('public/assets/admin')}}/vendor/babel-polyfill/polyfill.min.js"><\/script>');
-</script>
-</body>
-</html>
+@endpush

@@ -1,34 +1,36 @@
-<!-- Header -->
-<div class="card-header">
-    <h5 class="card-header-title">
-        <i class="tio-user"></i> {{translate('top_customer')}}
+
+<div class="card-header border-0 order-header-shadow">
+    <h5 class="card-title d-flex justify-content-between flex-grow-1">
+        <span>{{translate('top_customer')}}</span>
+        <a href="{{route('admin.customer.list')}}" class="fz-12px font-medium text-006AE5">{{translate('view_all')}}</a>
     </h5>
-    <i class="tio-poi-user" style="font-size: 45px"></i>
 </div>
-<!-- End Header -->
 
 <!-- Body -->
 <div class="card-body">
-    <div class="row">
+    <div class="top--selling">
         @foreach($top_customer as $key=>$item)
             @if(isset($item->customer))
-                <div class="col-6 col-md-4 mt-2"
-                     onclick="location.href='{{route('admin.customer.view',[$item['customer_id']])}}'"
-                     style="padding-left: 6px;padding-right: 6px;cursor: pointer">
-                    <div class="grid-card" style="min-height: 170px">
-                        <label class="label_1">Orders : {{$item['count']}}</label>
-                        <center class="mt-6">
-                            <img style="border-radius: 50%;width: 60px;height: 60px;border:2px solid #80808082;"
-                                 onerror="this.src='{{asset('public/assets/back-end/img/160x160/img1.jpg')}}'"
-                                 src="{{asset('storage/app/public/profile/'.$item->customer->image??'')}}">
-                        </center>
-                        <div class="text-center mt-2">
-                            <span style="font-size: 10px">{{$item->customer['f_name']??'Not exist'}}</span>
-                        </div>
+                <a class="grid--card" href="{{route('admin.customer.view',[$item['user_id']])}}">
+                    @if (!empty(json_decode($item->customer->image,true)))
+                        <img src="{{ asset('storage/app/public/customer').'/'.json_decode($item->customer->image)[0]  ?? '' }}"
+                             onerror="this.src='{{asset('public/assets/admin/img/admin.jpg')}}'"
+                             alt="{{$item->customer->name}} image">
+                    @else
+                        <img src="{{asset('public/assets/admin/img/admin.jpg')}}"
+                        >
+                    @endif
+                    <div class="cont pt-2">
+                        <h6>{{$item->customer['f_name']??'Not exist'}}</h6>
+                        <span>{{$item->customer['phone']}}</span>
                     </div>
-                </div>
+                    <div class="ml-auto">
+                        <span class="badge badge-soft">{{ translate('Orders') }} : {{$item['count']}}</span>
+                    </div>
+                </a>
             @endif
         @endforeach
     </div>
 </div>
 <!-- End Body -->
+

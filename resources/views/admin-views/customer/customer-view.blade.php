@@ -9,58 +9,74 @@
 @section('content')
     <div class="content container-fluid">
         <!-- Page Header -->
+
         <div class="d-print-none pb-2">
             <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb breadcrumb-no-gutter">
-                            <li class="breadcrumb-item">
-                                <a class="breadcrumb-link"
-                                   href="{{route('admin.customer.list')}}">
-                                    {{translate('customers')}}
-                                </a>
-                            </li>
-                            <li class="breadcrumb-item active" aria-current="page">{{translate('customer')}} {{translate('details')}}</li>
-                        </ol>
-                    </nav>
-
-                    <div class="d-sm-flex align-items-sm-center">
-                        <h1 class="page-header-title">{{translate('customer')}} {{translate('id')}} #{{$customer['id']}}</h1>
-                        <span class="ml-2 ml-sm-3">
-                        <i class="tio-date-range">
-                        </i> {{translate('joined_at')}} : {{date('d M Y H:i:s',strtotime($customer['created_at']))}}
-                        </span>
-                    </div>
-                    <div class="row border-top pt-3">
-                        <div class="col-12">
-                            <a href="{{route('admin.dashboard')}}" class="btn btn-primary">
-                                <i class="tio-home-outlined"></i> {{translate('dashboard')}}
-                            </a>
-                        </div>
-                    </div>
+                <div class="col-auto mb-2 mb-sm-0">
+                    <h1 class="page-header-title">{{translate('customer')}} {{translate('id')}} #{{$customer['id']}}</h1>
+                    <span class="d-block">
+                        <i class="tio-date-range"></i> {{translate('joined_at')}} : {{date('d M Y '.config('timeformat'),strtotime($customer['created_at']))}}
+                    </span>
                 </div>
 
-                <div class="col-sm-auto">
-                    <a class="btn btn-icon btn-sm btn-ghost-secondary rounded-circle mr-1"
+                <div class="col-auto ml-auto">
+                    <a class="btn btn-icon btn-sm btn-soft-secondary rounded-circle mr-1"
                        href="{{route('admin.customer.view',[$customer['id']-1])}}"
-                       data-toggle="tooltip" data-placement="top" title="Previous customer">
+                       data-toggle="tooltip" data-placement="top" title="{{ translate('Previous customer') }}">
                         <i class="tio-arrow-backward"></i>
                     </a>
-                    <a class="btn btn-icon btn-sm btn-ghost-secondary rounded-circle"
+                    <a class="btn btn-icon btn-sm btn-soft-secondary rounded-circle"
                        href="{{route('admin.customer.view',[$customer['id']+1])}}" data-toggle="tooltip"
-                       data-placement="top" title="Next customer">
+                       data-placement="top" title="{{ translate('Next customer') }}">
                         <i class="tio-arrow-forward"></i>
                     </a>
                 </div>
             </div>
         </div>
         <!-- End Page Header -->
+<!--        <div class="row mb-2 g-2">
+            &lt;!&ndash; Collected Cash Card Example &ndash;&gt;
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="resturant-card bg&#45;&#45;2">
+                    <img class="resturant-icon" src="{{asset('/public/assets/admin/img/dashboard/1.png')}}" alt="dashboard">
+                    <div class="for-card-text font-weight-bold  text-uppercase mb-1">{{translate('wallet')}} {{translate('balance')}}</div>
+                    <div class="for-card-count">{{$customer->wallet_balance??0}}</div>
+                </div>
+            </div>
+
+            &lt;!&ndash; Pending Requests Card Example &ndash;&gt;
+            <div class="col-lg-6 col-md-6 col-sm-6">
+                <div class="resturant-card bg&#45;&#45;3">
+                    <img class="resturant-icon" src="{{asset('/public/assets/admin/img/dashboard/3.png')}}" alt="dashboard">
+                    <div class="for-card-text font-weight-bold  text-uppercase mb-1">{{translate('loyalty_point')}} {{translate('balance')}}</div>
+                    <div class="for-card-count">{{$customer->loyalty_point??0}}</div>
+                </div>
+            </div>
+        </div>-->
+
 
         <div class="row" id="printableArea">
             <div class="col-lg-8 mb-3 mb-lg-0">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="card-header-title"></h5>
+                        <div class="card--header">
+                        <h5 class="card-title">{{ translate('Order List') }} <span class="badge badge-soft-secondary">{{ count($orders) }}</span></h5>
+                            <form action="{{url()->current()}}" method="GET">
+                                <div class="input-group">
+                                    <input id="datatableSearch_" type="search" name="search"
+                                           class="form-control"
+                                           placeholder="{{translate('Search by Order Id or Order Amount')}}" aria-label="Search"
+                                           value="{{$search}}" required autocomplete="off">
+                                    <div class="input-group-append">
+                                        <button type="submit" class="input-group-text">
+                                            {{__('Search')}}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <h5 class="card-header-title">
+                        </h5>
                     </div>
                     <!-- Table -->
                     <div class="table-responsive datatable-custom">
@@ -73,21 +89,9 @@
                             <thead class="thead-light">
                             <tr>
                                 <th>{{translate('#')}}</th>
-                                <th style="width: 50%" class="text-center">{{translate('order')}} {{translate('id')}}</th>
-                                <th style="width: 50%">{{translate('total')}}</th>
-                                <th style="width: 10%">{{translate('action')}}</th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <th>
-                                    <input type="text" id="column1_search" class="form-control form-control-sm"
-                                           placeholder="{{ translate('Search ID') }}">
-                                </th>
-                                <th></th>
-                                <th>
-                                    {{--<input type="text" id="column4_search" class="form-control form-control-sm"
-                                           placeholder="Search countries">--}}
-                                </th>
+                                <th class="text-center">{{translate('order')}} {{translate('id')}}</th>
+                                <th class="text-center">{{translate('total amount')}}</th>
+                                <th class="text-center">{{translate('action')}}</th>
                             </tr>
                             </thead>
 
@@ -95,26 +99,20 @@
                             @foreach($orders as $key=>$order)
                                 <tr>
                                     <td>{{$orders->firstItem()+$key}}</td>
-                                    <td class="table-column-pl-0 text-center">
+                                    <td class=" text-center">
                                         <a href="{{route('admin.orders.details',['id'=>$order['id']])}}">{{$order['id']}}</a>
                                     </td>
-                                    <td>{{ Helpers::set_symbol($order['order_amount']) }}</td>
+                                    <td class="text-center">{{ Helpers::set_symbol($order['order_amount']) }}</td>
                                     <td>
                                         <!-- Dropdown -->
-                                        <div class="dropdown">
-                                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
-                                                    id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
-                                                <i class="tio-settings"></i>
-                                            </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                <a class="dropdown-item"
-                                                   href="{{route('admin.orders.details',['id'=>$order['id']])}}"><i
-                                                        class="tio-visible"></i> {{translate('view')}}</a>
-                                                <a class="dropdown-item" target="_blank"
-                                                   href="{{route('admin.orders.generate-invoice',[$order['id']])}}"><i
-                                                        class="tio-download"></i> {{translate('invoice')}}</a>
-                                            </div>
+                                        <div class="btn--container justify-content-center">
+                                            <a class="action-btn"
+                                                href="{{route('admin.orders.details',['id'=>$order['id']])}}"><i
+                                                    class="tio-invisible"></i></a>
+                                            <a class="action-btn btn--primary btn-outline-primary" target="_blank"
+                                                href="{{route('admin.orders.generate-invoice',[$order['id']])}}">
+                                                <i class="tio-print"></i>
+                                            </a>
                                         </div>
                                         <!-- End Dropdown -->
                                     </td>
@@ -129,93 +127,90 @@
                         <!-- End Pagination -->
                         </div>
                         <!-- End Footer -->
+                        @if(count($orders)==0)
+                            <div class="text-center p-4">
+                                <img class="w-120px mb-3" src="{{asset('public/assets/admin')}}/svg/illustrations/sorry.svg" alt="Image Description">
+                                <p class="mb-0">{{ translate('No_data_to_show')}}</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
+
+
 
             <div class="col-lg-4">
                 <!-- Card -->
                 <div class="card">
                     <!-- Header -->
                     <div class="card-header">
-                        <h4 class="card-header-title">{{translate('customer')}}</h4>
+                        <h4 class="card-header-title">
+                            <span class="card-header-icon">
+                                <i class="tio-user"></i>
+                            </span>
+                            <span>
+                                @if($customer)
+                                    {{$customer['f_name'].' '.$customer['l_name']}}
+                                    @else
+                                    Customer
+                                @endif
+                            </span>
+                        </h4>
                     </div>
                     <!-- End Header -->
 
                     <!-- Body -->
                     @if($customer)
                         <div class="card-body">
-                            <div class="media align-items-center" href="javascript:">
-                                <div class="avatar avatar-circle mr-3">
+                            <div class="media align-items-center customer--information-single" href="javascript:">
+                                <div class="avatar avatar-circle">
                                     <img
                                         class="avatar-img"
-                                        onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
+                                        onerror="this.src='{{asset('public/assets/admin/img/admin.png')}}'"
                                         src="{{asset('storage/app/public/profile/'.$customer->image)}}"
                                         alt="Image Description">
                                 </div>
                                 <div class="media-body">
-                                <span
-                                    class="text-body text-hover-primary">{{$customer['f_name'].' '.$customer['l_name']}}</span>
-                                </div>
-                                <div class="media-body text-right">
-                                    {{--<i class="tio-chevron-right text-body"></i>--}}
-                                </div>
-                            </div>
-
-                            <hr>
-
-                            <div class="media align-items-center" href="javascript:">
-                                <div class="icon icon-soft-info icon-circle mr-3">
-                                    <i class="tio-shopping-basket-outlined"></i>
-                                </div>
-                                <div class="media-body">
-                                    <span
-                                        class="text-body text-hover-primary">{{$customer->orders->count()}} {{translate('orders')}}</span>
-                                </div>
-                                <div class="media-body text-right">
-                                    {{--<i class="tio-chevron-right text-body"></i>--}}
+                                    <ul class="list-unstyled m-0">
+                                        <li class="pb-1">
+                                            <i class="tio-email mr-2"></i>
+                                            <a href="mailto:{{$customer['email']}}">{{$customer['email']}}</a>
+                                        </li>
+                                        <li class="pb-1">
+                                            <i class="tio-call-talking-quiet mr-2"></i>
+                                            <a href="Tel:{{$customer['phone']}}">{{$customer['phone']}}</a>
+                                        </li>
+                                        <li class="pb-1">
+                                            <i class="tio-shopping-basket-outlined mr-2"></i>
+                                            {{$customer->orders->count()}} {{translate('orders')}}
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
-
                             <hr>
-
-                            <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h5>{{translate('contact')}} {{translate('info')}}</h5>
                             </div>
-
-                            <ul class="list-unstyled list-unstyled-py-2">
-                                <li>
-                                    <i class="tio-online mr-2"></i>
-                                    {{$customer['email']}}
-                                </li>
-                                <li>
-                                    <i class="tio-android-phone-vs mr-2"></i>
-                                    {{$customer['phone']}}
-                                </li>
-                            </ul>
-
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5>{{translate('addresses')}}</h5>
-                            </div>
-
                             @foreach($customer->addresses as $address)
                                 <ul class="list-unstyled list-unstyled-py-2">
-                                    <li>
-                                        <i class="tio-tab mr-2"></i>
-                                        {{$address['address_type']}}
-                                    </li>
-                                    <li>
-                                        <i class="tio-android-phone-vs mr-2"></i>
-                                        {{$address['contact_person_umber']}}
-                                    </li>
-                                    <li style="cursor: pointer">
-                                        <a target="_blank" href="http://maps.google.com/maps?z=12&t=m&q=loc:{{$address['latitude']}}+{{$address['longitude']}}">
-                                            <i class="tio-map mr-2"></i>
-                                            {{$address['address']}}
-                                        </a>
+                                    @if($address['contact_person_umber'])
+                                        <li>
+                                            <i class="tio-call-talking-quiet mr-2"></i>
+                                            {{$address['contact_person_umber']}}
+                                        </li>
+                                    @endif
+                                    <li class="quick--address-bar">
+                                        <div class="quick-icon badge-soft-secondary">
+                                            <i class="tio-home"></i>
+                                        </div>
+                                        <div class="info">
+                                            <h6>{{$address['address_type']}}</h6>
+                                            <a target="_blank" href="http://maps.google.com/maps?z=12&t=m&q=loc:{{$address['latitude']}}+{{$address['longitude']}}" class="text--title">
+                                                {{$address['address']}}
+                                            </a>
+                                        </div>
                                     </li>
                                 </ul>
-                                <hr>
                             @endforeach
 
                         </div>
@@ -224,6 +219,7 @@
                 </div>
                 <!-- End Card -->
             </div>
+
         </div>
         <!-- End Row -->
     </div>
@@ -232,32 +228,6 @@
 @push('script_2')
 
     <script>
-        $(document).on('ready', function () {
-            // INITIALIZATION OF DATATABLES
-            // =======================================================
-            var datatable = $.HSCore.components.HSDatatables.init($('#columnSearchDatatable'));
 
-            $('#column1_search').on('keyup', function () {
-                datatable
-                    .columns(1)
-                    .search(this.value)
-                    .draw();
-            });
-
-
-            $('#column3_search').on('change', function () {
-                datatable
-                    .columns(2)
-                    .search(this.value)
-                    .draw();
-            });
-
-
-            // INITIALIZATION OF SELECT2
-            // =======================================================
-            $('.js-select2-custom').each(function () {
-                var select2 = $.HSCore.components.HSSelect2.init($(this));
-            });
-        });
     </script>
 @endpush

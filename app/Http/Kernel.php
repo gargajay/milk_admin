@@ -72,5 +72,9 @@ class Kernel extends HttpKernel
         'actch' => ActivationCheckMiddleware::class,
         'localization' => \App\Http\Middleware\localization::class,
         'module' => \App\Http\Middleware\ModulePermissionMiddleware::class,
+        'customer_is_block' => \App\Http\Middleware\CustomerIsBlocked::class,
+        'deliveryman_is_active' => \App\Http\Middleware\DeliverymanIsBlock::class,
+        'employee_active_check' => \App\Http\Middleware\EmployeeActiveCheck::class,
+        'active_branch_check' => \App\Http\Middleware\ActiveBranchCheck::class,
     ];
 }

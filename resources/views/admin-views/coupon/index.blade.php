@@ -10,113 +10,122 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title"><i class="tio-add-circle-outlined"></i> {{translate('add')}} {{translate('new')}} {{translate('coupon')}}</h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/coupon.png')}}" class="w--20" alt="mail">
+                </span>
+                <span>
+                    {{translate('Coupon Setup')}}
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
         <div class="row gx-2 gx-lg-3">
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
-                <form action="{{route('admin.coupon.store')}}" method="post">
-                    @csrf
-                   <div class="row">
-                       <div class="col-4">
-                           <div class="form-group">
-                               <label class="input-label" for="exampleFormControlInput1">{{translate('title')}}</label>
-                               <input type="text" name="title" value="{{old('title')}}" class="form-control" placeholder="{{ translate('New coupon') }}" required>
-                           </div>
-                       </div>
-                       <div class="col-4">
-                           <div class="form-group">
-                               <label class="input-label" for="exampleFormControlInput1">{{translate('coupon')}} {{translate('type')}}</label>
-                               <select name="coupon_type" class="form-control" onchange="coupon_type_change(this.value)">
-                                   <option value="default">{{translate('default')}}</option>
-                                   <option value="first_order">{{translate('first order')}}</option>
-                               </select>
-                           </div>
-                       </div>
-                       <div class="col-4" id="limit-for-user">
-                           <div class="form-group">
-                               <label class="input-label" for="exampleFormControlInput1">{{translate('limit')}} {{translate('for')}} {{translate('same')}} {{translate('user')}}</label>
-                               <input type="number" name="limit" value="{{old('limit')}}" id="user-limit" min="1" class="form-control" placeholder="{{ translate('EX: 10') }}" required>
-                           </div>
-                       </div>
-                   </div>
-
-                    <div class="row">
-                        <div class="col-md-4 col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('code')}}</label>
-                                <input type="text" name="code" class="form-control"
-                                       placeholder="{{\Illuminate\Support\Str::random(8)}}" required>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body p-xl-30">
+                        <form action="{{route('admin.coupon.store')}}" method="post">
+                            @csrf
+                            <div class="row gx--3">
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('coupon type')}}</label>
+                                        <select name="coupon_type" class="form-control" onchange="coupon_type_change(this.value)">
+                                            <option value="default">{{translate('default')}}</option>
+                                            <option value="first_order">{{translate('first order')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('coupon title')}}</label>
+                                        <input type="text" name="title" value="{{old('title')}}" class="form-control" placeholder="{{ translate('New coupon') }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-group">
+                                        <div class="d-flex justify-content-between">
+                                            <label class="input-label" for="exampleFormControlInput1">{{translate('coupon code')}}</label>
+                                            <a href="javascript:void(0)" class="float-right c1 fz-12" onclick="generateCode()">{{translate('generate_code')}}</a>
+                                        </div>
+                                        <input type="text" name="code" class="form-control" id="code"
+                                            placeholder="{{\Illuminate\Support\Str::random(8)}}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6" id="limit-for-user">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('limit')}} {{translate('for')}} {{translate('same')}} {{translate('user')}}</label>
+                                        <input type="number" name="limit" value="{{old('limit')}}" id="user-limit" min="1" class="form-control" placeholder="{{ translate('EX: 10') }}" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('discount')}} {{translate('type')}}</label>
+                                        <select name="discount_type" id="discount_type" class="form-control">
+                                            <option value="percent">{{translate('percent')}}</option>
+                                            <option value="amount">{{translate('amount')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('discount amount')}}</label>
+                                        <input type="number" step="any" min="1" max="10000" name="discount" value="{{old('discount')}}" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('minimum')}} {{translate('purchase')}}</label>
+                                        <input type="number" step="any" name="min_purchase" value="{{ old('min_purchase') ? old('min_purchase') : 0 }}" min="0" max="100000" class="form-control"
+                                            placeholder="{{ translate('100') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-sm-6" id="max_discount_div">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('maximum')}} {{translate('discount')}}</label>
+                                        <input type="number" step="any" min="0" value="{{ old('max_discount') ? old('max_discount') : 0 }}" max="1000000" name="max_discount" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('start')}} {{translate('date')}}</label>
+                                        <label class="input-date">
+                                            <input type="text" name="start_date" value="{{ old('start_date') }}" class="js-flatpickr form-control flatpickr-custom" placeholder="{{ \App\CentralLogics\translate('dd/mm/yy') }}" data-hs-flatpickr-options='{ "dateFormat": "Y/m/d", "minDate": "today" }'>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-6">
+                                    <div class="form-group">
+                                        <label class="input-label" for="exampleFormControlInput1">{{translate('expire')}} {{translate('date')}}</label>
+                                        <label class="input-date">
+                                            <input type="text" name="expire_date" value="{{ old('start_date') }}" class="js-flatpickr form-control flatpickr-custom" placeholder="{{ \App\CentralLogics\translate('dd/mm/yy') }}" data-hs-flatpickr-options='{ "dateFormat": "Y/m/d", "minDate": "today" }'>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4 col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('start')}} {{translate('date')}}</label>
-                                <input type="text" name="start_date" value="{{ old('start_date') }}" class="js-flatpickr form-control flatpickr-custom" placeholder="{{ \App\CentralLogics\translate('Select dates') }}" data-hs-flatpickr-options='{ "dateFormat": "Y/m/d", "minDate": "today" }'>
+                            <div class="btn--container justify-content-end">
+                                <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
                             </div>
-                        </div>
-                        <div class="col-md-4 col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('expire')}} {{translate('date')}}</label>
-                                <input type="text" name="expire_date" value="{{ old('start_date') }}" class="js-flatpickr form-control flatpickr-custom" placeholder="{{ \App\CentralLogics\translate('Select dates') }}" data-hs-flatpickr-options='{ "dateFormat": "Y/m/d", "minDate": "today" }'>
-                            </div>
-                        </div>
+                        </form>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-3 col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('min')}} {{translate('purchase')}}</label>
-                                <input type="number" step="any" name="min_purchase" value="{{ old('min_purchase') ? old('min_purchase') : 0 }}" min="0" max="100000" class="form-control"
-                                       placeholder="{{ translate('100') }}">
-                            </div>
-                        </div>
-                        <div class="col-md-3 col-6" id="max_discount_div">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('max')}} {{translate('discount')}}</label>
-                                <input type="number" step="any" min="0" value="{{ old('max_discount') ? old('max_discount') : 0 }}" max="1000000" name="max_discount" class="form-control">
-                            </div>
-                        </div>
-                        <div class="col-md-4 col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('discount')}}</label>
-                                <input type="number" step="any" min="1" max="10000" name="discount" value="{{old('discount')}}" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="col-md-2 col-6">
-                            <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1">{{translate('discount')}} {{translate('type')}}</label>
-                                <select name="discount_type" id="discount_type" class="form-control">
-                                    <option value="percent">{{translate('percent')}}</option>
-                                    <option value="amount">{{translate('amount')}}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">{{translate('submit')}}</button>
-                </form>
+                </div>
             </div>
 
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2 mt-2">
+            <div class="col-12 mt-2">
                 <div class="card">
-                    <div class="card-header flex-between">
-                        <div class="flex-start">
-                            <h5 class="card-header-title">{{translate('Coupon Table')}}</h5>
-                            <h5 class="card-header-title text-primary mx-1">({{ $coupons->total() }})</h5>
-                        </div>
-                        <div>
+                    <div class="card-header flex-between border-0">
+                        <div class="card--header">
+                            <h5 class="card-title">{{translate('Coupon Table')}} <span class="ml-2 badge badge-pill badge-soft-secondary">{{ $coupons->total() }}</span> </h5>
                             <form action="{{url()->current()}}" method="GET">
                                 <div class="input-group">
                                     <input id="datatableSearch_" type="search" name="search"
-                                           class="form-control"
-                                           placeholder="{{translate('Search')}}" aria-label="Search"
-                                           value="{{$search}}" required autocomplete="off">
+                                            class="form-control"
+                                            placeholder="{{translate('Search by title or coupon code')}}" aria-label="Search"
+                                            value="{{$search}}" required autocomplete="off">
                                     <div class="input-group-append">
-                                        <button type="submit" class="input-group-text"><i class="tio-search"></i>
+                                        <button type="submit" class="input-group-text">
+                                            {{translate('search')}}
                                         </button>
                                     </div>
                                 </div>
@@ -129,16 +138,12 @@
                             <thead class="thead-light">
                             <tr>
                                 <th>{{translate('#')}}</th>
-                                <th>{{translate('title')}}</th>
-                                <th>{{translate('code')}}</th>
-                                <th>{{translate('min')}} {{translate('purchase')}}</th>
-                                <th>{{translate('max')}} {{translate('discount')}}</th>
-                                <th>{{translate('discount')}}</th>
-                                <th>{{translate('discount')}} {{translate('type')}}</th>
-                                <th>{{translate('start')}} {{translate('date')}}</th>
-                                <th>{{translate('expire')}} {{translate('date')}}</th>
-                                <th>{{translate('status')}}</th>
-                                <th>{{translate('action')}}</th>
+                                <th>{{translate('coupon')}}</th>
+                                <th>{{translate('amount')}}</th>
+                                <th>{{translate('coupon type')}}</th>
+                                <th>{{translate('duration')}}</th>
+                                <th class="text-center">{{translate('status')}}</th>
+                                <th class="text-center">{{translate('action')}}</th>
                             </tr>
                             </thead>
 
@@ -147,48 +152,56 @@
                                 <tr>
                                     <td>{{$coupons->firstItem()+$key}}</td>
                                     <td>
-                                    <span class="d-block font-size-sm text-body">
-                                        {{$coupon['title']}}
-                                    </span>
+                                        <a  id="coupon_details"
+                                           href="#" data-toggle="modal" data-target="#couponDetails" data-url="{{ url('admin/coupon/show',['id'=>$coupon->id])}}">
+                                            <strong class="text--title">{{translate('Code : ')}} {{$coupon['code']}}</strong>
+                                        </a>
+                                        <a  id="coupon_details"
+                                           href="#" data-toggle="modal" data-target="#couponDetails" data-url="{{ url('admin/coupon/show',['id'=>$coupon->id])}}">
+                                            <span class="d-block font-size-sm text-body">{{$coupon['title']}}</span>
+                                        </a>
                                     </td>
-                                    <td>{{$coupon['code']}}</td>
-                                    <td>{{ Helpers::set_symbol($coupon['min_purchase']) }}</td>
-                                    <td>{{ Helpers::set_symbol($coupon['max_discount']) }}</td>
-                                    <td>{{$coupon['discount']}}</td>
-                                    <td>{{$coupon['discount_type']}}</td>
-                                    <td>{{date('d-m-Y', strtotime($coupon['start_date']))}}</td>
-                                    <td>{{date('d-m-Y', strtotime($coupon['expire_date']))}}</td>
                                     <td>
-                                        @if($coupon['status']==1)
-                                            <div style="padding: 10px;border: 1px solid;cursor: pointer"
-                                                 onclick="location.href='{{route('admin.coupon.status',[$coupon['id'],0])}}'">
-                                                <span class="legend-indicator bg-success"></span>{{translate('active')}}
-                                            </div>
-                                        @else
-                                            <div style="padding: 10px;border: 1px solid;cursor: pointer"
-                                                 onclick="location.href='{{route('admin.coupon.status',[$coupon['id'],1])}}'">
-                                                <span class="legend-indicator bg-danger"></span>{{translate('disabled')}}
-                                            </div>
-                                        @endif
+                                        <div class="max-51 text-right">
+                                            @if($coupon['discount_type'] == 'amount')
+                                                {{ Helpers::set_symbol($coupon['discount']) }}
+
+                                            @else
+                                                 {{$coupon['discount']}}%
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-capitalize">
+                                        <div>{{translate('discount in')}}</div>
+                                        <div>{{$coupon['discount_type']}}</div>
+                                    </td>
+                                    <td>
+                                        {{$coupon->start_date->format('d M, Y')}} - {{$coupon->expire_date->format('d M, Y')}}
+                                    </td>
+                                    <td>
+                                        <label class="toggle-switch my-0">
+                                            <input type="checkbox"
+                                                onclick="status_change_alert('{{ route('admin.coupon.status', [$coupon->id, $coupon->status ? 0 : 1]) }}', '{{ $coupon->status? translate('you_want_to_disable_this_coupon'): translate('you_want_to_active_this_coupon') }}', event)"
+                                                class="toggle-switch-input" id="stocksCheckbox{{ $coupon->id }}"
+                                                {{ $coupon->status ? 'checked' : '' }}>
+                                            <span class="toggle-switch-label mx-auto text">
+                                                <span class="toggle-switch-indicator"></span>
+                                            </span>
+                                        </label>
                                     </td>
                                     <td>
                                         <!-- Dropdown -->
-                                        <div class="dropdown">
-                                            <button class="btn btn-secondary dropdown-toggle" type="button"
-                                                    id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
-                                                <i class="tio-settings"></i>
-                                            </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                <a class="dropdown-item"
-                                                   href="{{route('admin.coupon.update',[$coupon['id']])}}">{{translate('edit')}}</a>
-                                                <a class="dropdown-item" href="javascript:"
-                                                   onclick="form_alert('coupon-{{$coupon['id']}}','{{translate('Want to delete this coupon ?')}}')">{{translate('delete')}}</a>
-                                                <form action="{{route('admin.coupon.delete',[$coupon['id']])}}"
-                                                      method="post" id="coupon-{{$coupon['id']}}">
-                                                    @csrf @method('delete')
-                                                </form>
-                                            </div>
+                                        <div class="btn--container justify-content-center">
+                                            <a class="action-btn btn--warning btn-outline-warning" id="coupon_details"
+                                               href="#" data-toggle="modal" data-target="#couponDetails" data-url="{{ url('admin/coupon/show',['id'=>$coupon->id])}}">
+                                                <i class="tio-invisible"></i></a>
+                                            <a class="action-btn" href="{{route('admin.coupon.update',[$coupon['id']])}}"><i class="tio-edit"></i></a>
+                                            <a class="action-btn btn--danger btn-outline-danger" href="javascript:"
+                                                onclick="form_alert('coupon-{{$coupon['id']}}','{{translate('Want to delete this coupon ?')}}')"><i class="tio-delete-outlined"></i></a>
+                                            <form action="{{route('admin.coupon.delete',[$coupon['id']])}}"
+                                                    method="post" id="coupon-{{$coupon['id']}}">
+                                                @csrf @method('delete')
+                                            </form>
                                         </div>
                                         <!-- End Dropdown -->
                                     </td>
@@ -196,12 +209,17 @@
                             @endforeach
                             </tbody>
                         </table>
-                        <hr>
                         <table>
                             <tfoot>
                             {!! $coupons->links() !!}
                             </tfoot>
                         </table>
+                        @if(count($coupons) == 0)
+                        <div class="text-center p-4">
+                            <img class="w-120px mb-3" src="{{asset('/public/assets/admin/svg/illustrations/sorry.svg')}}" alt="Image Description">
+                            <p class="mb-0">{{translate('No_data_to_show')}}</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -209,9 +227,81 @@
         </div>
     </div>
 
+
+<!-- Modal -->
+<div class="modal fade" id="couponDetails" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered coupon-details" role="document">
+    <div class="modal-content">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <i class="tio-clear"></i>
+        </button>
+        <div class="coupon__details">
+            <div class="coupon__details-left">
+                <div class="text-center">
+                    <h6 class="title" id="title"></h6>
+                    <h6 class="subtitle" >{{translate('Code : ')}}<span id="coupon_code"></span></h6>
+                    <div class="text-capitalize">
+                        <span>{{translate('discount in')}}</span>
+                         <strong id="discount_on"></strong>
+                    </div>
+                </div>
+                <div class="coupon-info">
+                    <div class="coupon-info-item">
+                        <span>{{translate('min purchase :')}}</span>
+                        <strong id="min_purchase"></strong>
+                        <span class="currency_symbol"></span>
+                    </div>
+                    <div class="coupon-info-item" id="max_discount_modal_div">
+                        <span>{{translate('max Discount : ')}}</span>
+                        <strong id="max_discount"></strong>
+                        <span class="currency_symbol"></span>
+                    </div>
+                    <div class="coupon-info-item">
+                        <span>{{translate('start date : ')}}</span>
+                        <span id="start_date"></span>
+                    </div>
+                    <div class="coupon-info-item">
+                        <span>{{translate('Expire date : ')}}</span>
+                        <span id="expire_date"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="coupon__details-right">
+                <div class="coupon">
+                    <div class="d-flex">
+                        <h4 id="discount"></h4><h4 id="discount_type_symbol"></h4>
+                    </div>
+
+                    <span>{{translate('off')}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</div>
 @endsection
 
 @push('script_2')
+    <script>
+        function status_change_alert(url, message, e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: message,
+                type: 'warning',
+                showCancelButton: true,
+                cancelButtonColor: 'default',
+                confirmButtonColor: '#107980',
+                cancelButtonText: 'No',
+                confirmButtonText: 'Yes',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.value) {
+                    location.href = url;
+                }
+            })
+        }
+    </script>
     <script>
         $("#discount_type").change(function(){
             if(this.value === 'amount') {
@@ -221,6 +311,7 @@
                 $("#max_discount_div").show();
             }
         });
+
     </script>
     <script>
         $(document).on('ready', function () {
@@ -239,6 +330,59 @@
                 $('#user-limit').prop('required',true);
                 $('#limit-for-user').show();
             }
+        }
+
+        $(document).on('click', '#coupon_details', function(e){
+            let url = $(this).data('url');
+            $.ajax({
+                url: url,
+                type: 'GET',
+            })
+                .done(function(data){
+                    console.log(data);
+                    var currency = data.currency;
+
+                    var start_date = new Date(data.coupon.start_date);
+                    var year = start_date.toLocaleString("default", { year: "numeric" });
+                    var month = start_date.toLocaleString("default", { month: "2-digit" });
+                    var day = start_date.toLocaleString("default", { day: "2-digit" });
+                    var startFormattedDate = day + "-" + month + "-" + year;
+
+                    var expire_date = new Date(data.coupon.expire_date);
+                    var year = expire_date.toLocaleString("default", { year: "numeric" });
+                    var month = expire_date.toLocaleString("default", { month: "2-digit" });
+                    var day = expire_date.toLocaleString("default", { day: "2-digit" });
+                    var expiredFormattedDate= day + "-" + month + "-" + year;
+
+                    $('#title').text(data.coupon.title);
+                    $('#coupon_code').text(data.coupon.code);
+                    $('#discount_on').text(data.coupon.discount_type);
+                    $('#min_purchase').html(data.coupon.min_purchase);
+
+                    $('#start_date').text(startFormattedDate);
+                    $('#expire_date').text(expiredFormattedDate);
+                    $('#discount').text(data.coupon.discount);
+                    $('.currency_symbol').text(currency);
+
+                    if(data.coupon.discount_type == 'amount'){
+                        $('#discount_type_symbol').html(currency);
+                        $('#max_discount').html('');
+                        $('#max_discount_modal_div').addClass('d-none');
+                    }
+                    else {
+                        $('#discount_type_symbol').html('%');
+                        $('#max_discount').html(data.coupon.max_discount);
+                        $('#max_discount_modal_div').removeClass('d-none');
+                    }
+                })
+                .fail(function(){
+
+                });
+        });
+
+        function  generateCode(){
+            let code = Math.random().toString(36).substring(2,12);
+            $('#code').val(code)
         }
     </script>
 @endpush

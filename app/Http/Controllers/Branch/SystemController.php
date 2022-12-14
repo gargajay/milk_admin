@@ -44,7 +44,8 @@ class SystemController extends Controller
         }
 
         $branch->name = $request->name;
-//        $branch->email = $request->email;
+        //$branch->email = $request->email;
+        $branch->phone = $request->phone;
         $branch->image = $image_name;
         $branch->save();
         Toastr::success(translate('Branch updated successfully!'));

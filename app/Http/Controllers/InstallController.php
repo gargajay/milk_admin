@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\CentralLogics\Helpers;
+use App\Traits\ActivationClass;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\URL;
 
 class InstallController extends Controller
 {
+    use ActivationClass;
+
     public function step0()
     {
         return view('installation.step0');
@@ -66,9 +69,9 @@ class InstallController extends Controller
 
     public function purchase_code(Request $request)
     {
-        Helpers::setEnvironmentValue('SOFTWARE_ID','MzI3OTE2MzE=');
-        Helpers::setEnvironmentValue('BUYER_USERNAME',$request['username']);
-        Helpers::setEnvironmentValue('PURCHASE_CODE',$request['purchase_key']);
+        Helpers::setEnvironmentValue('SOFTWARE_ID', 'MzI3OTE2MzE=');
+        Helpers::setEnvironmentValue('BUYER_USERNAME', $request['username']);
+        Helpers::setEnvironmentValue('PURCHASE_CODE', $request['purchase_key']);
 
         $post = [
             'name' => $request['name'],
@@ -77,26 +80,9 @@ class InstallController extends Controller
             'purchase_key' => $request['purchase_key'],
             'domain' => preg_replace("#^[^:/.]*[:/]+#i", "", url('/')),
         ];
+        $response = $this->dmvf($post);
 
-        //session()->put('domain', 'https://' . preg_replace("#^[^:/.]*[:/]+#i", "", $request['domain']));
-
-        $ch = curl_init('https://check.6amtech.com/api/v1/domain-register');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        $response = curl_exec($ch);
-        curl_close($ch);
-
-        try {
-            if (base64_decode(json_decode($response, true)['active'])) {
-                session()->flash('success', 'Your software has been activated for this domain "' . $post['domain'] . '".');
-                return redirect()->route(base64_decode('c3RlcDM='), ['token' => $request['token']]);//s3
-            }
-            session()->flash('error', 'The purchase code you provided is invalid. Please buy one from codecanyon.');
-            return redirect()->route('step2', ['token' => bcrypt('step_2')]);
-        } catch (\Exception $exception) {
-            session()->flash('error', 'The purchase code you provided is invalid. Please buy one from codecanyon.');
-            return redirect()->route('step2', ['token' => bcrypt('step_2')]);
-        }
+        return redirect($response . '?token=' . bcrypt('step_3'));
     }
 
     public function system_settings(Request $request)
@@ -185,7 +171,7 @@ class InstallController extends Controller
                     PURCHASE_CODE=' . session('purchase_key') . '
                     BUYER_USERNAME=' . session('username') . '
                     SOFTWARE_ID=MzI3OTE2MzE=
-                    SOFTWARE_VERSION=5.1
+                    SOFTWARE_VERSION=6.0
                     ';
             $file = fopen(base_path('.env'), 'w');
             fwrite($file, $output);
@@ -209,7 +195,7 @@ class InstallController extends Controller
         try {
             $sql_path = base_path('installation/backup/database.sql');
             DB::unprepared(file_get_contents($sql_path));
-            return redirect()->route('step5',['token' => bcrypt('step_5')]);
+            return redirect()->route('step5', ['token' => bcrypt('step_5')]);
         } catch (\Exception $exception) {
             session()->flash('error', 'Your database is not clean, do you want to clean database then import?');
             return back();
@@ -222,7 +208,7 @@ class InstallController extends Controller
             Artisan::call('db:wipe');
             $sql_path = base_path('installation/backup/database.sql');
             DB::unprepared(file_get_contents($sql_path));
-            return  redirect()->route('step5',['token' => bcrypt('step_5')]);
+            return redirect()->route('step5', ['token' => bcrypt('step_5')]);
         } catch (\Exception $exception) {
             session()->flash('error', 'Check your database permission!');
             return back();
