@@ -158,6 +158,8 @@ class CustomerAuthController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
         $temporary_token = Str::random(40);
+        $self_ref_code = Str::random(20);
+
         $user = User::create([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
@@ -165,6 +167,8 @@ class CustomerAuthController extends Controller
             'phone' => $request->phone,
             'password' => bcrypt($request->password),
             'temporary_token' => $temporary_token,
+            'self_ref_code' => $self_ref_code
+
         ]);
 
         $phone_verification = Helpers::get_business_settings('phone_verification');

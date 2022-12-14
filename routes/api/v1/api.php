@@ -143,6 +143,16 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
             Route::put('update-fcm-token', 'DeliverymanController@update_fcm_token');
         });
 
+        // wallet
+
+        Route::group(['prefix' => 'mywallet'], function () {
+            Route::get('list', 'CustomerController@address_list');
+            Route::post('adding', 'CustomerController@addMoney');
+            Route::post('using', 'CustomerController@useMoney');
+            Route::put('update/{id}', 'CustomerController@update_address');
+            Route::delete('delete', 'CustomerController@delete_address');
+        });
+
 
         //delivery-man message
         Route::group(['prefix' => 'message'], function () {
