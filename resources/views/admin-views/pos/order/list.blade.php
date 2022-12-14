@@ -10,160 +10,245 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center mb-3">
-                <div class="col-sm">
-                <h1 class="page-header-title text-capitalize">{{translate('pos')}} {{translate('orders')}} <span
-                        class="badge badge-soft-dark ml-2">{{ $orders->total() }}</span></h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/empty-cart.png')}}" class="w--20" alt="">
+                </span>
+                <span>
+                    {{translate('pos')}} {{translate('orders')}} <span class="badge badge-pill badge-soft-secondary ml-2">{{ $orders->total() }}</span>
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
 
         <!-- Card -->
         <div class="card">
-            <!-- Header -->
-            <div class="card-header">
-                <div class="row justify-content-between align-items-center flex-grow-1">
-                    <div class="col-lg-6 mb-3 mb-lg-0">
+
+            <div class="card-header shadow flex-wrap p-20px border-0">
+                <h5 class="form-bold w-100 mb-3">Select Date Range</h5>
+                <form class="w-100">
+                    <div class="row g-3 g-sm-4 g-md-3 g-lg-4">
+                        <div class="col-sm-6 col-md-4 col-lg-2">
+                            <select class="custom-select custom-select-sm text-capitalize min-h-45px" name="branch_id">
+                                <option disabled>--- {{translate('select')}} {{translate('branch')}} ---</option>
+                                <option value="all" {{ $branch_id == 'all' ? 'selected': ''}}>{{translate('all')}} {{translate('branch')}}</option>
+                                @foreach($branches as $branch)
+                                    <option value="{{$branch['id']}}" {{ $branch['id'] == $branch_id ? 'selected' : ''}}>{{$branch['name']}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-3">
+                            <div class="input-date-group">
+                                <label class="input-label" for="start_date">Start Date</label>
+                                <label class="input-date">
+                                    <input type="text" id="start_date" name="start_date" value="{{$start_date}}" class="js-flatpickr form-control flatpickr-custom min-h-45px" placeholder="yy-mm-dd" data-hs-flatpickr-options='{ "dateFormat": "Y-m-d"}'>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-3">
+                            <div class="input-date-group">
+                                <label class="input-label" for="end_date">End Date</label>
+                                <label class="input-date">
+                                    <input type="text" id="end_date" name="end_date" value="{{$end_date}}" class="js-flatpickr form-control flatpickr-custom min-h-45px" placeholder="yy-mm-dd" data-hs-flatpickr-options='{ "dateFormat": "Y-m-d"}'>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-12 col-lg-4 __btn-row">
+                            <a href="{{ route('admin.pos.orders') }}" id="" class="btn w-100 btn--reset min-h-45px">{{translate('clear')}}</a>
+                            <button type="submit" id="show_filter_data" class="btn w-100 btn--primary min-h-45px">{{translate('show data')}}</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+
+            <div class="card-body p-20px">
+                <!-- Header -->
+                <div class="order-top">
+                    <div class="card--header">
                         <form action="{{url()->current()}}" method="GET">
                             <div class="input-group">
                                 <input id="datatableSearch_" type="search" name="search"
-                                       class="form-control"
-                                       placeholder="{{translate('Search')}}" aria-label="Search"
-                                       value="{{$search}}" required autocomplete="off">
+                                        class="form-control"
+                                        placeholder="{{translate('Search by ID, order or payment status')}}" aria-label="Search"
+                                        value="{{$search}}" required autocomplete="off">
                                 <div class="input-group-append">
-                                    <button type="submit" class="input-group-text"><i class="tio-search"></i>
+                                    <button type="submit" class="input-group-text">
+                                        {{translate('Search')}}
                                     </button>
                                 </div>
                             </div>
                         </form>
-                    </div>
 
-                    <div class="col-lg-6"></div>
-                </div>
-                <!-- End Row -->
-            </div>
-            <!-- End Header -->
 
-            <!-- Table -->
-            <div class="table-responsive datatable-custom">
-                <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table"
-                       style="width: 100%">
-                    <thead class="thead-light">
-                    <tr>
-                        <th class="">
-                            {{translate('#')}}
-                        </th>
-                        <th class="table-column-pl-0">{{translate('order')}}</th>
-                        <th>{{translate('date')}}</th>
-                        <th>{{translate('customer')}}</th>
-                        <th>{{translate('payment')}} {{translate('status')}}</th>
-                        <th>{{translate('total')}}</th>
-                        <th>{{translate('order')}} {{translate('status')}}</th>
-                        <th>{{translate('order')}} {{translate('type')}}</th>
-                        <th>{{translate('actions')}}</th>
-                    </tr>
-                    </thead>
+                        <!-- Unfold -->
+                        <div class="hs-unfold mr-2">
+                            <a class="js-hs-unfold-invoker btn btn-sm btn-outline-primary-2 dropdown-toggle min-height-40" href="javascript:;"
+                                data-hs-unfold-options='{
+                                        "target": "#usersExportDropdown",
+                                        "type": "css-animation"
+                                    }'>
+                                <i class="tio-download-to mr-1"></i> {{ translate('export') }}
+                            </a>
 
-                    <tbody id="set-rows">
-                    @foreach($orders as $key=>$order)
-                        <tr class="status-{{$order['order_status']}} class-all">
-                            <td class="">
-                                {{$key+$orders->firstItem()}}
-                            </td>
-                            <td class="table-column-pl-0">
-                                <a href="{{route('admin.pos.order-details',['id'=>$order['id']])}}">{{$order['id']}}</a>
-                            </td>
-                            <td>{{date('d M Y',strtotime($order['created_at']))}}</td>
-                            <td>
-                                @if($order->customer)
-                                <label
-                                        class="badge badge-dark">{{$order->customer['f_name'].' '.$order->customer['l_name']}}</label>
-                                @else
-                                    <label
-                                        class="badge badge-success">{{translate('walk_in_customer')}}</label>
-                                @endif
-                            </td>
-                            <td>
-                                @if($order->payment_status=='paid')
-                                    <span class="badge badge-soft-success">
-                                      <span class="legend-indicator bg-success"></span>{{translate('paid')}}
-                                    </span>
-                                @else
-                                    <span class="badge badge-soft-danger">
-                                      <span class="legend-indicator bg-danger"></span>{{translate('unpaid')}}
-                                    </span>
-                                @endif
-                            </td>
-                            <td>{{ Helpers::set_symbol($order['order_amount']) }}</td>
-                            <td class="text-capitalize">
-                                @if($order['order_status']=='pending')
-                                    <span class="badge badge-soft-info ml-2 ml-sm-3">
-                                        <span class="legend-indicator bg-info"></span>{{translate('pending')}}
-                                    </span>
-                                @elseif($order['order_status']=='confirmed')
-                                    <span class="badge badge-soft-info ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-info"></span>{{translate('confirmed')}}
-                                    </span>
-                                @elseif($order['order_status']=='processing')
-                                    <span class="badge badge-soft-warning ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-warning"></span>{{translate('processing')}}
-                                    </span>
-                                @elseif($order['order_status']=='picked_up')
-                                    <span class="badge badge-soft-warning ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-warning"></span>{{translate('out_for_delivery')}}
-                                    </span>
-                                @elseif($order['order_status']=='delivered')
-                                    <span class="badge badge-soft-success ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-success"></span>{{translate('delivered')}}
-                                    </span>
-                                @else
-                                    <span class="badge badge-soft-danger ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-danger"></span>{{str_replace('_',' ',$order['order_status'])}}
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="text-capitalize">
-                                @if($order['order_type']=='take_away')
-                                    <span class="badge badge-soft-info ml-2 ml-sm-3">
-                                        <span class="legend-indicator bg-info"></span>{{translate('take_away')}}
-                                    </span>
-                                @else
-                                    <span class="badge badge-soft-success ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-success"></span>{{translate('delivery')}}
-                                    </span>
-                                @endif
-                            </td>
-                            <td>
-                                <a class="btn btn-sm btn-white"
-                                           href="{{route('admin.pos.order-details',['id'=>$order['id']])}}"><i
-                                                class="tio-visible"></i> {{translate('view')}}</a>
-                                <button class="btn btn-sm btn-white" target="_blank" type="button"
-                                        onclick="print_invoice('{{$order->id}}')"><i
-                                        class="tio-download"></i> {{translate('invoice')}}</button>
-                            </td>
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <!-- End Table -->
-
-            <!-- Footer -->
-            <div class="card-footer">
-                <!-- Pagination -->
-                <div class="row justify-content-center justify-content-sm-between align-items-sm-center">
-                    <div class="col-sm-auto">
-                        <div class="d-flex justify-content-center justify-content-sm-end">
-                            <!-- Pagination -->
-                            {!! $orders->links() !!}
-                            {{--<nav id="datatablePagination" aria-label="Activity pagination"></nav>--}}
+                            <div id="usersExportDropdown"
+                                class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-sm-right">
+                                <span class="dropdown-header">{{ translate('download') }}
+                                    {{ translate('options') }}</span>
+                                <a id="export-excel" class="dropdown-item" href="{{route('admin.pos.orders.export', ['branch_id'=>Request::get('branch_id'), 'start_date'=>Request::get('start_date'), 'end_date'=>Request::get('end_date'), 'search'=>Request::get('search')])}}">
+                                    <img class="avatar avatar-xss avatar-4by3 mr-2"
+                                        src="{{ asset('public/assets/admin') }}/svg/components/excel.svg"
+                                        alt="Image Description">
+                                    {{ translate('excel') }}
+                                </a>
+                            </div>
                         </div>
+                        <!-- End Unfold -->
                     </div>
                 </div>
-                <!-- End Pagination -->
+                <!-- Table -->
+                <div class="table-responsive datatable-custom">
+                    <table class="table table-hover table-borderless table-thead-bordered table-nowrap table-align-middle card-table">
+                        <thead class="thead-light">
+                        <tr>
+                            <th class="">
+                                {{translate('#')}}
+                            </th>
+                            <th>{{translate('order id')}}</th>
+                            <th>{{translate('order date')}}</th>
+                            <th>{{translate('customer info')}}</th>
+                            <th>{{translate('Branch')}}</th>
+                            <th>{{translate('total amount')}}</th>
+                            <th class="text-center">{{translate('order')}} {{translate('status')}}</th>
+                            <th class="text-center">{{translate('order')}} {{translate('type')}}</th>
+                            <th class="text-center">{{translate('actions')}}</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="set-rows">
+                        @foreach($orders as $key=>$order)
+                            <tr class="status-{{$order['order_status']}} class-all">
+                                <td class="">
+                                    {{$key+$orders->firstItem()}}
+                                </td>
+                                <td>
+                                    <a href="{{route('admin.pos.order-details',['id'=>$order['id']])}}">{{$order['id']}}</a>
+                                </td>
+                                <td>{{date('d M Y',strtotime($order['created_at']))}}</td>
+
+                                <td>
+                                    @if(isset($order->customer))
+                                        <div>
+                                            <a class="text-body text-capitalize font-medium"
+                                               href="{{route('admin.customer.view',[$order['user_id']])}}">{{$order->customer['f_name'].' '.$order->customer['l_name']}}</a>
+                                        </div>
+                                        <div class="text-sm">
+                                            <a href="Tel:{{$order->customer['phone']}}">{{$order->customer['phone']}}</a>
+                                        </div>
+                                    @elseif($order->user_id != null && !isset($order->customer))
+                                        <label
+                                            class="text-danger">{{translate('Customer_not_available')}}
+                                        </label>
+                                    @else
+                                        <label
+                                            class="text-success">{{translate('Walking Customer')}}
+                                        </label>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{$order->branch?$order->branch->name: translate('unavailable') }}
+                                </td>
+                                <td>
+                                    <div class="mw-85">
+                                        <div>
+                                            {{ Helpers::set_symbol($order['order_amount']) }}
+                                        </div>
+                                        @if($order->payment_status=='paid')
+                                            <span class="text-success">
+                                                {{translate('paid')}}
+                                            </span>
+                                        @else
+                                            <span class="text-danger">
+                                                {{translate('unpaid')}}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="text-capitalize text-center">
+                                    @if($order['order_status']=='pending')
+                                        <span class="badge badge-soft-info">
+                                            {{translate('pending')}}
+                                        </span>
+                                    @elseif($order['order_status']=='confirmed')
+                                        <span class="badge badge-soft-info">
+                                        {{translate('confirmed')}}
+                                        </span>
+                                    @elseif($order['order_status']=='processing')
+                                        <span class="badge badge-soft-warning">
+                                        {{translate('packaging')}}
+                                        </span>
+                                    @elseif($order['order_status']=='picked_up')
+                                        <span class="badge badge-soft-warning">
+                                        {{translate('out_for_delivery')}}
+                                        </span>
+                                    @elseif($order['order_status']=='delivered')
+                                        <span class="badge badge-soft-success">
+                                        {{translate('delivered')}}
+                                        </span>
+                                    @else
+                                        <span class="badge badge-soft-danger">
+                                        {{str_replace('_',' ',$order['order_status'])}}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-capitalize text-center">
+                                    @if($order['order_type']=='take_away')
+                                        <span class="badge badge-soft-info">
+                                            {{translate('take_away')}}
+                                        </span>
+                                    @elseif($order['order_type']=='pos')
+                                        <span class="badge badge-soft-info">
+                                        {{translate('POS')}}
+                                    </span>
+                                    @else
+                                        <span class="badge badge-soft-success">
+                                        {{translate('delivery')}}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="btn--container justify-content-center">
+                                        <a class="action-btn btn--primary btn-outline-primary"
+                                                href="{{route('admin.pos.order-details',['id'=>$order['id']])}}"><i
+                                                        class="tio-visible-outlined"></i></a>
+                                       <button class="action-btn btn-outline-primary-2" target="_blank" type="button"
+                                                onclick="print_invoice('{{$order->id}}')"><i
+                                                class="tio-print"></i></button>
+
+<!--                                        <a class="action-btn btn-outline-primary-2" target="_blank" href="{{route('admin.orders.generate-invoice',[$order['id']])}}">
+                                            <i class="tio-print"></i>
+                                        </a>-->
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <!-- End Table -->
+                @if(count($orders) == 0)
+                <div class="text-center p-4">
+                    <img class="w-120px mb-3" src="{{asset('/public/assets/admin/svg/illustrations/sorry.svg')}}" alt="Image Description">
+                    <p class="mb-0">{{translate('No_data_to_show')}}</p>
+                </div>
+                @endif
+                <div class="card-footer px-0">
+                    {!! $orders->links() !!}
+                </div>
+                <!-- End Header -->
             </div>
-            <!-- End Footer -->
+
+
         </div>
         <!-- End Card -->
     </div>
@@ -177,16 +262,14 @@
                     <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body row" style="font-family: emoji;">
-                    <div class="col-md-12">
-                        <center>
-                            <input type="button" class="btn btn-primary non-printable" onclick="printDiv('printableArea')"
-                                value="{{translate('Proceed, If thermal printer is ready.')}}"/>
-                            <a href="{{url()->previous()}}" class="btn btn-danger non-printable">Back</a>
-                        </center>
-                        <hr class="non-printable">
-                    </div>
-                    <div class="row" id="printableArea" style="margin: auto;">
+                <div class="modal-body">
+                    <center>
+                        <input type="button" class="btn btn-primary non-printable" onclick="printDiv('printableArea')"
+                            value="{{translate('Proceed, If thermal printer is ready.')}}"/>
+                        <a href="{{url()->previous()}}" class="btn btn-danger non-printable">Back</a>
+                    </center>
+                    <hr class="non-printable">
+                    <div class="row m-auto" id="printableArea">
 
                     </div>
 
@@ -233,4 +316,18 @@
             location.reload();
         }
     </script>
+
+
+    <script>
+        $(document).on('ready', function () {
+            // INITIALIZATION OF FLATPICKR
+            // =======================================================
+            $('.js-flatpickr').each(function () {
+                $.HSCore.components.HSFlatpickr.init($(this));
+            });
+        });
+
+    </script>
+
+
 @endpush

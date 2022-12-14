@@ -16,7 +16,7 @@ class DatabaseSettingsController extends Controller
     public function db_index()
     {
         $tables = DB::connection()->getDoctrineSchemaManager()->listTableNames();
-        $filter_tables = array('admins', 'branches', 'business_settings', 'email_verifications', 'failed_jobs', 'migrations', 'oauth_access_tokens', 'oauth_auth_codes', 'oauth_clients', 'oauth_personal_access_clients', 'oauth_refresh_tokens', 'password_resets', 'phone_verifications', 'soft_credentials', 'users', 'currencies', 'colors');
+        $filter_tables = array('admins', 'admin_roles', 'branches', 'business_settings', 'email_verifications', 'failed_jobs', 'migrations', 'oauth_access_tokens', 'oauth_auth_codes', 'oauth_clients', 'oauth_personal_access_clients', 'oauth_refresh_tokens', 'password_resets', 'phone_verifications', 'soft_credentials', 'users', 'currencies', 'colors');
         $tables = array_values(array_diff($tables, $filter_tables));
 
         $rows = [];

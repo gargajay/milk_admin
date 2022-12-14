@@ -65,6 +65,7 @@ class ConversationController extends Controller
                 'description' => $request->user()->id,
                 'order_id' => '',
                 'image' => asset('storage/app/public/restaurant') . '/' . BusinessSetting::where(['key' => 'logo'])->first()->value,
+                'type' => 'order'
             ];
             try {
                 Helpers::send_push_notif_to_device($admin->fcm_token, $data);
@@ -194,6 +195,7 @@ class ConversationController extends Controller
             'description' => $request->reply,
             'order_id' => $request->order_id ?? null,
             'image' => '',
+            'type' => 'message'
         ];
         try {
             Helpers::send_push_notif_to_device($receiver_fcm_token, $data);

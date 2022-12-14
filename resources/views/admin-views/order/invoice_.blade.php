@@ -2,40 +2,10 @@
 
 @section('title','')
 
-@push('css_or_js')
-    <style>
-        @media print {
-            .non-printable {
-                display: none;
-            }
-
-            .printable {
-                display: block;
-                font-family: emoji !important;
-            }
-
-            body {
-                -webkit-print-color-adjust: exact !important; /* Chrome, Safari */
-                color-adjust: exact !important;
-                font-family: emoji !important;
-            }
-        }
-    </style>
-
-    <style type="text/css" media="print">
-        @page {
-            size: auto;   /* auto is the initial value */
-            margin: 2px;  /* this affects the margin in the printer settings */
-            font-family: emoji !important;
-        }
-
-    </style>
-@endpush
-
 @section('content')
 
     <div class="content container-fluid">
-        <div class="row" id="printableArea" style="font-family: emoji;">
+        <div class="row" id="printableArea">
             <div class="col-md-12">
                 <center>
                     <input type="button" class="btn btn-primary non-printable" onclick="printDiv('printableArea')"

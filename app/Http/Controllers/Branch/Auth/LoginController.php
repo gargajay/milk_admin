@@ -78,7 +78,7 @@ class LoginController extends Controller
         }
         //end recaptcha validation
 
-        if (auth('branch')->attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+        if (auth('branch')->attempt(['email' => $request->email, 'password' => $request->password, 'status' => 1], $request->remember)) {
             return redirect()->route('branch.dashboard');
         }
 

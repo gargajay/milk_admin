@@ -6,12 +6,17 @@ use App\CentralLogics\Helpers;
 use App\Model\Admin;
 use App\Model\AdminRole;
 use App\Model\BusinessSetting;
+use App\Traits\ActivationClass;
+use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Mockery\Exception;
 
 class UpdateController extends Controller
 {
+    use ActivationClass;
+
     public function update_software_index()
     {
         return view('update.update-software');
@@ -19,24 +24,22 @@ class UpdateController extends Controller
 
     public function update_software(Request $request)
     {
-        Helpers::setEnvironmentValue('SOFTWARE_ID','MzI3OTE2MzE=');
-        Helpers::setEnvironmentValue('BUYER_USERNAME',$request['username']);
-        Helpers::setEnvironmentValue('PURCHASE_CODE',$request['purchase_key']);
-        Helpers::setEnvironmentValue('SOFTWARE_VERSION','5.1');
-        Helpers::setEnvironmentValue('APP_NAME','grofresh');
-        Helpers::setEnvironmentValue('APP_MODE','live');
+        Helpers::setEnvironmentValue('SOFTWARE_ID', 'MzI3OTE2MzE=');
+        Helpers::setEnvironmentValue('BUYER_USERNAME', $request['username']);
+        Helpers::setEnvironmentValue('PURCHASE_CODE', $request['purchase_key']);
+        Helpers::setEnvironmentValue('SOFTWARE_VERSION', '6.0');
+        Helpers::setEnvironmentValue('APP_NAME', 'grofresh');
+        Helpers::setEnvironmentValue('APP_MODE', 'live');
 
-        $data = Helpers::requestSender($request);
-        if (!$data['active']) {
-            session()->flash('error', 'Invalid credentials');
-            return back();
+        if (!$this->actch()) {
+            return redirect(base64_decode('aHR0cHM6Ly82YW10ZWNoLmNvbS9zb2Z0d2FyZS1hY3RpdmF0aW9u'));
         }
 
         Artisan::call('migrate', ['--force' => true]);
         $previousRouteServiceProvier = base_path('app/Providers/RouteServiceProvider.php');
         $newRouteServiceProvier = base_path('app/Providers/RouteServiceProvider.txt');
         copy($newRouteServiceProvier, $previousRouteServiceProvier);
-        
+
         Artisan::call('optimize:clear');
 
         if (BusinessSetting::where(['key' => 'terms_and_conditions'])->first() == false) {
@@ -63,9 +66,9 @@ class UpdateController extends Controller
         $lang_flag = false;
 
         foreach ($languages as $key => $language) {
-            if(gettype($language) != 'array') {
+            if (gettype($language) != 'array') {
                 $lang = [
-                    'id' => $key+1,
+                    'id' => $key + 1,
                     'name' => $language,
                     'direction' => 'ltr',
                     'code' => $language,
@@ -83,14 +86,13 @@ class UpdateController extends Controller
             ]);
         }
         //lang end
-        
+
         if (BusinessSetting::where(['key' => 'time_zone'])->first() == false) {
             DB::table('business_settings')->updateOrInsert(['key' => 'time_zone'], [
                 'value' => 'Pacific/Midway'
             ]);
         }
-        if(BusinessSetting::where(['key' => 'decimal_point_settings'])->first() == false)
-        {
+        if (BusinessSetting::where(['key' => 'decimal_point_settings'])->first() == false) {
             DB::table('business_settings')->updateOrInsert(['key' => 'decimal_point_settings'], [
                 'value' => 2
             ]);
@@ -127,10 +129,10 @@ class UpdateController extends Controller
         }
         if (BusinessSetting::where(['key' => 'delivery_management'])->first() == false) {
             DB::table('business_settings')->updateOrInsert(['key' => 'delivery_management'], [
-            'value' => json_encode([
-                'status'  => 0,
-                'min_shipping_charge' => 0,
-                'shipping_per_km' => 0,
+                'value' => json_encode([
+                    'status' => 0,
+                    'min_shipping_charge' => 0,
+                    'shipping_per_km' => 0,
                 ]),
             ]);
         }
@@ -176,6 +178,30 @@ class UpdateController extends Controller
             ]);
         }
 
+        if (BusinessSetting::where(['key' => 'minimum_stock_limit'])->first() == false) {
+            DB::table('business_settings')->updateOrInsert(['key' => 'minimum_stock_limit'], [
+                'value' => 1
+            ]);
+        }
+
+        if (BusinessSetting::where(['key' => 'faq'])->first() == false) {
+            DB::table('business_settings')->updateOrInsert(['key' => 'faq'], [
+                'value' => null
+            ]);
+        }
+
+        if (BusinessSetting::where(['key' => 'google_social_login'])->first() == false) {
+            DB::table('business_settings')->updateOrInsert(['key' => 'google_social_login'], [
+                'value' => 1
+            ]);
+        }
+
+        if (BusinessSetting::where(['key' => 'facebook_social_login'])->first() == false) {
+            DB::table('business_settings')->updateOrInsert(['key' => 'facebook_social_login'], [
+                'value' => 1
+            ]);
+        }
+
         //for role management
         $admin_role = AdminRole::get()->first();
         if (!$admin_role) {
@@ -190,12 +216,12 @@ class UpdateController extends Controller
         }
 
         $admin = Admin::get()->first();
-        if($admin) {
+        if ($admin) {
             $admin->admin_role_id = 1;
             $admin->save();
         }
 
-        
+
         $mail_config = \App\CentralLogics\Helpers::get_business_settings('mail_config');
         BusinessSetting::where(['key' => 'mail_config'])->update([
             'value' => json_encode([

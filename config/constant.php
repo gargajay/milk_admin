@@ -12,9 +12,9 @@ const MANAGEMENT_SECTION = [
     'pos_management' => 'pos_management',
     'order_management' => 'order_management',
     'product_management' => 'product_management',
-    'business_management' => 'business_management',
-    'employee_management' => 'employee_management',
-    'deliveryman_management' => 'deliveryman_management',
-    'customer_management' => 'customer_management',
+    'promotion_management' => 'promotion_management',
+    'support_management' => 'support_management',
     'report_management' => 'report_management',
+    'user_management' => 'user_management',
+    'system_management' => 'system_management',
 ];

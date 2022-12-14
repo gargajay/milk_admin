@@ -6,6 +6,7 @@ use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
 use App\Model\Product;
 use App\Model\Review;
+use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 
 class ReviewsController extends Controller
@@ -18,6 +19,7 @@ class ReviewsController extends Controller
             $key = explode(' ', $request['search']);
             $products=Product::where(function ($q) use ($key) {
                     foreach ($key as $value) {
+                        $q->orWhere('id', 'like', "%{$value}%");
                         $q->orWhere('name', 'like', "%{$value}%");
                     }
                 })->pluck('id')->toArray();
@@ -41,5 +43,14 @@ class ReviewsController extends Controller
         return response()->json([
             'view'=>view('admin-views.reviews.partials._table',compact('reviews'))->render()
         ]);
+    }
+
+    public function status(Request $request)
+    {
+        $reviews = Review::find($request->id);
+        $reviews->is_active = $request->status;
+        $reviews->save();
+        Toastr::success(translate('Review status updated!'));
+        return back();
     }
 }

@@ -10,15 +10,14 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center mb-3">
-                <div class="col-sm flex-between">
-                    <h1 class="page-header-title">{{translate('Subscribed Customers')}}
-                        <span class="badge badge-soft-dark ml-2">({{ $newsletters->total() }})</span>
-                    </h1>
-                    <h1 style="font-size: 1.5em;"><i class="tio-email-outlined"></i></h1>
-                </div>
-            </div>
-            <!-- End Row -->
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/employee.png')}}" class="w--20" alt="">
+                </span>
+                <span>
+                    {{translate('Subscribed Customers')}} <span class="badge badge-soft-primary ml-2 badge-pill">{{ $newsletters->total() }}</span>
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
 
@@ -26,15 +25,16 @@
         <div class="card">
             <!-- Header -->
             <div class="card-header flex-end">
-                <div class="">
+                <div class="card--header">
                     <form action="{{url()->current()}}" method="GET">
                         <div class="input-group">
                             <input id="datatableSearch_" type="search" name="search"
                                    class="form-control"
-                                   placeholder="{{translate('Search')}}" aria-label="Search"
+                                   placeholder="{{translate('Ex : Search Emails Address')}}" aria-label="Search"
                                    value="{{$search}}" required autocomplete="off">
                             <div class="input-group-append">
-                                <button type="submit" class="input-group-text"><i class="tio-search"></i>
+                                <button type="submit" class="input-group-text">
+                                    {{__('Search')}}
                                 </button>
                             </div>
                         </div>
@@ -82,6 +82,12 @@
                     </div>
                 </div>
             </div>
+            @if(count($newsletters) == 0)
+                <div class="text-center p-4">
+                    <img class="w-120px mb-3" src="{{asset('/public/assets/admin/svg/illustrations/sorry.svg')}}" alt="Image Description">
+                    <p class="mb-0">{{translate('No_data_to_show')}}</p>
+                </div>
+            @endif
             <!-- End Footer -->
         </div>
         <!-- End Card -->

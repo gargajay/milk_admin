@@ -19,7 +19,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name','f_name', 'l_name', 'phone', 'email', 'password','self_ref_code','reference_code'
+        'name','f_name', 'l_name', 'phone', 'email', 'password',
     ];
 
     /**
@@ -51,5 +51,15 @@ class User extends Authenticatable
 
     public function favorite_products(){
         return $this->hasMany(FavoriteProduct::class,'user_id');
+    }
+
+    static function total_order_amount($customer_id)
+    {
+        $total_amount = 0;
+        $customer = User::where(['id' => $customer_id])->first();
+        foreach ($customer->orders as $order){
+            $total_amount += $order->order_amount;
+        }
+        return $total_amount;
     }
 }

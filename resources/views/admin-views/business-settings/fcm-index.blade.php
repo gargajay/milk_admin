@@ -10,11 +10,7 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title">{{translate('firebase')}} {{translate('push')}} {{translate('notification')}} {{translate('setup')}}</h1>
-                </div>
-            </div>
+            @include('admin-views.business-settings.partial.third-party-api-navmenu')
         </div>
         <!-- End Page Header -->
         <div class="row gx-2 gx-lg-3">
@@ -42,8 +38,10 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr>
-                            <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}" class="btn btn-primary">{{translate('submit')}}</button>
+                            <div class="btn--container justify-content-end">
+                                <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                                <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}" class="btn btn--primary">{{translate('save')}}</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -332,8 +330,10 @@
                                 </div>
 
                             </div>
-                            <hr>
-                            <button type="submit" class="btn btn-primary">{{translate('submit')}}</button>
+                            <div class="btn--container justify-content-end">
+                                <button type="reset" class="btn btn--reset">{{translate('clear')}}</button>
+                                <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
+                            </div>
                         </form>
                     </div>
                 </div>

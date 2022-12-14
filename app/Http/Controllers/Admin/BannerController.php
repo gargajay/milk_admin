@@ -13,17 +13,50 @@ use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
-    function index()
+    function index(Request $request)
     {
+        $query_param = [];
+        $search = $request['search'];
+        if($request->has('search'))
+        {
+            $key = explode(' ', $request['search']);
+            $banners = Banner::where(function ($q) use ($key) {
+                foreach ($key as $value) {
+                    $q->orWhere('title', 'like', "%{$value}%");
+                    $q->orWhere('id', 'like', "%{$value}%");
+                }
+            })->orderBy('id', 'desc');
+            $query_param = ['search' => $request['search']];
+        }else{
+            $banners = Banner::orderBy('id', 'desc');
+        }
+        $banners = $banners->paginate(Helpers::getPagination())->appends($query_param);
+
+
         $products = Product::orderBy('name')->get();
         $categories = Category::where(['parent_id'=>0])->orderBy('name')->get();
-        return view('admin-views.banner.index', compact('products', 'categories'));
+        return view('admin-views.banner.index', compact('products', 'categories', 'banners','search'));
     }
 
-    function list()
+    function list(Request $request)
     {
-        $banners=Banner::latest()->paginate(Helpers::getPagination());
-        return view('admin-views.banner.list',compact('banners'));
+        $query_param = [];
+        $search = $request['search'];
+        if($request->has('search'))
+        {
+            $key = explode(' ', $request['search']);
+            $banners = Banner::where(function ($q) use ($key) {
+                foreach ($key as $value) {
+                    $q->orWhere('title', 'like', "%{$value}%");
+                    $q->orWhere('id', 'like', "%{$value}%");
+                }
+            })->orderBy('id', 'desc');
+            $query_param = ['search' => $request['search']];
+        }else{
+            $banners = Banner::orderBy('id', 'desc');
+        }
+        $banners = $banners->paginate(Helpers::getPagination())->appends($query_param);
+        return view('admin-views.banner.list', compact('banners','search'));
     }
 
     public function store(Request $request)
@@ -46,7 +79,7 @@ class BannerController extends Controller
         $banner->image = Helpers::upload('banner/', 'png', $request->file('image'));
         $banner->save();
         Toastr::success(translate('Banner added successfully!'));
-        return redirect('admin/banner/list');
+        return back();
     }
 
     public function edit($id)
@@ -86,7 +119,7 @@ class BannerController extends Controller
         $banner->image = $request->has('image') ? Helpers::update('banner/', $banner->image, 'png', $request->file('image')) : $banner->image;
         $banner->save();
         Toastr::success(translate('Banner updated successfully!'));
-        return redirect('admin/banner/list');
+        return redirect()->route('admin.banner.add-new');
     }
 
     public function delete(Request $request)

@@ -2,24 +2,10 @@
     <header id="header"
             class="navbar navbar-expand-lg navbar-fixed navbar-height navbar-flush navbar-container navbar-bordered">
         <div class="navbar-nav-wrap">
-            <div class="navbar-brand-wrapper">
-                <!-- Logo -->
-                @php($restaurant_logo=\App\Model\BusinessSetting::where(['key'=>'logo'])->first()->value)
-                <a class="navbar-brand" href="{{route('branch.dashboard')}}" aria-label="">
-                    <img class="navbar-brand-logo"
-                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                         src="{{asset('storage/app/public/restaurant/'.$restaurant_logo)}}" alt="Logo">
-                    <img class="navbar-brand-logo-mini"
-                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                         src="{{asset('storage/app/public/restaurant/'.$restaurant_logo)}}"
-                         alt="Logo">
-                </a>
-                <!-- End Logo -->
-            </div>
 
             <div class="navbar-nav-wrap-content-left">
                 <!-- Navbar Vertical Toggle -->
-                <button type="button" class="js-navbar-vertical-aside-toggle-invoker close mr-3">
+                <button type="button" class="js-navbar-vertical-aside-toggle-invoker close d-xl-none">
                     <i class="tio-first-page navbar-vertical-aside-toggle-short-align" data-toggle="tooltip"
                        data-placement="right" title="Collapse"></i>
                     <i class="tio-last-page navbar-vertical-aside-toggle-full-align"
@@ -33,19 +19,22 @@
             <div class="navbar-nav-wrap-content-right">
                 <!-- Navbar -->
                 <ul class="navbar-nav align-items-center flex-row">
-                    <li class="nav-item d-none d-sm-inline-block">
+
+                    <li class="nav-item">
                         <!-- Notification -->
                         <div class="hs-unfold">
-                            <a class="js-hs-unfold-invoker btn btn-icon btn-ghost-secondary rounded-circle"
-                               href="{{route('branch.order.list',['status'=>'pending'])}}">
+                            <a class="js-hs-unfold-invoker btn btn-icon notify--icon"
+                               href="{{route('branch.orders.list',['status'=>'pending'])}}">
                                 <i class="tio-shopping-cart-outlined"></i>
-                                {{--<span class="btn-status btn-sm-status btn-status-danger"></span>--}}
+                                <span class="amount">
+                                    {{$message=\App\Model\Conversation::where('checked',0)->count()}}
+                                </span>
                             </a>
                         </div>
                         <!-- End Notification -->
                     </li>
 
-                    <li class="nav-item">
+                    <li class="nav-item ml-4">
                         <!-- Account -->
                         <div class="hs-unfold">
                             <a class="js-hs-unfold-invoker navbar-dropdown-account-wrapper" href="javascript:;"
@@ -53,12 +42,20 @@
                                      "target": "#accountNavbarDropdown",
                                      "type": "css-animation"
                                    }'>
-                                <div class="avatar avatar-sm avatar-circle">
-                                    <img class="avatar-img"
-                                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                                         src="{{asset('storage/app/public/branch')}}/{{auth('branch')->user()->image}}"
-                                         alt="Image Description">
-                                    <span class="avatar-status avatar-sm-status avatar-status-success"></span>
+                                   <div class="cmn--media right-dropdown-icon d-flex align-items-center">
+                                    <div class="media-body pl-0 pr-2">
+                                        <span class="card-title h5 text-right">
+                                            {{auth('branch')->user()->name}}
+                                        </span>
+                                        <span class="card-text"></span>
+                                    </div>
+                                    <div class="avatar avatar-sm avatar-circle">
+                                        <img class="avatar-img"
+                                            onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
+                                             src="{{asset('storage/app/public/branch')}}/{{auth('branch')->user()->image}}"
+                                            alt="Image Description">
+                                        <span class="avatar-status avatar-sm-status avatar-status-success"></span>
+                                    </div>
                                 </div>
                             </a>
 

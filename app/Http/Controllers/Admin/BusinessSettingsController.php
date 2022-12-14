@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
+use App\Model\Branch;
 use App\Model\BusinessSetting;
 use App\Model\Currency;
 use App\Model\SocialMedia;
+use App\Model\TimeSlot;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +26,17 @@ class BusinessSettingsController extends Controller
         }
 
         return view('admin-views.business-settings.restaurant-index');
+    }
+
+    public function delivery_index()
+    {
+        if (BusinessSetting::where(['key' => 'minimum_order_value'])->first() == false) {
+            DB::table('business_settings')->updateOrInsert(['key' => 'minimum_order_value'], [
+                'value' => 1,
+            ]);
+        }
+
+        return view('admin-views.business-settings.delivery-fee');
     }
 
     public function maintenance_mode()
@@ -46,15 +59,60 @@ class BusinessSettingsController extends Controller
         return response()->json(['message' => 'Symbol position is ' . $side]);
     }
 
-    public function restaurant_setup(Request $request)
+    public function phone_verification_status($status)
     {
+        $email_status = DB::table('business_settings')->where('key','email_verification')->first()->value;
+        //dd($email_status);
 
-        if ($request['email_verification'] == 1) {
-            $request['phone_verification'] = 0;
-        } elseif ($request['phone_verification'] == 1) {
-            $request['email_verification'] = 0;
+        if ($email_status == 1){
+            return response()->json([
+                'status' => 0,
+                'message' => 'Both email and phone verification can not be active at a time!'
+            ]);
         }
 
+        DB::table('business_settings')->updateOrInsert(['key' => 'phone_verification'], [
+            'value' => $status
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Phone verification status updated'
+        ]);
+    }
+
+    public function email_verification_status($status)
+    {
+        $phone_status = DB::table('business_settings')->where('key','phone_verification')->first()->value;
+        //dd($phone_status);
+
+        if ($phone_status == 1){
+            return response()->json([
+                'status' => 0,
+                'message' => 'Both email and phone verification can not be active at a time!'
+            ]);
+        }
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'email_verification'], [
+            'value' => $status
+        ]);
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Email verification status updated'
+        ]);
+    }
+
+    public function self_pickup_status($status)
+    {
+        DB::table('business_settings')->updateOrInsert(['key' => 'self_pickup'], [
+            'value' => $status
+        ]);
+        return response()->json(['message' => 'Pickup status updated']);
+    }
+
+    public function restaurant_setup(Request $request)
+    {
         DB::table('business_settings')->updateOrInsert(['key' => 'country'], [
             'value' => $request['country']
         ]);
@@ -63,24 +121,8 @@ class BusinessSettingsController extends Controller
             'value' => $request['time_zone'],
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'phone_verification'], [
-            'value' => $request['phone_verification']
-        ]);
-
         DB::table('business_settings')->updateOrInsert(['key' => 'time_format'], [
             'value' => $request['time_format']
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'email_verification'], [
-            'value' => $request['email_verification']
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'restaurant_name'], [
-            'value' => $request->restaurant_name
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'self_pickup'], [
-            'value' => $request['self_pickup'],
         ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'currency'], [
@@ -89,6 +131,23 @@ class BusinessSettingsController extends Controller
         DB::table('business_settings')->updateOrInsert(['key' => 'decimal_point_settings'], [
             'value' => $request['decimal_point_settings'],
         ]);
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'footer_text'], [
+            'value' => $request['footer_text'],
+        ]);
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'pagination_limit'], [
+            'value' => $request['pagination_limit'],
+        ]);
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'minimum_order_value'], [
+            'value' => $request['minimum_order_value'],
+        ]);
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'restaurant_name'], [
+            'value' => $request->restaurant_name
+        ]);
+
         $curr_logo = BusinessSetting::where(['key' => 'logo'])->first();
         if ($request->has('logo')) {
             $image_name = Helpers::update('restaurant/', $curr_logo->value, 'png', $request->file('logo'));
@@ -98,14 +157,6 @@ class BusinessSettingsController extends Controller
 
         DB::table('business_settings')->updateOrInsert(['key' => 'logo'], [
             'value' => $image_name,
-        ]);
-
-        if($request->delivery_charge == null) {
-            $request->delivery_charge = BusinessSetting::where(['key' => 'delivery_charge'])->first()->value;
-        }
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'delivery_charge'], [
-            'value' => $request->delivery_charge,
         ]);
 
         DB::table('business_settings')->updateOrInsert(['key' => 'phone'], [
@@ -120,39 +171,8 @@ class BusinessSettingsController extends Controller
             'value' => $request['address'],
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'footer_text'], [
-            'value' => $request['footer_text'],
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'pagination_limit'], [
-            'value' => $request['pagination_limit'],
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'minimum_order_value'], [
-            'value' => $request['minimum_order_value'],
-        ]);
-        if ($request['shipping_status'] == 1) {
-            $request->validate([
-                'min_shipping_charge' => 'required',
-                'shipping_per_km' => 'required',
-            ],
-            [
-                'min_shipping_charge.required' => translate('Minimum shipping charge is required while shipping method is active'),
-                'shipping_per_km.required' => translate('Shipping charge per Kilometer is required while shipping method is active'),
-            ]);
-        }
-        if($request['min_shipping_charge'] == null) {
-            $request['min_shipping_charge'] = Helpers::get_business_settings('delivery_management')['min_shipping_charge'];
-        }
-        if($request['shipping_per_km'] == null) {
-            $request['shipping_per_km'] = Helpers::get_business_settings('delivery_management')['shipping_per_km'];
-        }
-        DB::table('business_settings')->updateOrInsert(['key' => 'delivery_management'], [
-            'value' => json_encode([
-                'status'  => $request['shipping_status'],
-                'min_shipping_charge' => $request['min_shipping_charge'],
-                'shipping_per_km' => $request['shipping_per_km'],
-            ]),
+        DB::table('business_settings')->updateOrInsert(['key' => 'time_format'], [
+            'value' => $request['time_format'],
         ]);
 
         Toastr::success(translate('Settings updated!'));
@@ -183,9 +203,11 @@ class BusinessSettingsController extends Controller
 
     public function mail_config(Request $request)
     {
+        $data = Helpers::get_business_settings('mail_config');
+
         BusinessSetting::where(['key' => 'mail_config'])->update([
             'value' => json_encode([
-                "status" => $request['status'],
+                "status" => $data['status'],
                 "name"       => $request['name'],
                 "host"       => $request['host'],
                 "driver"     => $request['driver'],
@@ -199,6 +221,17 @@ class BusinessSettingsController extends Controller
         Toastr::success(translate('Configuration updated successfully!'));
 
         return back();
+    }
+
+    public function mail_config_status($status)
+    {
+        $data = Helpers::get_business_settings('mail_config');
+        $data['status'] = $status == '1' ? 1 : 0;
+
+        BusinessSetting::where(['key' => 'mail_config'])->update([
+            'value' => $data,
+        ]);
+        return response()->json(['message' => 'Mail config status updated']);
     }
 
     public function payment_index()
@@ -549,6 +582,30 @@ class BusinessSettingsController extends Controller
         ]);
 
         Toastr::success(translate('About us updated!'));
+        return back();
+    }
+
+    public function faq()
+    {
+        $data = BusinessSetting::where(['key' => 'faq'])->first();
+        if ($data == false) {
+            $data = [
+                'key' => 'faq',
+                'value' => '',
+            ];
+            BusinessSetting::insert($data);
+        }
+        return view('admin-views.business-settings.faq', compact('data'));
+    }
+
+    public function faq_update(Request $request)
+    {
+        //dd($request->all());
+        BusinessSetting::where(['key' => 'faq'])->update([
+            'value' => $request->faq,
+        ]);
+
+        Toastr::success(translate('FAQ updated!'));
         return back();
     }
 
@@ -980,6 +1037,88 @@ class BusinessSettingsController extends Controller
         return response()->json([
             'success' => 1,
         ], 200);
+    }
+
+    public function main_branch_setup()
+    {
+        $main_branch = Branch::where(['id' => 1])->first();
+        //return $main_branch;
+        return view('admin-views.business-settings.main-branch-setup', compact('main_branch'));
+    }
+
+    public function delivery_setup_update(Request $request)
+    {
+        //dd($request->all());
+        if($request->delivery_charge == null) {
+            $request->delivery_charge = BusinessSetting::where(['key' => 'delivery_charge'])->first()->value;
+        }
+
+        DB::table('business_settings')->updateOrInsert(['key' => 'delivery_charge'], [
+            'value' => $request->delivery_charge,
+        ]);
+
+        if ($request['shipping_status'] == 1) {
+            $request->validate([
+                'min_shipping_charge' => 'required',
+                'shipping_per_km' => 'required',
+            ],
+                [
+                    'min_shipping_charge.required' => translate('Minimum shipping charge is required while shipping method is active'),
+                    'shipping_per_km.required' => translate('Shipping charge per Kilometer is required while shipping method is active'),
+                ]);
+        }
+        if($request['min_shipping_charge'] == null) {
+            $request['min_shipping_charge'] = Helpers::get_business_settings('delivery_management')['min_shipping_charge'];
+        }
+        if($request['shipping_per_km'] == null) {
+            $request['shipping_per_km'] = Helpers::get_business_settings('delivery_management')['shipping_per_km'];
+        }
+        DB::table('business_settings')->updateOrInsert(['key' => 'delivery_management'], [
+            'value' => json_encode([
+                'status'  => $request['shipping_status'],
+                'min_shipping_charge' => $request['min_shipping_charge'],
+                'shipping_per_km' => $request['shipping_per_km'],
+            ]),
+        ]);
+
+        Toastr::success(translate('Settings Updated'));
+        return back();
+    }
+
+    public function social_media_login()
+    {
+        return view('admin-views.business-settings.social-media-login');
+    }
+
+    public function google_social_login($status)
+    {
+        DB::table('business_settings')->updateOrInsert(['key' => 'google_social_login'], [
+            'value' => $status
+        ]);
+        return response()->json(['message' => 'Status updated']);
+    }
+
+    public function facebook_social_login($status)
+    {
+        DB::table('business_settings')->updateOrInsert(['key' => 'facebook_social_login'], [
+            'value' => $status
+        ]);
+        return response()->json(['message' => 'Status updated']);
+    }
+
+    public function product_setup()
+    {
+        return view('admin-views.business-settings.product-setup-index');
+    }
+
+    public function product_setup_update(Request $request)
+    {
+        DB::table('business_settings')->updateOrInsert(['key' => 'minimum_stock_limit'], [
+            'value' => $request['minimum_stock_limit'],
+        ]);
+
+        Toastr::success(translate('Settings updated!'));
+        return back();
     }
 
 }

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
 
 class CustomerAuthController extends Controller
 {
@@ -73,7 +74,7 @@ class CustomerAuthController extends Controller
                 if (isset($emailServices['status']) && $emailServices['status'] == 1) {
                     Mail::to($request['email'])->send(new EmailVerification($token));
                 }
-                
+
             } catch (\Exception $exception) {
                 return response()->json([
                     'message' => 'Token sent failed'
@@ -144,18 +145,19 @@ class CustomerAuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'f_name' => 'required',
+            'l_name' => 'required',
             'email' => '',
             'phone' => 'required|unique:users',
             'password' => 'required|min:6',
         ], [
-            'f_name.required' => 'The first name  field is required.',
+            'f_name.required' => 'The first name field is required.',
+            'l_name.required' => 'The last name field is required.',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
         $temporary_token = Str::random(40);
-        $self_ref_code = Str::random(20);
         $user = User::create([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
@@ -163,7 +165,6 @@ class CustomerAuthController extends Controller
             'phone' => $request->phone,
             'password' => bcrypt($request->password),
             'temporary_token' => $temporary_token,
-            'self_ref_code' => $self_ref_code
         ]);
 
         $phone_verification = Helpers::get_business_settings('phone_verification');
@@ -206,13 +207,14 @@ class CustomerAuthController extends Controller
             return response()->json(['errors' => Helpers::error_processor($validator)], 403);
         }
 
-        $user = User::where(['email' => $user_id])->orWhere('phone', $user_id)->first();
+        $user = User::where(['email' => $user_id])->orWhere(['phone' => $user_id])->first();
         if (isset($user)) {
             $user->temporary_token = Str::random(40);
             $user->save();
             $data = [
                 'email' => $user->email,
-                'password' => $request->password
+                'password' => $request->password,
+                'is_block' => 0
             ];
 
             if (auth()->attempt($data)) {
@@ -222,10 +224,94 @@ class CustomerAuthController extends Controller
         }
 
         $errors = [];
-        array_push($errors, ['code' => 'auth-001', 'message' => 'Invalid credential.']);
+        $errors[] = ['code' => 'auth-001', 'message' => 'Invalid credential.'];
         return response()->json([
             'errors' => $errors
         ], 401);
 
+    }
+
+    public function social_customer_login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'unique_id' => 'required',
+            'email' => 'required',
+            'medium' => 'required|in:google,facebook',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+
+        $client = new Client();
+        $token = $request['token'];
+        $email = $request['email'];
+        $unique_id = $request['unique_id'];
+
+
+        try {
+            if ($request['medium'] == 'google') {
+                $res = $client->request('GET', 'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token=' . $token);
+                $data = json_decode($res->getBody()->getContents(), true);
+            } elseif ($request['medium'] == 'facebook') {
+                $res = $client->request('GET', 'https://graph.facebook.com/' . $unique_id . '?access_token=' . $token . '&&fields=name,email');
+                $data = json_decode($res->getBody()->getContents(), true);
+            }
+        } catch (\Exception $exception) {
+            $errors = [];
+            $errors[] = ['code' => 'auth-001', 'message' => 'Invalid Token'];
+            return response()->json([
+                'errors' => $errors
+            ], 401);
+        }
+
+        if (strcmp($email, $data['email']) === 0) {
+            $user = User::where('email', $request['email'])->first();
+
+            if (!isset($user)) {
+                $name = explode(' ', $data['name']);
+                if (count($name) > 1) {
+                    $fast_name = implode(" ", array_slice($name, 0, -1));
+                    $last_name = end($name);
+                } else {
+                    $fast_name = implode(" ", $name);
+                    $last_name = '';
+                }
+
+                $user = new User();
+                $user->f_name = $fast_name;
+                $user->l_name = $last_name;
+                $user->email = $data['email'];
+                $user->phone = null;
+                $user->image = 'def.png';
+                $user->password = bcrypt($request->ip());
+                $user->is_block = 0;
+                $user->login_medium = $request['medium'];
+                $user->save();
+            }
+
+            if (isset($user)){
+                if ($user->is_block == 0){
+                    $token = $user->createToken('AuthToken')->accessToken;
+                    return response()->json([
+                        'errors' => null,
+                        'token' => $token,
+                    ], 200);
+                }else{
+                    $errors = [];
+                    $errors[] = ['code' => 'auth-001', 'message' => 'Invalid Token'];
+                    return response()->json([
+                        'errors' => $errors
+                    ], 401);
+                }
+            }
+        }
+
+        $errors = [];
+        $errors[] = ['code' => 'auth-001', 'message' => 'Invalid Token'];
+        return response()->json([
+            'errors' => $errors
+        ], 401);
     }
 }

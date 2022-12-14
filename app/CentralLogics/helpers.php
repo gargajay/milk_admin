@@ -180,6 +180,7 @@ class Helpers
                 "body" : "' . $data['description'] . '",
                 "image" : "' . $data['image'] . '",
                 "order_id":"' . $data['order_id'] . '",
+                "type":"' . $data['type'] . '",
                 "is_read": 0
               },
              "notification" : {
@@ -188,6 +189,7 @@ class Helpers
                 "image" : "' . $data['image'] . '",
                 "order_id":"' . $data['order_id'] . '",
                 "title_loc_key":"' . $data['order_id'] . '",
+                "type":"' . $data['type'] . '",
                 "is_read": 0,
                 "icon" : "new",
                 "sound" : "default"
@@ -232,6 +234,7 @@ class Helpers
                 "body" : "' . $data['description'] . '",
                 "image" : "' . $image . '",
                 "order_id":"' . $data['order_id'] . '",
+                "type":"' . $data['type'] . '",
                 "is_read": 0
               },
               "notification" : {
@@ -240,6 +243,7 @@ class Helpers
                 "image" : "' . $image . '",
                 "order_id":"' . $data['order_id'] . '",
                 "title_loc_key":"' . $data['order_id'] . '",
+                "type":"' . $data['type'] . '",
                 "is_read": 0,
                 "icon" : "new",
                 "sound" : "default"
@@ -716,6 +720,7 @@ class Helpers
     public static function module_permission_check($mod_name)
     {
         $permission = auth('admin')->user()->role->module_access;
+
         if (isset($permission) && in_array($mod_name, (array)json_decode($permission)) == true) {
             return true;
         }

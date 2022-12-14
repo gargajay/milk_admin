@@ -1,6 +1,6 @@
 @extends('layouts.admin.app')
 
-@section('title', translate('Settings'))
+@section('title', translate('mail config'))
 
 @push('css_or_js')
 
@@ -10,125 +10,123 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title">{{translate('smtp')}} {{translate('mail')}} {{translate('setup')}}</h1>
-                </div>
-            </div>
+            @include('admin-views.business-settings.partial.third-party-api-navmenu')
         </div>
         <!-- End Page Header -->
-        <div class="row gx-2 gx-lg-3 card card-body">
-
-            <div class="col-lg-6 col-12 mb-4">
-                <div class="card">
+        <div class="row gx-2 gx-lg-3">
+            <div class="col-xl-8">
+                <div class="card mb-3">
                     <div class="card-body">
 
-                        <div class="row mb-4">
-                            <div class="col-10">
+                        <div class="position-relative">
                                 <button class="btn btn-secondary" type="button" data-toggle="collapse"
                                         data-target="#collapseExample" aria-expanded="false"
                                         aria-controls="collapseExample">
                                     <i class="tio-email-outlined"></i>
                                     {{translate('test_your_email_integration')}}
                                 </button>
-                            </div>
-                            <div class="col-2 float-right">
+                            <div class="fixed--to-right">
                                 <i class="tio-telegram float-right"></i>
                             </div>
                         </div>
 
                         <div class="collapse" id="collapseExample">
-                            <div class="card card-body">
-                                <form class="" action="javascript:">
-                                    <div class="row">
-                                        <div class="col-8">
-                                            <div class="form-group mb-2">
-                                                <label for="inputPassword2"
-                                                       class="sr-only">{{translate('mail')}}</label>
-                                                <input type="email" id="test-email" class="form-control"
-                                                       placeholder="Ex : jhon@email.com">
-                                            </div>
-                                        </div>
-                                        <div class="col-4">
-                                            <button type="button" onclick="send_mail()" class="btn btn-primary mb-2 btn-block">
-                                                <i class="tio-telegram"></i>
-                                                {{translate('send_mail')}}
-                                            </button>
+                            <form class="pt-3" action="javascript:">
+                                <div class="row g-2">
+                                    <div class="col-sm-8">
+                                        <div class="form-group mb-0">
+                                            <label for="inputPassword2"
+                                                    class="sr-only">{{translate('mail')}}</label>
+                                            <input type="email" id="test-email" class="form-control"
+                                                    placeholder="Ex : jhon@email.com">
                                         </div>
                                     </div>
-                                </form>
-                            </div>
+                                    <div class="col-sm-4">
+                                        <button type="button" onclick="send_mail()" class="btn btn-primary h-100 btn-block">
+                                            <i class="tio-telegram"></i>
+                                            {{translate('send_mail')}}
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
+
                     </div>
                 </div>
             </div>
-            <div class="col-6"></div>
             @php($config=\App\Model\BusinessSetting::where(['key'=>'mail_config'])->first())
             @php($data=json_decode($config['value'],true))
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
-                <form action="{{env('APP_MODE')!='demo'?route('admin.business-settings.web-app.mail-config'):'javascript:'}}" method="post"
-                      enctype="multipart/form-data">
-                    @csrf
-                    @if(isset($config))
-                        <div class="form-group mb-2 mt-2">
-                            <input type="radio" name="status"
-                                value="1" {{isset($data['status']) && $data['status']==1?'checked':''}}>
-                            <label style="padding-left: 10px">{{translate('Active')}}</label>
-                            <br>
+            @php($status=$data['status']== 1 ? 0 : 1)
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap">
+                            <label class="control-label h3 mb-0 text-capitalize mr-3">{{translate('mail configuration status')}}</label>
+                            <div class="custom--switch">
+                                <input type="checkbox" name="status" value="" id="switch6" switch="primary"
+                                    onclick="mail_status_change('{{route('admin.business-settings.web-app.mail-config.status',[$status])}}')"
+                                    class="toggle-switch-input" id="stocksCheckbox{{ 1 }}" {{ $data['status'] ==  1 ? 'checked' : '' }}>
+                                <label for="switch6" data-on-label="on" data-off-label="off"></label>
+                            </div>
                         </div>
-                        <div class="form-group mb-2">
-                            <input type="radio" name="status"
-                                value="0" {{isset($data['status']) && $data['status']==0?'checked':''}}>
-                            <label style="padding-left: 10px">{{translate('Inactive')}}</label>
-                            <br>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('mailer')}} {{translate('name')}}</label><br>
-                            <input type="text" placeholder="{{ translate('ex : Alex') }}" class="form-control" name="name"
-                                   value="{{env('APP_MODE')!='demo'?$data['name']:''}}" required>
-                        </div>
+                        <form action="{{env('APP_MODE')!='demo'?route('admin.business-settings.web-app.mail-config'):'javascript:'}}" method="post"
+                            enctype="multipart/form-data">
+                            @csrf
+                            @if(isset($config))
+                                <div class="row mt-3">
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('mailer')}} {{translate('name')}}</label><br>
+                                        <input type="text" placeholder="{{ translate('ex : Alex') }}" class="form-control" name="name"
+                                            value="{{env('APP_MODE')!='demo'?$data['name']:''}}" required>
+                                    </div>
 
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('host')}}</label><br>
-                            <input type="text" class="form-control" name="host" value="{{env('APP_MODE')!='demo'?$data['host']:''}}" required>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('driver')}}</label><br>
-                            <input type="text" class="form-control" name="driver" value="{{env('APP_MODE')!='demo'?$data['driver']:''}}" required>
-                        </div>
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('port')}}</label><br>
-                            <input type="text" class="form-control" name="port" value="{{env('APP_MODE')!='demo'?$data['port']:''}}" required>
-                        </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('host')}}</label><br>
+                                        <input type="text" class="form-control" name="host" value="{{env('APP_MODE')!='demo'?$data['host']:''}}" required>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('driver')}}</label><br>
+                                        <input type="text" class="form-control" name="driver" value="{{env('APP_MODE')!='demo'?$data['driver']:''}}" required>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('port')}}</label><br>
+                                        <input type="text" class="form-control" name="port" value="{{env('APP_MODE')!='demo'?$data['port']:''}}" required>
+                                    </div>
 
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('username')}}</label><br>
-                            <input type="text" placeholder="{{ translate('ex : ex@yahoo.com') }}" class="form-control" name="username"
-                                   value="{{env('APP_MODE')!='demo'?$data['username']:''}}" required>
-                        </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('username')}}</label><br>
+                                        <input type="text" placeholder="{{ translate('ex : ex@yahoo.com') }}" class="form-control" name="username"
+                                            value="{{env('APP_MODE')!='demo'?$data['username']:''}}" required>
+                                    </div>
 
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('email')}} {{translate('id')}}</label><br>
-                            <input type="text" placeholder="{{ translate('ex : ex@yahoo.com') }}" class="form-control" name="email"
-                                   value="{{env('APP_MODE')!='demo'?$data['email_id']:''}}" required>
-                        </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('email')}} {{translate('id')}}</label><br>
+                                        <input type="text" placeholder="{{ translate('ex : ex@yahoo.com') }}" class="form-control" name="email"
+                                            value="{{env('APP_MODE')!='demo'?$data['email_id']:''}}" required>
+                                    </div>
 
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('encryption')}}</label><br>
-                            <input type="text" placeholder="{{ translate('ex : tls') }}" class="form-control" name="encryption"
-                                   value="{{env('APP_MODE')!='demo'?$data['encryption']:''}}" required>
-                        </div>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('encryption')}}</label><br>
+                                        <input type="text" placeholder="{{ translate('ex : tls') }}" class="form-control" name="encryption"
+                                            value="{{env('APP_MODE')!='demo'?$data['encryption']:''}}" required>
+                                    </div>
 
-                        <div class="form-group mb-2">
-                            <label style="padding-left: 10px">{{translate('password')}}</label><br>
-                            <input type="text" class="form-control" name="password" value="{{env('APP_MODE')!='demo'?$data['password']:''}}" required>
-                        </div>
-
-                        <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}" class="btn btn-primary mt-2 mb-2">{{translate('save')}}</button>
-                    @else
-                        <button type="submit" class="btn btn-primary mt-2 mb-2">{{translate('configure')}}</button>
-                    @endif
-                </form>
+                                    <div class="form-group col-md-6">
+                                        <label class="form-label">{{translate('password')}}</label><br>
+                                        <input type="text" class="form-control" name="password" value="{{env('APP_MODE')!='demo'?$data['password']:''}}" required>
+                                    </div>
+                                </div>
+                                <div class="btn--container justify-content-end">
+                                    <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                                    <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}" class="btn btn-primary mt-2 mb-2">{{translate('save')}}</button>
+                                </div>
+                            @else
+                                <button type="submit" class="btn btn-primary mt-2 mb-2">{{translate('configure')}}</button>
+                            @endif
+                        </form>
+                    </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -136,6 +134,25 @@
 
 @push('script_2')
 <script>
+
+    function mail_status_change(route) {
+
+        $.get({
+            url: route,
+            contentType: false,
+            processData: false,
+            beforeSend: function () {
+                $('#loading').show();
+            },
+            success: function (data) {
+                toastr.success(data.message);
+            },
+            complete: function () {
+                $('#loading').hide();
+            },
+        });
+    }
+
     function ValidateEmail(inputText) {
         var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
         if (inputText.match(mailformat)) {

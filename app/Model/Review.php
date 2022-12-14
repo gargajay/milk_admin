@@ -13,6 +13,7 @@ class Review extends Model
         'user_id'    => 'integer',
         'order_id'   => 'integer',
         'rating'     => 'integer',
+        'is_active'     => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -25,5 +26,10 @@ class Review extends Model
     public function customer()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', '=', 1);
     }
 }

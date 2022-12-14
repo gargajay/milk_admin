@@ -10,6 +10,7 @@ use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
@@ -94,9 +95,11 @@ class CategoryController extends Controller
         }
 
         //uniqueness check
-        $cat = Category::where('name', $request->name)->where('parent_id', $request->parent_id ?? 0)->first();
-        if (isset($cat)) {
-            Toastr::error(\App\CentralLogics\translate(($request->parent_id == null ? 'Category' : 'Sub-category') . ' already exists!'));
+        $parent_id = $request->parent_id ?? 0;
+        $all_category = Category::where(['parent_id' => $parent_id])->pluck('name')->toArray();
+
+        if (in_array($request->name[0], $all_category)) {
+            Toastr::error(translate(($request->parent_id == null ? 'Category' : 'Sub_category') . ' already exists!'));
             return back();
         }
 
@@ -154,7 +157,7 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'name' => 'required',
+            'name' =>'required|unique:categories,name,'.$request->id
         ]);
 
         foreach ($request->name as $name) {

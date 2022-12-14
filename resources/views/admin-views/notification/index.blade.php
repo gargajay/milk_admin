@@ -10,57 +10,71 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title"><i class="tio-notifications"></i> {{translate('notification')}}</h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/notification.png')}}" class="w--20" alt="">
+                </span>
+                <span>
+                    {{translate('Send Push Notification')}}
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
-        <div class="row gx-2 gx-lg-3">
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
-                <form action="{{route('admin.notification.store')}}" method="post" enctype="multipart/form-data">
-                    @csrf
-                    <div class="form-group">
-                        <label class="input-label" for="exampleFormControlInput1">{{translate('title')}}</label>
-                        <input type="text" name="title" class="form-control" placeholder="{{ translate('New notification') }}" required>
+        <div class="row">
+            <div class="col-sm-12 mb-5">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{{route('admin.notification.store')}}" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label mb-3" for="exampleFormControlInput1">{{translate('title')}}</label>
+                                        <input type="text" name="title" class="form-control" value="{{old('title')}}" placeholder="{{ translate('Ex : New Notification') }}" required>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label class="form-label mb-3" for="exampleFormControlInput1">{{translate('description')}}</label>
+                                        <textarea name="description" class="form-control h--92px" placeholder="{{ translate('Ex : Max 250 Words') }}" required>{{ old('description') }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex flex-column justify-content-center h-100">
+                                        <h5 class="text-center mb-3 mt-auto text--title text-capitalize">
+                                            {{translate('notification banner')}}
+                                            <small class="text-danger">* ( {{translate('ratio')}} 3:1 )</small>
+                                        </h5>
+                                        <label class="upload--vertical mt-auto">
+                                            <input type="file" name="image" id="customFileEg1" class="" accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" hidden>
+                                            <img id="viewer" src="{{asset('public/assets/admin/img/upload-vertical.png')}}" alt="notification image"/>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="btn--container justify-content-end mt-2">
+                                        <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
+                                        <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label class="input-label" for="exampleFormControlInput1">{{translate('description')}}</label>
-                        <textarea name="description" class="form-control" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>{{translate('image')}}</label><small style="color: red">* ( {{translate('ratio')}} 3:1 )</small>
-                        <div class="custom-file">
-                            <input type="file" name="image" id="customFileEg1" class="custom-file-input"
-                                   accept=".jpg, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*" required>
-                            <label class="custom-file-label" for="customFileEg1">{{translate('choose')}} {{translate('file')}}</label>
-                        </div>
-                        <div class="text-center mt-2">
-                            <img style="width: 30%;border: 1px solid; border-radius: 10px;" id="viewer"
-                                 src="{{asset('public/assets/admin/img/900x400/img1.jpg')}}" alt="image"/>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">{{translate('send')}} {{translate('notification')}}</button>
-                </form>
+                </div>
             </div>
 
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2 mt-2">
+            <div class="col-sm-12">
                 <div class="card">
-                    <div class="card-header flex-between">
-                        <div class="flex-start">
-                            <h5 class="card-header-title">{{translate('Notifications Table')}}</h5>
-                            <h5 class="card-header-title text-primary mx-1">({{ $notifications->total() }})</h5>
-                        </div>
-                        <div>
+                    <div class="card-header border-0 flex-between">
+                        <div class="card--header">
+                            <h5 class="card-title">{{translate('Notifications Table')}} <span class="ml-2 badge badge-pill badge-soft-secondary">{{ $notifications->total() }}</span> </h5>
                             <form action="{{url()->current()}}" method="GET">
                                 <div class="input-group">
                                     <input id="datatableSearch_" type="search" name="search"
-                                           class="form-control"
-                                           placeholder="{{translate('Search')}}" aria-label="Search"
-                                           value="{{$search}}" required autocomplete="off">
+                                            class="form-control"
+                                            placeholder="{{translate('Search')}}" aria-label="Search"
+                                            value="{{$search}}" required autocomplete="off">
                                     <div class="input-group-append">
-                                        <button type="submit" class="input-group-text"><i class="tio-search"></i>
+                                        <button type="submit" class="input-group-text">
+                                            {{translate('search')}}
                                         </button>
                                     </div>
                                 </div>
@@ -70,14 +84,14 @@
                     <!-- Table -->
                     <div class="table-responsive datatable-custom">
                         <table class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table">
-                            <thead>
+                            <thead class="thead-light">
                                 <tr>
                                     <th>{{translate('#')}}</th>
-                                    <th style="width: 50%">{{translate('title')}}</th>
-                                    <th>{{translate('description')}}</th>
                                     <th>{{translate('image')}}</th>
-                                    <th>{{translate('status')}}</th>
-                                    <th style="width: 10%">{{translate('action')}}</th>
+                                    <th>{{translate('title')}}</th>
+                                    <th>{{translate('description')}}</th>
+                                    <th class="text-center">{{translate('status')}}</th>
+                                    <th class="text-center">{{translate('action')}}</th>
                                 </tr>
                             </thead>
 
@@ -86,54 +100,49 @@
                                 <tr>
                                     <td>{{$notifications->firstItem()+$key}}</td>
                                     <td>
-                                    <span class="d-block font-size-sm text-body">
-                                        {{substr($notification['title'],0,25)}} {{strlen($notification['title'])>25?'...':''}}
-                                    </span>
-                                    </td>
-                                    <td>
-                                        {{substr($notification['description'],0,25)}} {{strlen($notification['description'])>25?'...':''}}
-                                    </td>
-                                    <td>
                                         @if($notification['image']!=null)
-                                            <img style="height: 75px"
-                                                 onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'"
-                                                 src="{{asset('storage/app/public/notification')}}/{{$notification['image']}}">
+                                            <img class="img-vertical-150" onerror="this.src='{{asset('public/assets/admin/img/160x160/img2.jpg')}}'" src="{{asset('storage/app/public/notification')}}/{{$notification['image']}}">
                                         @else
                                             <label class="badge badge-soft-warning">No {{translate('image')}}</label>
                                         @endif
                                     </td>
                                     <td>
-                                        @if($notification['status']==1)
-                                            <div style="padding: 10px;border: 1px solid;cursor: pointer"
-                                                 onclick="location.href='{{route('admin.notification.status',[$notification['id'],0])}}'">
-                                                <span class="legend-indicator bg-success"></span>{{translate('active')}}
-                                            </div>
-                                        @else
-                                            <div style="padding: 10px;border: 1px solid;cursor: pointer"
-                                                 onclick="location.href='{{route('admin.notification.status',[$notification['id'],1])}}'">
-                                                <span class="legend-indicator bg-danger"></span>{{translate('disabled')}}
-                                            </div>
-                                        @endif
+                                    <span class="d-block font-size-sm text-body">
+                                        {{substr($notification['title'],0,25)}} {{strlen($notification['title'])>25?'...':''}}
+                                    </span>
+                                    </td>
+                                    <td>
+                                        <div class="line--limit-2 max-200px ">
+                                        {{substr($notification['description'],0,50)}} {{strlen($notification['description'])>25?'...':''}}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <label class="toggle-switch my-0">
+                                            <input type="checkbox"
+                                                onclick="status_change_alert('{{ route('admin.notification.status', [$notification->id, $notification->status ? 0 : 1]) }}', '{{ $notification->status? translate('you_want_to_disable_this_notification'): translate('you_want_to_active_this_notification') }}', event)"
+                                                class="toggle-switch-input" id="stocksCheckbox{{ $notification->id }}"
+                                                {{ $notification->status ? 'checked' : '' }}>
+                                            <span class="toggle-switch-label mx-auto text">
+                                                <span class="toggle-switch-indicator"></span>
+                                            </span>
+                                        </label>
                                     </td>
                                     <td>
                                         <!-- Dropdown -->
-                                        <div class="dropdown">
-                                            <button class="btn btn-secondary dropdown-toggle" type="button"
-                                                    id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
-                                                <i class="tio-settings"></i>
-                                            </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                <a class="dropdown-item"
-                                                   href="{{route('admin.notification.edit',[$notification['id']])}}">{{translate('edit')}}</a>
-                                                <a class="dropdown-item" href="javascript:"
-                                                   onclick="$('#notification-{{$notification['id']}}').submit()">{{translate('delete')}}</a>
-                                                <form
-                                                    action="{{route('admin.notification.delete',[$notification['id']])}}"
-                                                    method="post" id="notification-{{$notification['id']}}">
-                                                    @csrf @method('delete')
-                                                </form>
-                                            </div>
+                                        <div class="btn--container justify-content-center">
+                                            <a class="action-btn"
+                                                href="{{route('admin.notification.edit',[$notification['id']])}}">
+                                                <i class="tio-edit"></i>
+                                            </a>
+                                            <a class="action-btn btn--danger btn-outline-danger" href="javascript:"
+                                                onclick="form_alert('notification-{{$notification['id']}}','{{ translate("Want to delete this") }}')">
+                                                <i class="tio-delete-outlined"></i>
+                                            </a>
+                                            <form
+                                                action="{{route('admin.notification.delete',[$notification['id']])}}"
+                                                method="post" id="notification-{{$notification['id']}}">
+                                                @csrf @method('delete')
+                                            </form>
                                         </div>
                                         <!-- End Dropdown -->
                                     </td>
@@ -142,7 +151,6 @@
                             </tbody>
                         </table>
 
-                        <hr>
                         <table>
                             <tfoot>
                             {!! $notifications->links() !!}
@@ -164,6 +172,27 @@
 @endsection
 
 @push('script_2')
+<script>
+        function status_change_alert(url, message, e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: message,
+                type: 'warning',
+                showCancelButton: true,
+                cancelButtonColor: 'default',
+                confirmButtonColor: '#107980',
+                cancelButtonText: 'No',
+                confirmButtonText: 'Yes',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.value) {
+                    location.href = url;
+                }
+            })
+        }
+</script>
+
     <script>
         function readURL(input) {
             if (input.files && input.files[0]) {

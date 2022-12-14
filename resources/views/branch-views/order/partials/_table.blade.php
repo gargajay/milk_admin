@@ -45,7 +45,7 @@
                                     </span>
             @elseif($order['order_status']=='processing')
                 <span class="badge badge-soft-warning ml-2 ml-sm-3">
-                                      <span class="legend-indicator bg-warning"></span>{{translate('processing')}}
+                                      <span class="legend-indicator bg-warning"></span>{{translate('packaging')}}
                                     </span>
             @elseif($order['order_status']=='out_for_delivery')
                 <span class="badge badge-soft-warning ml-2 ml-sm-3">

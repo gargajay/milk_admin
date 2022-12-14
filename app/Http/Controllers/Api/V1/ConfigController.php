@@ -55,6 +55,7 @@ class ConfigController extends Controller
             'terms_and_conditions' => BusinessSetting::where(['key' => 'terms_and_conditions'])->first()->value,
             'privacy_policy' => BusinessSetting::where(['key' => 'privacy_policy'])->first()->value,
             'about_us' => BusinessSetting::where(['key' => 'about_us'])->first()->value,
+            'faq' => BusinessSetting::where(['key' => 'faq'])->first()->value,
             'email_verification' => (boolean)Helpers::get_business_settings('email_verification') ?? 0,
             'phone_verification' => (boolean)Helpers::get_business_settings('phone_verification') ?? 0,
             'currency_symbol_position' => Helpers::get_business_settings('currency_symbol_position') ?? 'right',
@@ -75,6 +76,10 @@ class ConfigController extends Controller
             'footer_text' => Helpers::get_business_settings('footer_text'),
             'decimal_point_settings' => (string)Helpers::get_business_settings('decimal_point_settings')??'0',
             'time_format' => (string)Helpers::get_business_settings('time_format')??'24',
+            'social_login' => [
+                'google' => (integer)BusinessSetting::where(['key' => 'google_social_login'])->first()->value,
+                'facebook' => (integer)BusinessSetting::where(['key' => 'facebook_social_login'])->first()->value,
+            ]
         ]);
     }
 }

@@ -12,12 +12,12 @@ class ProductLogic
 {
     public static function get_product($id)
     {
-        return Product::active()->withCount(['wishlist'])->with(['rating'])->where('id', $id)->first();
+        return Product::active()->withCount(['wishlist'])->with(['rating', 'active_reviews', 'active_reviews.customer'])->where('id', $id)->first();
     }
 
     public static function get_latest_products($limit = 10, $offset = 1)
     {
-        $paginator = Product::active()->withCount(['wishlist'])->with(['rating'])->latest()->paginate($limit, ['*'], 'page', $offset);
+        $paginator = Product::active()->withCount(['wishlist'])->with(['rating', 'active_reviews'])->latest()->paginate($limit, ['*'], 'page', $offset);
         /*$paginator->count();*/
         return [
             'total_size' => $paginator->total(),
@@ -27,8 +27,11 @@ class ProductLogic
         ];
     }
 
-    public static function get_favorite_products($limit = 10, $offset = 1, $user_id)
+    public static function get_favorite_products($limit, $offset, $user_id)
     {
+        $limit = is_null($limit) ? 10 : $limit;
+        $offset = is_null($offset) ? 1 : $offset;
+
         $ids = User::with('favorite_products')->find($user_id)->favorite_products->pluck('product_id')->toArray();
         $favorite_products = Product::whereIn('id', $ids)->paginate($limit, ['*'], 'page', $offset);
 
@@ -45,7 +48,7 @@ class ProductLogic
     public static function get_related_products($product_id)
     {
         $product = Product::find($product_id);
-        return Product::active()->withCount(['wishlist'])->with(['rating'])->where('category_ids', $product->category_ids)
+        return Product::active()->withCount(['wishlist'])->with(['rating', 'active_reviews'])->where('category_ids', $product->category_ids)
             ->where('id', '!=', $product->id)
             ->limit(10)
             ->get();
@@ -54,7 +57,7 @@ class ProductLogic
     public static function search_products($name, $limit = 10, $offset = 1)
     {
         $key = explode(' ', $name);
-        $paginator = Product::active()->withCount(['wishlist'])->with(['rating'])->where(function ($q) use ($key) {
+        $paginator = Product::active()->withCount(['wishlist'])->with(['rating', 'active_reviews'])->where(function ($q) use ($key) {
             foreach ($key as $value) {
                 $q->orWhere('name', 'like', "%{$value}%");
             }
@@ -70,7 +73,7 @@ class ProductLogic
 
     public static function get_product_review($id)
     {
-        $reviews = Review::where('product_id', $id)->get();
+        $reviews = Review::active()->where('product_id', $id)->get();
         return $reviews;
     }
 
@@ -119,8 +122,7 @@ class ProductLogic
 
     public static function get_popular_products($limit = 10, $offset = 1)
     {
-        $paginator = Product::active()->with(['rating'])->orderBy('popularity_count', 'desc')->paginate($limit, ['*'], 'page', $offset);
-        /*$paginator->count();*/
+        $paginator = Product::active()->with(['rating', 'active_reviews'])->orderBy('popularity_count', 'desc')->paginate($limit, ['*'], 'page', $offset);
         return [
             'total_size' => $paginator->total(),
             'limit' => $limit,

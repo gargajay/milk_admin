@@ -1,82 +1,78 @@
 @extends('layouts.admin.app')
 
-@section('title', translate('Settings'))
+@section('title', translate('clean database'))
 
-@push('css_or_js')
-    <script src="https://use.fontawesome.com/74721296a6.js"></script>
-    <link rel="stylesheet"
-          href=
-          "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <style>
-        .input-icons i {
-            position: absolute;
-            cursor: pointer;
-            /*text-align: right*/
-            background-color: #F8FAFD;
-            border: #E7EAF3 1px solid;
-        }
-
-        .input-icons {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .icon {
-            padding: 10px;
-            min-width: 40px;
-        }
-
-        .input-field {
-            width: 94%;
-            padding: 10px;
-            text-align: center;
-            border-right-style: none;
-        }
-    </style>
-@endpush
 
 @section('content')
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title">{{translate('Clean')}} {{translate('database')}}</h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/cloud-database.png')}}" class="w--26" alt="">
+                </span>
+                <span>
+                    {{translate('system settings')}}
+                </span>
+            </h1>
+            <ul class="nav nav-tabs border-0 mb-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.language.index')}}">
+                        Language Setup
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.app_setting')}}">
+                        App Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.firebase_message_config_index')}}">
+                        Firebase Configuration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{route('admin.business-settings.web-app.system-setup.db-index')}}">
+                        Clean Database
+                    </a>
+                </li>
+            </ul>
         </div>
         <!-- End Page Header -->
-        <div class="row">
-            <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
-                <div class="alert alert-danger mx-2" role="alert">
-                    {{translate('This_page_contains_sensitive_information.Make_sure_before_changing.')}}
-                </div>
-                <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
-                    <form action="{{route('admin.business-settings.web-app.system-setup.clean-db')}}" method="post"
-                          enctype="multipart/form-data">
-                        @csrf
-                        <div class="row">
-                            @foreach($tables as $key=>$table)
-                                <div class="col-md-3">
-                                    <div class="form-group form-check">
-                                        <input type="checkbox" name="tables[]" value="{{$table}}"
-                                               class="form-check-input"
-                                               id="business_section">
-                                        <label class="form-check-label text-dark"
-                                               style="{{Session::get('direction') === "rtl" ? 'margin-right: 1.25rem;' : ''}};"
-                                               for="business_section">{{ Str::limit($table, 20) }}</label>
-                                        <span class="badge-pill badge-secondary mx-2">{{$rows[$key]}}</span>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
+        <div class="alert alert--danger alert-danger mb-3" role="alert">
+            <span class="alert--icon"><i class="tio-info"></i></span>
+                <strong class="text--title">{{translate('Note :')}}</strong>
+            <span>
+                {{translate('This_page_contains_sensitive_information.Make_sure_before_changing.')}}
+            </span>
+        </div>
 
-                        <hr>
+        <div class="card">
+            <div class="card-body p-20">
+                <form action="{{route('admin.business-settings.web-app.system-setup.clean-db')}}" method="post"
+                    enctype="multipart/form-data">
+                    @csrf
+                    <div class="check--item-wrapper clean--database-checkgroup mt-0">
+                        @foreach($tables as $key=>$table)
+                            <div class="check-item">
+                                <div class="form-group form-check form--check">
+                                    <input type="checkbox" name="tables[]" value="{{$table}}"
+                                        class="form-check-input"
+                                        id="{{$table}}">
+                                    <label class="form-check-label text-dark"
+                                        for="{{$table}}">{{ translate(Str::limit($table, 20)) }}
+                                    <span class="badge-pill badge-secondary mx-2">{{$rows[$key]}}</span></label>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="btn--container justify-content-end">
+                        <button type="reset" class="btn btn--reset">{{translate('reset')}}</button>
                         <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
-                                class="btn btn-primary mb-2">{{translate('Clear')}}</button>
-                    </form>
-                </div>
+                            onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
+                            class="btn btn-primary mb-2">{{translate('clean')}}</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

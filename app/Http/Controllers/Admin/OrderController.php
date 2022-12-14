@@ -4,72 +4,144 @@ namespace App\Http\Controllers\Admin;
 
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
+use App\Model\Branch;
+use App\Model\BusinessSetting;
+use App\Model\DeliveryMan;
 use App\Model\Order;
 use App\Model\OrderDetail;
 use App\Model\Product;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Rap2hpoutre\FastExcel\FastExcel;
 
 class OrderController extends Controller
 {
     public function list(Request $request, $status)
     {
-        //dd($request['timeSlot']);
         $query_param = [];
         $search = $request['search'];
-        $date = $request['date'];
-        $time = $request['time'];
 
-        if (session()->has('branch_filter') == false) {
-            session()->put('branch_filter', 0);
-        }
+        $branches = Branch::all();
+        $branch_id = $request['branch_id'];
+        $start_date = $request['start_date'];
+        $end_date = $request['end_date'];
+
         Order::where(['checked' => 0])->update(['checked' => 1]);
-        if (session('branch_filter') == 0) {
-            if ($status != 'all') {
-                $query = Order::with(['customer', 'branch'])->where(['order_status' => $status]);
-            } else {
-                $query = Order::with(['customer', 'branch']);
-            }
+
+        if ($status != 'all') {
+            $query = Order::with(['customer', 'branch'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    //return $query->whereBetween('created_at', [$start_date, $end_date]);
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->where(['order_status' => $status]);
+            $query_param = ['branch_id' => $branch_id, 'start_date' => $start_date,'end_date' => $end_date ];
+
         } else {
-            if ($status != 'all') {
-                $query = Order::with(['customer', 'branch'])->where(['order_status' => $status, 'branch_id' => session('branch_filter')]);
-            } else {
-                $query = Order::with(['customer', 'branch'])->where(['branch_id' => session('branch_filter')]);
-            }
+            $query = Order::with(['customer', 'branch'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    //return $query->whereBetween('created_at', [$start_date, $end_date]);
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                });
+            $query_param = ['branch_id' => $branch_id, 'start_date' => $start_date,'end_date' => $end_date ];
         }
+
         if ($request->has('search')) {
             $key = explode(' ', $request['search']);
             $query = $query->where(function ($q) use ($key) {
                 foreach ($key as $value) {
                     $q->orWhere('id', 'like', "%{$value}%")
                         ->orWhere('order_status', 'like', "%{$value}%")
-                        ->orWhere('transaction_reference', 'like', "%{$value}%");
+                        ->orWhere('payment_status', 'like', "{$value}%");
                 }
             });
-            $query_param = ['search' => $request['search']];
+            $query_param = ['search' => $request['search'], 'branch_id' => $request['branch_id'], 'start_date' => $request['start_date'],'end_date' => $request['end_date'] ];
         }
 
-        if ($request->has('date') && $date != null) {
-            $query = $query->where('delivery_date', $date);
-            $query_param = ['date' => $request['date']];
-        }
-        if ($request->has('time') && $time != 0) {
-            $query = $query->where('time_slot_id', $time);
-            $query_param = ['time' => $request['time']];
-        }
+        $orders = $query->notPos()->orderBy('id', 'desc')->paginate(Helpers::getPagination())->appends($query_param);
 
+        $count_data = [
+            'pending' => Order::notPos()->where(['order_status'=>'pending'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
 
-        $orders = $query->where('order_type', '!=', 'pos')->orderBy('id', 'desc')->paginate(Helpers::getPagination())->appends($query_param);
-        return view('admin-views.order.list', compact('orders', 'status', 'search', 'date', 'time'));
+            'confirmed' => Order::notPos()->where(['order_status'=>'confirmed'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+
+            'processing' => Order::notPos()->where(['order_status'=>'processing'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+
+            'out_for_delivery' => Order::notPos()->where(['order_status'=>'out_for_delivery'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+
+            'delivered' => Order::notPos()->where(['order_status'=>'delivered'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+
+            'canceled' => Order::notPos()->where(['order_status'=>'canceled'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+
+            'returned' => Order::notPos()->where(['order_status'=>'returned'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+
+            'failed' => Order::notPos()->where(['order_status'=>'failed'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->count(),
+        ];
+
+        return view('admin-views.order.list', compact('orders', 'status', 'search', 'branches', 'branch_id', 'start_date', 'end_date', 'count_data'));
     }
 
     public function details($id)
     {
+        $delivery_man = DeliveryMan::where(['is_active'=>1])->get();
         $order = Order::with('details')->where(['id' => $id])->first();
 
         if (isset($order)) {
-            return view('admin-views.order.order-view', compact('order'));
+            return view('admin-views.order.order-view', compact('order', 'delivery_man'));
         } else {
             Toastr::info(translate('No more orders!'));
             return back();
@@ -136,57 +208,70 @@ class OrderController extends Controller
         }
         if ($request->order_status == 'returned' || $request->order_status == 'failed' || $request->order_status == 'canceled') {
             foreach ($order->details as $detail) {
+
                 if ($detail['is_stock_decreased'] == 1) {
                     $product = Product::find($detail['product_id']);
-                    $type = json_decode($detail['variation'])[0]->type;
-                    $var_store = [];
-                    foreach (json_decode($product['variations'], true) as $var) {
-                        if ($type == $var['type']) {
-                            $var['stock'] += $detail['quantity'];
+
+                    if($product != null){
+                        $type = json_decode($detail['variation'])[0]->type;
+                        $var_store = [];
+                        foreach (json_decode($product['variations'], true) as $var) {
+                            if ($type == $var['type']) {
+                                $var['stock'] += $detail['quantity'];
+                            }
+                            array_push($var_store, $var);
                         }
-                        array_push($var_store, $var);
+                        Product::where(['id' => $product['id']])->update([
+                            'variations' => json_encode($var_store),
+                            'total_stock' => $product['total_stock'] + $detail['quantity'],
+                        ]);
+                        OrderDetail::where(['id' => $detail['id']])->update([
+                            'is_stock_decreased' => 0,
+                        ]);
                     }
-                    Product::where(['id' => $product['id']])->update([
-                        'variations' => json_encode($var_store),
-                        'total_stock' => $product['total_stock'] + $detail['quantity'],
-                    ]);
-                    OrderDetail::where(['id' => $detail['id']])->update([
-                        'is_stock_decreased' => 0,
-                    ]);
+                }else{
+                    Toastr::warning(translate('Product_deleted'));
                 }
+
             }
         } else {
             foreach ($order->details as $detail) {
                 if ($detail['is_stock_decreased'] == 0) {
                     $product = Product::find($detail['product_id']);
-
-                    //check stock
-                    foreach ($order->details as $c) {
-                        $product = Product::find($c['product_id']);
-                        $type = json_decode($c['variation'])[0]->type;
-                        foreach (json_decode($product['variations'], true) as $var) {
-                            if ($type == $var['type'] && $var['stock'] < $c['quantity']) {
-                                Toastr::error(translate('Stock is insufficient!'));
-                                return back();
+                    if($product != null){
+                        //check stock
+                        foreach ($order->details as $c) {
+                            $product = Product::find($c['product_id']);
+                            $type = json_decode($c['variation'])[0]->type;
+                            foreach (json_decode($product['variations'], true) as $var) {
+                                if ($type == $var['type'] && $var['stock'] < $c['quantity']) {
+                                    Toastr::error(translate('Stock is insufficient!'));
+                                    return back();
+                                }
                             }
                         }
+
+                        $type = json_decode($detail['variation'])[0]->type;
+                        $var_store = [];
+                        foreach (json_decode($product['variations'], true) as $var) {
+                            if ($type == $var['type']) {
+                                $var['stock'] -= $detail['quantity'];
+                            }
+                            array_push($var_store, $var);
+                        }
+                        Product::where(['id' => $product['id']])->update([
+                            'variations' => json_encode($var_store),
+                            'total_stock' => $product['total_stock'] - $detail['quantity'],
+                        ]);
+                        OrderDetail::where(['id' => $detail['id']])->update([
+                            'is_stock_decreased' => 1,
+                        ]);
+                    }
+                    else{
+                        Toastr::warning(translate('Product_deleted'));
                     }
 
-                    $type = json_decode($detail['variation'])[0]->type;
-                    $var_store = [];
-                    foreach (json_decode($product['variations'], true) as $var) {
-                        if ($type == $var['type']) {
-                            $var['stock'] -= $detail['quantity'];
-                        }
-                        array_push($var_store, $var);
-                    }
-                    Product::where(['id' => $product['id']])->update([
-                        'variations' => json_encode($var_store),
-                        'total_stock' => $product['total_stock'] - $detail['quantity'],
-                    ]);
-                    OrderDetail::where(['id' => $detail['id']])->update([
-                        'is_stock_decreased' => 1,
-                    ]);
+
                 }
             }
         }
@@ -202,6 +287,7 @@ class OrderController extends Controller
                     'description' => $value,
                     'order_id' => $order['id'],
                     'image' => '',
+                    'type' => 'order'
                 ];
                 Helpers::send_push_notif_to_device($fcm_token, $data);
             }
@@ -220,6 +306,7 @@ class OrderController extends Controller
                         'description' => $value,
                         'order_id' => $order['id'],
                         'image' => '',
+                        'type' => 'order'
                     ];
                     Helpers::send_push_notif_to_device($fcm_token, $data);
                 }
@@ -234,8 +321,6 @@ class OrderController extends Controller
 
     public function add_delivery_man($order_id, $delivery_man_id)
     {
-
-
         if ($delivery_man_id == 0) {
             return response()->json([], 401);
         }
@@ -259,6 +344,7 @@ class OrderController extends Controller
                     'description' => $value,
                     'order_id' => $order['id'],
                     'image' => '',
+                    'type' => 'order'
                 ];
                 Helpers::send_push_notif_to_device($fcm_token, $data);
                 $cs_notify_message = Helpers::order_status_update_message('customer_notify_message');
@@ -271,7 +357,7 @@ class OrderController extends Controller
             Toastr::warning(\App\CentralLogics\translate('Push notification failed for DeliveryMan!'));
         }
 
-        //Toastr::success('Order deliveryman added!');
+        Toastr::success('Deliveryman successfully assigned/changed!');
         return response()->json(['status' => true], 200);
     }
 
@@ -304,12 +390,15 @@ class OrderController extends Controller
             'address' => $request->address,
             'longitude' => $request->longitude,
             'latitude' => $request->latitude,
+            'road' => $request->road,
+            'house' => $request->house,
+            'floor' => $request->floor,
             'created_at' => now(),
             'updated_at' => now(),
         ];
 
         DB::table('customer_addresses')->where('id', $id)->update($address);
-        Toastr::success(translate('Payment status updated!'));
+        Toastr::success(translate('Delivery Information updated!'));
         return back();
     }
 
@@ -329,10 +418,10 @@ class OrderController extends Controller
     {
         if ($request->ajax()) {
             $order = Order::find($request->id);
-            $order->delivery_Date = $request->deliveryDate;
+            $order->delivery_date = $request->deliveryDate;
+           // dd($order);
             $order->save();
             $data = $request->deliveryDate;
-
             return response()->json($data);
         }
     }
@@ -340,7 +429,8 @@ class OrderController extends Controller
     public function generate_invoice($id)
     {
         $order = Order::where('id', $id)->first();
-        return view('admin-views.order.invoice', compact('order'));
+        $footer_text = BusinessSetting::where(['key' => 'footer_text'])->first();
+        return view('admin-views.order.invoice', compact('order', 'footer_text'));
     }
 
     public function add_payment_ref_code(Request $request, $id)
@@ -357,5 +447,81 @@ class OrderController extends Controller
     {
         session()->put('branch_filter', $id);
         return back();
+    }
+
+    public function export_orders(Request $request, $status)
+    {
+        $query_param = [];
+        $search = $request['search'];
+        $branch_id = $request['branch_id'];
+        $start_date = $request['start_date'];
+        $end_date = $request['end_date'];
+
+        if ($status != 'all') {
+            $query = Order::with(['customer', 'branch'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                })->where(['order_status' => $status]);
+        } else {
+            $query = Order::with(['customer', 'branch'])
+                ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                    return $query->where('branch_id', $branch_id);
+                })->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                    return $query->whereDate('created_at', '>=', $start_date)
+                        ->whereDate('created_at', '<=', $end_date);
+                });
+        }
+
+        if ($request->has('search')) {
+            $key = explode(' ', $request['search']);
+            $query = $query->where(function ($q) use ($key) {
+                foreach ($key as $value) {
+                    $q->orWhere('id', 'like', "%{$value}%")
+                        ->orWhere('order_status', 'like', "%{$value}%")
+                        ->orWhere('payment_status', 'like', "%{$value}%");
+                }
+            });
+            $query_param = ['search' => $request['search']];
+        }
+
+        //$orders = $query->notPos()->orderBy('id', 'desc')->paginate(Helpers::getPagination())->appends($query_param);
+        $orders = $query->notPos()->orderBy('id', 'desc')->get();
+
+        $storage = [];
+
+        foreach($orders as $order){
+            $branch = $order->branch ? $order->branch->name : '';
+            $customer = $order->customer ? $order->customer->f_name .' '. $order->customer->l_name : 'Customer Deleted';
+            //$delivery_address = $order->delivery_address ? $order->delivery_address['address'] : '';
+            $delivery_man = $order->delivery_man ? $order->delivery_man->f_name .' '. $order->delivery_man->l_name : '';
+            $timeslot = $order->time_slot ? $order->time_slot->start_time .' - '. $order->time_slot->end_time : '';
+
+            $storage[] = [
+                'order_id' => $order['id'],
+                'customer' => $customer,
+                'order_amount' => $order['order_amount'],
+                'coupon_discount_amount' => $order['coupon_discount_amount'],
+                'payment_status' => $order['payment_status'],
+                'order_status' => $order['order_status'],
+                'total_tax_amount'=>$order['total_tax_amount'],
+                'payment_method' => $order['payment_method'],
+                'transaction_reference' => $order['transaction_reference'],
+               // 'delivery_address' => $delivery_address,
+                'delivery_man' => $delivery_man,
+                'delivery_charge' => $order['delivery_charge'],
+                'coupon_code' => $order['coupon_code'],
+                'order_type' => $order['order_type'],
+                'branch'=>  $branch,
+                'time_slot_id' => $timeslot,
+                'date' => $order['date'],
+                'delivery_date' => $order['delivery_date'],
+                'extra_discount' => $order['extra_discount'],
+            ];
+        }
+        //return $storage;
+        return (new FastExcel($storage))->download('orders.xlsx');
     }
 }

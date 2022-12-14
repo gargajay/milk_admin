@@ -26,6 +26,11 @@
     <script
         src="{{asset('public/assets/admin')}}/vendor/hs-navbar-vertical-aside/hs-navbar-vertical-aside-mini-cache.js"></script>
     <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/toastr.css">
+
+
+    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/style.css">
+    <link rel="stylesheet" href="{{asset('public/assets/admin')}}/css/custom-helper.css">
 </head>
 <!-- Body-->
 <body class="toolbar-enabled">

@@ -174,8 +174,8 @@ class ProductController extends Controller
                 'products' => $paginator->items()
             ];
             $paginator = Helpers::product_data_formatting($products['products'], true);
-            
-            
+
+
             return response()->json($products, 200);
         } catch (\Exception $e) {
             return response()->json([

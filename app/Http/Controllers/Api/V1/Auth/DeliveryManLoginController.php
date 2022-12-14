@@ -24,8 +24,10 @@ class DeliveryManLoginController extends Controller
 
         $data = [
             'email' => $request->email,
-            'password' => $request->password
+            'password' => $request->password,
+            'is_active' => 1
         ];
+
 
         if (auth('delivery_men')->attempt($data)) {
             $token = Str::random(120);
@@ -35,7 +37,7 @@ class DeliveryManLoginController extends Controller
             return response()->json(['token' => $token], 200);
         } else {
             $errors = [];
-            array_push($errors, ['code' => 'auth-001', 'message' => 'Unauthorized.']);
+            $errors[] = ['code' => 'auth-001', 'message' => 'Unauthorized.'];
             return response()->json([
                 'errors' => $errors
             ], 401);

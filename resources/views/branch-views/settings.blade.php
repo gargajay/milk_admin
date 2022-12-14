@@ -128,6 +128,20 @@
                             <!-- End Form Group -->
 
                             <div class="row form-group">
+                                <label for="phoneLabel" class="col-sm-3 col-form-label input-label">{{ translate('Phone') }} <span
+                                        class="input-label-secondary">{{ translate('(Optional)') }}</span></label>
+
+                                <div class="col-sm-9">
+                                    <input type="text" class="js-masked-input form-control" name="phone" id="phoneLabel"
+                                           placeholder="+x(xxx)xxx-xx-xx" aria-label="+(xxx)xx-xxx-xxxxx"
+                                           value="{{auth('branch')->user()->phone}}"
+                                           data-hs-mask-options='{
+                                           "template": "+(880)00-000-00000"
+                                         }'>
+                                </div>
+                            </div>
+
+                            <div class="row form-group">
                                 <label for="newEmailLabel" class="col-sm-3 col-form-label input-label">{{ translate('Email') }}</label>
 
                                 <div class="col-sm-9">
@@ -151,7 +165,7 @@
                 <!-- Card -->
                 <div id="passwordDiv" class="card mb-3 mb-lg-5">
                     <div class="card-header">
-                        <h4 class="card-title">{{ translate('Change password') }}</h4>
+                        <h4 class="card-title"><i class="tio-user-outlined nav-icon"></i> {{ translate('Change password') }}</h4>
                     </div>
 
                     <!-- Body -->

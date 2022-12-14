@@ -10,9 +10,9 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="media mb-3">
+            <div class="media align-items-center mb-2">
                 <!-- Avatar -->
-                <div class="avatar avatar-xl avatar-4by3 mr-2">
+                <div class="avatar avatar-lg mr-3">
                     <img class="avatar-img" src="{{asset('public/assets/admin')}}/svg/illustrations/earnings.png"
                          alt="Image Description">
                 </div>
@@ -26,16 +26,16 @@
                             <div class="row align-items-center">
                                 <div class="col-auto">
                                     <span>{{translate('admin')}}:</span>
-                                    <a href="#">{{auth('admin')->user()->f_name.' '.auth('admin')->user()->l_name}}</a>
+                                    <a href="#"  class="text--primary-2">{{auth('admin')->user()->f_name.' '.auth('admin')->user()->l_name}}</a>
                                 </div>
 
                                 <div class="col-auto">
-                                    <div class="row align-items-center g-0">
-                                        <div class="col-auto pr-2">{{translate('date')}}</div>
+                                    <div class="row align-items-center g-0 m-0">
+                                        <div class="col-auto pr-2">{{translate('date :')}}</div>
 
                                         <!-- Flatpickr -->
-                                        <div>
-                                            ( {{session('from_date')}} - {{session('to_date')}} )
+                                        <div class="text--primary-2">
+                                            {{session('from_date')}} - {{session('to_date')}}
                                         </div>
                                         <!-- End Flatpickr -->
                                     </div>
@@ -43,188 +43,269 @@
                             </div>
                         </div>
 
-                        <div class="col-lg-auto">
-                            <div class="d-flex">
-                                <a class="btn btn-icon btn-primary rounded-circle" href="{{route('admin.dashboard')}}">
-                                    <i class="tio-home-outlined"></i>
-                                </a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
             <!-- End Media -->
-
-            <!-- Nav -->
-            <!-- Nav -->
-            <div class="js-nav-scroller hs-nav-scroller-horizontal">
-            <span class="hs-nav-scroller-arrow-prev" style="display: none;">
-              <a class="hs-nav-scroller-arrow-link" href="javascript:;">
-                <i class="tio-chevron-left"></i>
-              </a>
-            </span>
-
-                <span class="hs-nav-scroller-arrow-next" style="display: none;">
-              <a class="hs-nav-scroller-arrow-link" href="javascript:;">
-                <i class="tio-chevron-right"></i>
-              </a>
-            </span>
-
-                <ul class="nav nav-tabs page-header-tabs" id="projectsTab" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="javascript:">{{translate('overview')}}</a>
-                    </li>
-                </ul>
-            </div>
-            <!-- End Nav -->
         </div>
         <!-- End Page Header -->
 
-        <div class="row border-bottom border-right border-left border-top" style="border-radius: 10px">
-            <div class="col-lg-12 pt-3">
+        <div class="card">
+            <div class="card-body">
                 <form action="{{route('admin.report.set-date')}}" method="post">
                     @csrf
-                    <div class="row">
+                    <div class="row g-3">
                         <div class="col-12">
-                            <div class="mb-3">
-                                <label for="exampleInputEmail1" class="form-label">{{translate('show')}} {{translate('data')}} by {{translate('date')}}
+                            <div>
+                                <label class="form-label mb-0 font-semibold">{{translate('show')}} {{translate('data')}} by {{translate('date')}}
                                     {{translate('range')}}</label>
                             </div>
                         </div>
-                        <div class="col-4">
-                            <div class="mb-3">
-                                <input type="date" name="from" id="from_date"
-                                       class="form-control" required>
-                            </div>
+                        <div class="col-md-4 col-sm-6">
+                            <label class="input-label">{{translate('start')}} {{translate('date')}}</label>
+                            <label class="input-date">
+                                <input type="text" name="from" id="from_date"
+                                       class="js-flatpickr form-control flatpickr-custom flatpickr-input" placeholder="{{ translate('dd/mm/yy') }}" required>
+                            </label>
                         </div>
-                        <div class="col-4">
-                            <div class="mb-3">
-                                <input type="date" name="to" id="to_date"
-                                       class="form-control" required>
-                            </div>
+                        <div class="col-md-4 col-sm-6">
+                            <label class="input-label">{{translate('end')}} {{translate('date')}}</label>
+                            <label class="input-date">
+                                <input type="text" name="to" id="to_date"
+                                       class="js-flatpickr form-control flatpickr-custom flatpickr-input" placeholder="{{ translate('dd/mm/yy') }}" required>
+                            </label>
                         </div>
-                        <div class="col-4">
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-primary btn-block">{{translate('show')}}</button>
+                        <div class="col-md-4">
+                            <label class="input-label d-none d-md-block">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn--primary min-h-45px btn-block">{{translate('show')}}</button>
                             </div>
                         </div>
                     </div>
                 </form>
-            </div>
 
-            @php
-                $from = session('from_date');
-               $to = session('to_date');
-               $total_tax=\App\Model\Order::where(['order_status'=>'delivered'])
-               ->whereBetween('created_at', [$from, $to])
-               ->sum('total_tax_amount');
-               if($total_tax==0){
-                   $total_tax=0.01;
-               }
-            @endphp
-            <div class="col-sm-6 col-lg-6 mb-3 mb-lg-6">
-            @php
-                $total_sold=\App\Model\Order::where(['order_status'=>'delivered'])->whereBetween('created_at', [$from, $to])->sum('order_amount');
-            if($total_sold==0){
-                $total_sold=.01;
-            }
-            @endphp
-            <!-- Card -->
-                <div class="card card-sm">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <!-- Media -->
-                                <div class="media">
-                                    <i class="tio-dollar-outlined nav-icon"></i>
+                <div class="row g-3 mt-3">
+                    @php
+                        $from = session('from_date');
+                        $to = session('to_date');
+                        $total_tax=\App\Model\Order::where(['order_status'=>'delivered'])
+                            ->whereBetween('created_at', [$from, $to])
+                            ->sum('total_tax_amount');
 
-                                    <div class="media-body">
-                                        <h4 class="mb-1">{{translate('total')}} {{translate('sold')}}</h4>
-                                        <span class="font-size-sm text-success">
-                                          <i class="tio-trending-up"></i> {{ Helpers::set_symbol(round(abs($total_sold-$total_tax))) }}
-                                        </span>
+                        if($total_tax==0){
+                            $total_tax=0.01;
+                        }
+                        //dd($total_tax);
+
+                        $total_delivery_charge=\App\Model\Order::where(['order_status'=>'delivered'])
+                            ->whereBetween('created_at', [$from, $to])
+                            ->sum('delivery_charge');
+
+                        if($total_delivery_charge==0){
+                            $total_delivery_charge=0.01;
+                        }
+
+                        $total_sold=\App\Model\Order::where(['order_status'=>'delivered'])
+                            ->whereBetween('created_at', [$from, $to])
+                            ->sum('order_amount');
+
+                        if($total_sold==0){
+                            $total_sold=.01;
+                        }
+
+                        $total_earning = $total_sold - $total_tax - $total_delivery_charge;
+                    @endphp
+                    <div class="col-sm-6">
+
+                    <!-- Card -->
+                        <div class="card card-sm bg--2 border-0 shadow-none">
+                            <div class="card-body py-5 px-xl-5">
+                                <div class="row">
+                                    <div class="col">
+                                        <!-- Media -->
+                                        <div class="media">
+                                            <i class="tio-dollar-outlined nav-icon"></i>
+
+                                            <div class="media-body">
+                                                <h4 class="mb-1">{{translate('total')}} {{translate('sold')}}</h4>
+                                                <span class="text-success">
+                                                <i class="tio-trending-up"></i> {{ Helpers::set_symbol(round(abs($total_sold))) }}
+                                                </span>
+                                            </div>
+
+                                        </div>
+                                        <!-- End Media -->
                                     </div>
 
-                                </div>
-                                <!-- End Media -->
-                            </div>
-
-                            <div class="col-auto">
-                                <!-- Circle -->
-                                <div class="js-circle"
-                                     data-hs-circles-options='{
-                                       "value": {{$total_sold=='.01'?0:round((($total_sold-$total_tax)/$total_sold)*100)}},
-                                       "maxValue": 100,
-                                       "duration": 2000,
-                                       "isViewportInit": true,
-                                       "colors": ["#e7eaf3", "green"],
-                                       "radius": 25,
-                                       "width": 3,
-                                       "fgStrokeLinecap": "round",
-                                       "textFontSize": 14,
-                                       "additionalText": "%",
-                                       "textClass": "circle-custom-text",
-                                       "textColor": "green"
-                                     }'></div>
-                                <!-- End Circle -->
-                            </div>
-                        </div>
-                        <!-- End Row -->
-                    </div>
-                </div>
-                <!-- End Card -->
-            </div>
-
-            <div class="col-sm-6 col-lg-6 mb-3 mb-lg-6">
-                <!-- Card -->
-                <div class="card card-sm">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col">
-                                <!-- Media -->
-                                <div class="media">
-                                    <i class="tio-money nav-icon"></i>
-
-                                    <div class="media-body">
-                                        <h4 class="mb-1">{{translate('total')}} {{translate('tax')}}</h4>
-                                        <span class="font-size-sm text-warning">
-                                          <i class="tio-trending-up"></i> {{ Helpers::set_symbol(round(abs($total_tax))) }}
-                                        </span>
+                                    <div class="col-auto">
+                                        <!-- Circle -->
+                                        <div class="js-circle"
+                                            data-hs-circles-options='{
+                                            "value": {{$total_sold=='.01'?0:round(($total_sold/$total_sold)*100)}},
+                                            "maxValue": 100,
+                                            "duration": 2000,
+                                            "isViewportInit": true,
+                                            "colors": ["#00800040", "green"],
+                                            "radius": 25,
+                                            "width": 3,
+                                            "fgStrokeLinecap": "round",
+                                            "textFontSize": 14,
+                                            "additionalText": "%",
+                                            "textClass": "circle-custom-text",
+                                            "textColor": "green"
+                                            }'>
+                                        </div>
+                                        <!-- End Circle -->
                                     </div>
                                 </div>
-                                <!-- End Media -->
-                            </div>
-
-                            <div class="col-auto">
-                                <!-- Circle -->
-                                <div class="js-circle"
-                                     data-hs-circles-options='{
-                           "value": {{$total_tax=='0.01'?0:round(((abs($total_tax))/$total_sold)*100)}},
-                           "maxValue": 100,
-                           "duration": 2000,
-                           "isViewportInit": true,
-                           "colors": ["#e7eaf3", "#ec9a3c"],
-                           "radius": 25,
-                           "width": 3,
-                           "fgStrokeLinecap": "round",
-                           "textFontSize": 14,
-                           "additionalText": "%",
-                           "textClass": "circle-custom-text",
-                           "textColor": "#ec9a3c"
-                         }'></div>
-                                <!-- End Circle -->
+                                <!-- End Row -->
                             </div>
                         </div>
-                        <!-- End Row -->
+                        <!-- End Card -->
                     </div>
+
+                    <div class="col-sm-6">
+                        <!-- Card -->
+                        <div class="card card-sm bg--3 border-0 shadow-none">
+                            <div class="card-body py-5 px-xl-5">
+                                <div class="row">
+                                    <div class="col">
+                                        <!-- Media -->
+                                        <div class="media">
+                                            <i class="tio-money nav-icon"></i>
+
+                                            <div class="media-body">
+                                                <h4 class="mb-1">{{translate('total')}} {{translate('tax')}}</h4>
+                                                <span class="text-danger">
+                                                <i class="tio-trending-up"></i> {{ Helpers::set_symbol(round(abs($total_tax))) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <!-- End Media -->
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <!-- Circle -->
+                                        <div class="js-circle"
+                                            data-hs-circles-options='{
+                                "value": {{$total_tax=='0.01'?0:round(((abs($total_tax))/$total_sold)*100)}},
+                                "maxValue": 100,
+                                "duration": 2000,
+                                "isViewportInit": true,
+                                "colors": ["#f83b3b40", "#f83b3b"],
+                                "radius": 25,
+                                "width": 3,
+                                "fgStrokeLinecap": "round",
+                                "textFontSize": 14,
+                                "additionalText": "%",
+                                "textClass": "circle-custom-text",
+                                "textColor": "#f83b3b"
+                                }'></div>
+                                        <!-- End Circle -->
+                                    </div>
+                                </div>
+                                <!-- End Row -->
+                            </div>
+                        </div>
+                        <!-- End Card -->
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- Card -->
+                        <div class="card card-sm bg--4 border-0 shadow-none">
+                            <div class="card-body py-5 px-xl-5">
+                                <div class="row">
+                                    <div class="col">
+                                        <!-- Media -->
+                                        <div class="media">
+                                            <i class="tio-money nav-icon"></i>
+
+                                            <div class="media-body">
+                                                <h4 class="mb-1">{{translate('total')}} {{translate('delivery')}} {{translate('charge') }}</h4>
+                                                <span class="text-warning">
+                                                <i class="tio-trending-up"></i> {{ Helpers::set_symbol(round(abs($total_delivery_charge))) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <!-- End Media -->
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <!-- Circle -->
+                                        <div class="js-circle"
+                                            data-hs-circles-options='{
+                                "value": {{$total_delivery_charge=='0.01'?0:round(((abs($total_delivery_charge))/$total_sold)*100)}},
+                                "maxValue": 100,
+                                "duration": 2000,
+                                "isViewportInit": true,
+                                "colors": ["#ec9a3c40", "#ec9a3c"],
+                                "radius": 25,
+                                "width": 3,
+                                "fgStrokeLinecap": "round",
+                                "textFontSize": 14,
+                                "additionalText": "%",
+                                "textClass": "circle-custom-text",
+                                "textColor": "#ec9a3c"
+                                }'></div>
+                                        <!-- End Circle -->
+                                    </div>
+                                </div>
+                                <!-- End Row -->
+                            </div>
+                        </div>
+                        <!-- End Card -->
+                    </div>
+                    <div class="col-sm-6">
+                        <!-- Card -->
+                        <div class="card card-sm bg--1 border-0 shadow-none">
+                            <div class="card-body py-5 px-xl-5">
+                                <div class="row">
+                                    <div class="col">
+                                        <!-- Media -->
+                                        <div class="media">
+                                            <i class="tio-money nav-icon"></i>
+
+                                            <div class="media-body">
+                                                <h4 class="mb-1">{{translate('total')}} {{translate('earning')}}</h4>
+                                                <span class="text-warning" style="color: #0096ff !important">
+                                                <i class="tio-trending-up"></i> {{ Helpers::set_symbol(round(abs($total_earning))) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <!-- End Media -->
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <!-- Circle -->
+                                        <div class="js-circle"
+                                            data-hs-circles-options='{
+                                "value": {{$total_earning=='0.01'?0:round(((abs($total_earning))/$total_sold)*100)}},
+                                "maxValue": 100,
+                                "duration": 2000,
+                                "isViewportInit": true,
+                                "colors": ["#0096ff40", "#0096ff90"],
+                                "radius": 25,
+                                "width": 3,
+                                "fgStrokeLinecap": "round",
+                                "textFontSize": 14,
+                                "additionalText": "%",
+                                "textClass": "circle-custom-text",
+                                "textColor": "#0096ff"
+                                }'></div>
+                                        <!-- End Circle -->
+                                    </div>
+                                </div>
+                                <!-- End Row -->
+                            </div>
+                        </div>
+                        <!-- End Card -->
+                    </div>
+
                 </div>
-                <!-- End Card -->
             </div>
         </div>
-        <!-- End Stats -->
-        <hr>
-        <!-- Card -->
-        <div class="card mb-3 mb-lg-5 border-top border-left border-right border-bottom">
+
+
+        <div class="card mt-3">
             <!-- Header -->
             <div class="card-header">
                 @php
@@ -234,14 +315,6 @@
                         class="h3 ml-sm-2"> {{ Helpers::set_symbol($total_sold) }}</span>
                 </h6>
 
-                <!-- Unfold -->
-                <div class="hs-unfold">
-                    <a class="js-hs-unfold-invoker btn btn-white"
-                       href="{{route('admin.order.list',['status'=>'all'])}}">
-                        <i class="tio-shopping-cart-outlined mr-1"></i> {{translate('orders')}}
-                    </a>
-                </div>
-                <!-- End Unfold -->
             </div>
             <!-- End Header -->
 
@@ -263,8 +336,31 @@
                 }
         @endphp
 
-        @php($currency_position = Helpers::get_business_settings('currency_symbol_position'))
+        @php
+            $delivery_charge=[];
+                for ($i=1;$i<=12;$i++){
+                    $from = date('Y-'.$i.'-01');
+                    $to = date('Y-'.$i.'-30');
+                    $delivery_charge[$i]=\App\Model\Order::where(['order_status'=>'delivered'])->whereBetween('created_at', [$from, $to])->sum('delivery_charge');
+                }
+        @endphp
 
+        @php
+            $sold_cal=[];
+            $tax_cal=[];
+            $delivery_charge_cal=[];
+            $earning=[];
+            for ($i=1;$i<=12;$i++){
+                $from = date('Y-'.$i.'-01');
+                $to = date('Y-'.$i.'-30');
+                $sold_cal[$i]=\App\Model\Order::where(['order_status'=>'delivered'])->whereBetween('created_at', [$from, $to])->sum('order_amount');
+                $tax_cal[$i]=\App\Model\Order::where(['order_status'=>'delivered'])->whereBetween('created_at', [$from, $to])->sum('total_tax_amount');
+                $delivery_charge_cal[$i]=\App\Model\Order::where(['order_status'=>'delivered'])->whereBetween('created_at', [$from, $to])->sum('delivery_charge');
+                $earning[$i] = $sold_cal[$i] - $tax_cal[$i] - $delivery_charge_cal[$i];
+            }
+        @endphp
+
+        @php($currency_position = Helpers::get_business_settings('currency_symbol_position'))
 
         <!-- Body -->
             <div class="card-body">
@@ -287,17 +383,42 @@
                             "hoverBorderColor": "#fff",
                             "hoverBackgroundColor": "#377dff"
                           },
+
                           {
                             "data": [{{$tax[1]}},{{$tax[2]}},{{$tax[3]}},{{$tax[4]}},{{$tax[5]}},{{$tax[6]}},{{$tax[7]}},{{$tax[8]}},{{$tax[9]}},{{$tax[10]}},{{$tax[11]}},{{$tax[12]}}],
                             "backgroundColor": ["rgba(0, 201, 219, 0)", "rgba(255, 255, 255, 0)"],
-                            "borderColor": "#ec9a3c",
+                            "borderColor": "#f83b3b",
                             "borderWidth": 2,
                             "pointRadius": 0,
                             "pointBorderColor": "#fff",
-                            "pointBackgroundColor": "#ec9a3c",
+                            "pointBackgroundColor": "#f83b3b",
                             "pointHoverRadius": 0,
                             "hoverBorderColor": "#fff",
-                            "hoverBackgroundColor": "#00c9db"
+                            "hoverBackgroundColor": "#f83b3b"
+                          },
+                          {
+                            "data": [{{$delivery_charge[1]}},{{$delivery_charge[2]}},{{$delivery_charge[3]}},{{$delivery_charge[4]}},{{$delivery_charge[5]}},{{$delivery_charge[6]}},{{$delivery_charge[7]}},{{$delivery_charge[8]}},{{$delivery_charge[9]}},{{$delivery_charge[10]}},{{$delivery_charge[11]}},{{$delivery_charge[12]}}],
+                            "backgroundColor": ["rgba(0, 201, 219, 0)", "rgba(255, 255, 255, 0)"],
+                            "borderColor": "#f5a200",
+                            "borderWidth": 2,
+                            "pointRadius": 0,
+                            "pointBorderColor": "#fff",
+                            "pointBackgroundColor": "#f5a200",
+                            "pointHoverRadius": 0,
+                            "hoverBorderColor": "#fff",
+                            "hoverBackgroundColor": "#f5a200"
+                          },
+                          {
+                            "data": [{{$earning[1]}},{{$earning[2]}},{{$earning[3]}},{{$earning[4]}},{{$earning[5]}},{{$earning[6]}},{{$earning[7]}},{{$earning[8]}},{{$earning[9]}},{{$earning[10]}},{{$earning[11]}},{{$earning[12]}}],
+                            "backgroundColor": ["rgba(0, 201, 219, 0)", "rgba(255, 255, 255, 0)"],
+                            "borderColor": "#0096ff",
+                            "borderWidth": 2,
+                            "pointRadius": 0,
+                            "pointBorderColor": "#fff",
+                            "pointBackgroundColor": "#0096ff",
+                            "pointHoverRadius": 0,
+                            "hoverBorderColor": "#fff",
+                            "hoverBackgroundColor": "#0096ff"
                           }]
                         },
                         "options": {
@@ -571,5 +692,15 @@
             }
 
         })
+    </script>
+    <script>
+
+        $(document).on('ready', function () {
+            // INITIALIZATION OF FLATPICKR
+            // =======================================================
+            $('.js-flatpickr').each(function () {
+                $.HSCore.components.HSFlatpickr.init($(this));
+            });
+        });
     </script>
 @endpush

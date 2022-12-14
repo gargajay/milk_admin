@@ -2,39 +2,51 @@
     <tr>
         <td>{{$key+1}}</td>
         <td>
-            <span class="d-block font-size-sm text-body">
-                {{$dm['f_name'].' '.$dm['l_name']}}
+            <div class="table--media">
+                <img class="rounded-full"  onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'" src="{{asset('storage/app/public/delivery-man')}}/{{$dm['image']}}" alt="img">
+                <div class="table--media-body">
+                    <h5 class="title">
+                        {{$dm['f_name'] . ' ' . $dm['l_name']}}
+                    </h5>
+                </div>
+            </div>
+        </td>
+        <td>
+            <h5 class="m-0">
+                <a href="mailto:{{$dm['email']}}" class="text-hover">{{$dm['email']}}</a>
+            </h5>
+            <div>
+                <a href="tel:{{$dm['phone']}}" class="text-hover">{{$dm['phone']}}</a>
+            </div>
+        </td>
+        <td>
+            <span class="badge badge-soft-info py-2 px-3 font-bold ml-3">
+                700
             </span>
         </td>
         <td>
-            <div style="height: 60px; width: 60px; overflow-x: hidden;overflow-y: hidden">
-                <img width="60" style="border-radius: 50%"
-                     onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                     src="{{asset('storage/app/public/delivery-man')}}/{{$dm['image']}}">
-            </div>
-            {{--<span class="d-block font-size-sm">{{$banner['image']}}</span>--}}
-        </td>
-        <td>
-            {{$dm['phone']}}
+            <label class="toggle-switch toggle-switch-sm">
+                <input type="checkbox" class="toggle-switch-input" class="toggle-switch-input">
+                <span class="toggle-switch-label">
+                    <span class="toggle-switch-indicator"></span>
+                </span>
+            </label>
         </td>
         <td>
             <!-- Dropdown -->
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button"
-                        id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                        aria-expanded="false">
-                    <i class="tio-settings"></i>
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item"
-                       href="{{route('admin.delivery-man.edit',[$dm['id']])}}">{{translate('edit')}}</a>
-                    <a class="dropdown-item" href="javascript:"
-                       onclick="form_alert('delivery-man-{{$dm['id']}}','{{translate('Want to remove this information ?')}}')">{{translate('delete')}}</a>
-                    <form action="{{route('admin.delivery-man.delete',[$dm['id']])}}"
-                          method="post" id="delivery-man-{{$dm['id']}}">
-                        @csrf @method('delete')
-                    </form>
-                </div>
+            <div class="btn--container justify-content-center">
+                <a class="action-btn"
+                    href="{{route('admin.delivery-man.edit',[$dm['id']])}}">
+                <i class="tio-edit"></i>
+            </a>
+                <a class="action-btn btn--danger btn-outline-danger" href="javascript:"
+                    onclick="form_alert('delivery-man-{{$dm['id']}}','{{translate('Want to remove this information ?')}}')">
+                    <i class="tio-delete-outlined"></i>
+                </a>
+                <form action="{{route('admin.delivery-man.delete',[$dm['id']])}}"
+                        method="post" id="delivery-man-{{$dm['id']}}">
+                    @csrf @method('delete')
+                </form>
             </div>
             <!-- End Dropdown -->
         </td>

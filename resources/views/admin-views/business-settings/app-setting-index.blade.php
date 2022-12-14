@@ -1,88 +1,48 @@
 @extends('layouts.admin.app')
 
-@section('title', translate('Settings'))
-
-@push('css_or_js')
-    <style>
-
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 48px;
-            height: 23px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            -webkit-transition: .4s;
-            transition: .4s;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 15px;
-            width: 15px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            -webkit-transition: .4s;
-            transition: .4s;
-        }
-
-        input:checked + .slider {
-            background-color: #01684B;
-        }
-
-        input:focus + .slider {
-            box-shadow: 0 0 1px #01684B;
-        }
-
-        input:checked + .slider:before {
-            -webkit-transform: translateX(26px);
-            -ms-transform: translateX(26px);
-            transform: translateX(26px);
-        }
-
-        /* Rounded sliders */
-        .slider.round {
-            border-radius: 34px;
-        }
-
-        .slider.round:before {
-            border-radius: 50%;
-        }
-    </style>
-@endpush
+@section('title', translate('app settings'))
 
 @section('content')
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title">{{translate('App Settings')}}</h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('/public/assets/admin/img/app.png')}}" class="w--20" alt="">
+                </span>
+                <span>
+                    {{translate('system settings')}}
+                </span>
+            </h1>
+            <ul class="nav nav-tabs border-0 mb-3">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.language.index')}}">
+                        Language Setup
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{route('admin.business-settings.web-app.system-setup.app_setting')}}">
+                        App Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.firebase_message_config_index')}}">
+                        Firebase Configuration
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{route('admin.business-settings.web-app.system-setup.db-index')}}">
+                        Clean Database
+                    </a>
+                </li>
+            </ul>
         </div>
         <!-- End Page Header -->
 
-        <div class="row" style="padding-bottom: 20px">
+        <div class="row g-3">
             <div class="col-md-6">
                 <div class="card">
-                    <div class="card-body" style="padding: 20px">
+                    <div class="card-body">
                         <h2 class="text-center">{{translate('Android')}}</h2>
                         @php($config=\App\CentralLogics\Helpers::get_business_settings('play_store_config'))
                         <form
@@ -90,29 +50,31 @@
                             method="post">
                             @csrf
                             <div class="form-group mt-4">
-                                <div class="my-2">
-                                    <label
-                                        class="text-dark font-weight-bold">{{ translate('Enable download link for web footer') }}</label>
-                                    <label class="switch ml-3 ">
-                                        <input type="checkbox" class="status" name="play_store_status"
-                                               value="1" {{(isset($config) && $config['status']==1)?'checked':''}}>
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
+                                <label class="toggle-switch h--45px toggle-switch-sm d-flex justify-content-between mb-2">
+                                    <span
+                                        class="pr-1 d-flex align-items-center switch--label">
+                                        <span class="line--limit-1 text--title font-semibold">
+                                            {{ translate('Enable download link for web footer') }}
+                                        </span>
+                                    </span>
+                                        <input class="toggle-switch-input" type="checkbox" class="status" name="play_store_status"
+                                               value="1" {{(isset($config) && $config['status']==1)?'checked':''}} hidden>
+                                    <span class="toggle-switch-label text">
+                                        <span class="toggle-switch-indicator"></span>
+                                    </span>
+                                </label>
 
-                                <div class="my-2">
-                                    <label class="text-dark"
-                                           for="app_store_link">{{ translate('Download link') }}
-                                    </label>
+                                <div class="form-group">
                                     <input type="text" id="play_store_link" name="play_store_link"
                                            value="{{$config['link']??''}}" class="form-control" placeholder="">
                                 </div>
 
-                                <div class="my-2">
-                                    <label class="text-dark"
-                                           for="android_min_version">{{ translate('Minimum version for force update') }}
-                                        <i class="tio-info text-danger" data-toggle="tooltip" data-placement="right"
-                                           title="{{ translate("If there is any update available in the admin panel and for that, the previous user app will not work, you can force the customer from here by providing the minimum version for force update. That means if a customer has an app below this version the customers must need to update the app first. If you don't need a force update just insert here zero (0) and ignore it.") }}"></i>
+                                <div class="mt-3">
+                                    <label class="form-label"
+                                           for="ios_min_version">
+                                           <span>{{ translate('Minimum version for force update') }}</span>
+                                           <span class="form-label-secondary ml-1" data-toggle="tooltip" data-placement="right" data-original-title="{{ translate("If there is any update available in the admin panel and for that, the previous user app will not work, you can force the customer from here by providing the minimum version for force update. That means if a customer has an app below this version the customers must need to update the app first. If you don't need a force update just insert here zero (0) and ignore it.") }}"><img src="{{asset('public/assets/admin/img/info-circle.svg')}}" alt="info">
+
                                     </label>
                                     <input type="number" min="0" step=".1" id="android_min_version" name="android_min_version"
                                            value="{{$config['min_version']??''}}" class="form-control"
@@ -120,17 +82,19 @@
                                 </div>
 
                             </div>
-
-                            <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
-                                    onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
-                                    class="btn btn-primary mb-2">{{translate('save')}}</button>
+                            <div class="btn--container justify-content-end">
+                                <button type="reset" class="btn btn--reset">{{'reset'}}</button>
+                                <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
+                                        onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
+                                        class="btn btn--primary mb-2">{{translate('save')}}</button>
+                            </div>
                         </form>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 mt-2 mt-md-0">
+            <div class="col-md-6">
                 <div class="card">
-                    <div class="card-body" style="padding: 20px">
+                    <div class="card-body">
                         <h2 class="text-center">{{translate('IOS')}}</h2>
                         @php($config=\App\CentralLogics\Helpers::get_business_settings('app_store_config'))
                         <form
@@ -138,29 +102,31 @@
                             method="post">
                             @csrf
                             <div class="form-group mt-4">
-                                <div class="my-2">
-                                    <label
-                                        class="text-dark font-weight-bold">{{ translate('Enable download link for web footer') }}</label>
-                                    <label class="switch ml-3 ">
-                                        <input type="checkbox" class="status" name="app_store_status"
-                                               value="1" {{(isset($config) && $config['status']==1)?'checked':''}}>
-                                        <span class="slider round"></span>
-                                    </label>
-                                </div>
+                                <label class="toggle-switch h--45px toggle-switch-sm d-flex justify-content-between mb-2">
+                                    <span
+                                        class="pr-1 d-flex align-items-center switch--label">
+                                        <span class="line--limit-1 text--title font-semibold">
+                                            {{ translate('Enable download link for web footer') }}
+                                        </span>
+                                    </span>
+                                        <input class="toggle-switch-input" type="checkbox" class="status" name="app_store_status"
+                                               value="1" {{(isset($config) && $config['status']==1)?'checked':''}} hidden>
+                                    <span class="toggle-switch-label text">
+                                        <span class="toggle-switch-indicator"></span>
+                                    </span>
+                                </label>
 
-                                <div class="my-2">
-                                    <label class="text-dark"
-                                           for="app_store_link">{{ translate('Download link') }}
-                                    </label>
+                                <div class="form-group">
                                     <input type="text" id="app_store_link" name="app_store_link"
                                            value="{{$config['link']??''}}" class="form-control" placeholder="">
                                 </div>
 
-                                <div class="my-2">
-                                    <label class="text-dark"
-                                           for="ios_min_version">{{ translate('Minimum version for force update') }}
-                                        <i class="tio-info text-danger" data-toggle="tooltip" data-placement="right"
-                                           title="{{ translate("If there is any update available in the admin panel and for that, the previous user app will not work, you can force the customer from here by providing the minimum version for force update. That means if a customer has an app below this version the customers must need to update the app first. If you don't need a force update just insert here zero (0) and ignore it.") }}"></i>
+                                <div class="mt-3">
+                                    <label class="form-label"
+                                           for="ios_min_version">
+                                           <span>{{ translate('Minimum version for force update') }}</span>
+                                           <span class="form-label-secondary ml-1" data-toggle="tooltip" data-placement="right" data-original-title='{{ translate("If there is any update available in the admin panel and for that, the previous user app will not work, you can force the customer from here by providing the minimum version for force update. That means if a customer has an app below this version the customers must need to update the app first. If you don't need a force update just insert here zero (0) and ignore it.") }}'><img src="{{asset('public/assets/admin/img/info-circle.svg')}}" alt="info">
+
                                     </label>
                                     <input type="number" min="0" step=".1" id="ios_min_version" name="ios_min_version"
                                            value="{{$config['min_version']??''}}" class="form-control"
@@ -168,10 +134,12 @@
                                 </div>
 
                             </div>
-
-                            <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
+                            <div class="btn--container justify-content-end">
+                                <button type="reset" class="btn btn--reset">{{'reset'}}</button>
+                                <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
                                     onclick="{{env('APP_MODE')!='demo'?'':'call_demo()'}}"
-                                    class="btn btn-primary mb-2">{{translate('save')}}</button>
+                                    class="btn btn--primary">{{translate('save')}}</button>
+                            </div>
                         </form>
                     </div>
                 </div>

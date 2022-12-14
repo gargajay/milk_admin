@@ -10,87 +10,90 @@
     <div class="content container-fluid">
         <!-- Page Header -->
         <div class="page-header">
-            <div class="row align-items-center">
-                <div class="col-sm mb-2 mb-sm-0">
-                    <h1 class="page-header-title"><i
-                            class="tio-add-circle-outlined"></i> {{translate('add New Sub-category')}}
-                    </h1>
-                </div>
-            </div>
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/category.png')}}" class="w--24" alt="">
+                </span>
+                <span>
+                    {{translate('sub_category_setup')}}
+                </span>
+            </h1>
         </div>
         <!-- End Page Header -->
         <div class="row gx-2 gx-lg-3">
             <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
-                <form action="{{route('admin.category.store')}}" method="post">
-                    @csrf
-                    @php($data = Helpers::get_business_settings('language'))
-                    @php($default_lang = Helpers::get_default_language())
+                <div class="card">
+                    <div class="card-body">
+                        <form action="{{route('admin.category.store')}}" method="post">
+                            @csrf
+                            @php($data = Helpers::get_business_settings('language'))
+                            @php($default_lang = Helpers::get_default_language())
 
-                    @if($data && array_key_exists('code', $data[0]))
+                            @if($data && array_key_exists('code', $data[0]))
 
-                        <ul class="nav nav-tabs mb-4">
-                            @foreach($data as $lang)
-                                <li class="nav-item">
-                                    <a class="nav-link lang_link {{$lang['default'] == true? 'active':''}}" href="#" id="{{$lang['code']}}-link">{{\App\CentralLogics\Helpers::get_language_name($lang['code']).'('.strtoupper($lang['code']).')'}}</a>
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="row">
-                            <div class="col-6">
+                                <ul class="nav nav-tabs mb-4 d-inline-flex">
+                                    @foreach($data as $lang)
+                                        <li class="nav-item">
+                                            <a class="nav-link lang_link {{$lang['default'] == true? 'active':''}}" href="#" id="{{$lang['code']}}-link">{{\App\CentralLogics\Helpers::get_language_name($lang['code']).'('.strtoupper($lang['code']).')'}}</a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                <div class="row">
                                 @foreach($data as $lang)
-                                    <div class="form-group {{$lang['default'] == false ? 'd-none':''}} lang_form" id="{{$lang['code']}}-form">
-                                        <label class="input-label" for="exampleFormControlInput1">{{translate('sub_category')}} {{translate('name')}} ({{strtoupper($lang['code'])}})</label>
+                                    <div class="col-sm-6 {{$lang['default'] == false ? 'd-none':''}} lang_form" id="{{$lang['code']}}-form">
+                                        <label class="form-label" for="exampleFormControlInput1">{{translate('sub_category')}} {{translate('name')}} ({{strtoupper($lang['code'])}})</label>
                                         <input type="text" name="name[]" class="form-control" maxlength="255" placeholder="{{ translate('New Sub Category') }}" {{$lang['status'] == true ? 'required':''}}
                                         @if($lang['status'] == true) oninvalid="document.getElementById('{{$lang['code']}}-link').click()" @endif>
                                     </div>
                                     <input type="hidden" name="lang[]" value="{{$lang['code']}}">
                                 @endforeach
                                 @else
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group lang_form" id="{{$default_lang}}-form">
-                                                <label class="input-label" for="exampleFormControlInput1">{{translate('sub_category')}} {{translate('name')}}({{strtoupper($default_lang)}})</label>
-                                                <input type="text" name="name[]" class="form-control" placeholder="{{ translate('New Sub Category') }}" required>
-                                            </div>
-                                            <input type="hidden" name="lang[]" value="{{$default_lang}}">
-                                            @endif
-                                            <input name="position" value="1" style="display: none">
-                                        </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label class="input-label"
-                                                       for="exampleFormControlSelect1">{{translate('main')}} {{translate('category')}}
-                                                    <span class="input-label-secondary">*</span></label>
-                                                <select id="exampleFormControlSelect1" name="parent_id" class="form-control" required>
-                                                    @foreach(\App\Model\Category::where(['position'=>0])->get() as $category)
-                                                        <option value="{{$category['id']}}">{{$category['name']}}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
+                                <div class="col-sm-6 lang_form" id="{{$default_lang}}-form">
+                                    <label class="form-label" for="exampleFormControlInput1">{{translate('sub_category')}} {{translate('name')}}({{strtoupper($default_lang)}})</label>
+                                    <input type="text" name="name[]" class="form-control" placeholder="{{ translate('New Sub Category') }}" required>
+                                </div>
+                                <input type="hidden" name="lang[]" value="{{$default_lang}}">
+                                @endif
+                                <input name="position" value="1" hidden>
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label class="form-label"
+                                            for="exampleFormControlSelect1">{{translate('main')}} {{translate('category')}}
+                                            <span class="input-label-secondary">*</span></label>
+                                        <select id="exampleFormControlSelect1" name="parent_id" class="form-control" required>
+                                            @foreach(\App\Model\Category::where(['position'=>0])->get() as $category)
+                                                <option value="{{$category['id']}}">{{$category['name']}}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="btn--container justify-content-end">
+                                        <a href="" class="btn btn--reset min-w-120px">{{translate('reset')}}</a>
+                                        <button type="submit" class="btn btn--primary">{{translate('submit')}}</button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    <button type="submit" class="btn btn-primary">{{translate('submit')}}</button>
-                </form>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             <div class="col-sm-12 col-lg-12 mb-3 mb-lg-2">
                 <div class="card">
-                    <div class="card-header flex-between">
-                        <div class="flex-start">
-                            <h5 class="card-header-title">{{translate('Sub Category Table')}}</h5>
-                            <h5 class="card-header-title text-primary mx-1">({{ $categories->total() }})</h5>
-                        </div>
-                        <div>
+                    <div class="card-header border-0">
+                        <div class="card--header">
+                            <h5 class="card-title">{{translate('Sub Category Table')}} <span class="badge badge-soft-secondary">{{ $categories->total() }}</span> </h5>
                             <form action="{{url()->current()}}" method="GET">
                                 <div class="input-group">
                                     <input id="datatableSearch_" type="search" name="search"
-                                           class="form-control"
-                                           placeholder="{{translate('Search')}}" aria-label="Search"
-                                           value="{{$search}}" required autocomplete="off">
+                                            class="form-control pl-5"
+                                           placeholder="{{translate('Search_by_Name')}}" aria-label="Search"
+                                            value="{{$search}}" required autocomplete="off">
+                                           <i class="tio-search tio-input-search"></i>
                                     <div class="input-group-append">
-                                        <button type="submit" class="input-group-text"><i class="tio-search"></i>
+                                        <button type="submit" class="input-group-text">
+                                            {{translate('search')}}
                                         </button>
                                     </div>
                                 </div>
@@ -102,11 +105,11 @@
                         <table class="table table-borderless table-thead-bordered table-nowrap table-align-middle card-table">
                             <thead class="thead-light">
                             <tr>
-                                <th>{{translate('#')}}</th>
-                                <th style="width: 50%">{{translate('main')}} {{translate('category')}}</th>
-                                <th style="width: 50%">{{translate('sub_category')}}</th>
-                                <th style="width: 20%">{{translate('status')}}</th>
-                                <th style="width: 10%">{{translate('action')}}</th>
+                                <th class="text-center">{{translate('#')}}</th>
+                                <th>{{translate('main')}} {{translate('category')}}</th>
+                                <th>{{translate('sub_category')}}</th>
+                                <th>{{translate('status')}}</th>
+                                <th class="text-center">{{translate('action')}}</th>
                             </tr>
 
                             </thead>
@@ -114,7 +117,7 @@
                             <tbody id="set-rows">
                             @foreach($categories as $key=>$category)
                                 <tr>
-                                    <td>{{$categories->firstItem()+$key}}</td>
+                                    <td class="text-center">{{$categories->firstItem()+$key}}</td>
                                     <td>
                                         <span class="d-block font-size-sm text-body">
                                             {{$category->parent['name']}}
@@ -128,46 +131,47 @@
                                     </td>
 
                                     <td>
-                                        @if($category['status']==1)
-                                            <div style="padding: 10px;border: 1px solid;cursor: pointer"
-                                                 onclick="location.href='{{route('admin.category.status',[$category['id'],0])}}'">
-                                                <span
-                                                    class="legend-indicator bg-success"></span>{{translate('active')}}
-                                            </div>
-                                        @else
-                                            <div style="padding: 10px;border: 1px solid;cursor: pointer"
-                                                 onclick="location.href='{{route('admin.category.status',[$category['id'],1])}}'">
-                                                <span
-                                                    class="legend-indicator bg-danger"></span>{{translate('disabled')}}
-                                            </div>
-                                        @endif
+
+                                        <label class="toggle-switch">
+                                            <input type="checkbox"
+                                                onclick="status_change_alert('{{ route('admin.category.status', [$category->id, $category->status ? 0 : 1]) }}', '{{ $category->status? translate('you_want_to_disable_this_category'): translate('you_want_to_active_this_category') }}', event)"
+                                                class="toggle-switch-input" id="stocksCheckbox{{ $category->id }}"
+                                                {{ $category->status ? 'checked' : '' }}>
+                                            <span class="toggle-switch-label text">
+                                                <span class="toggle-switch-indicator"></span>
+                                            </span>
+                                        </label>
+
                                     </td>
                                     <td>
                                         <!-- Dropdown -->
-                                        <div class="dropdown">
-                                            <button class="btn btn-secondary dropdown-toggle" type="button"
-                                                    id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
-                                                    aria-expanded="false">
-                                                <i class="tio-settings"></i>
-                                            </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                                <a class="dropdown-item"
-                                                   href="{{route('admin.category.edit',[$category['id']])}}">{{translate('edit')}}</a>
-                                                <a class="dropdown-item" href="javascript:"
-                                                   onclick="form_alert('category-{{$category['id']}}','{{translate('Want to delete this ?')}}')">{{translate('delete')}}</a>
-                                                <form action="{{route('admin.category.delete',[$category['id']])}}"
-                                                      method="post" id="category-{{$category['id']}}">
-                                                    @csrf @method('delete')
-                                                </form>
-                                            </div>
+                                        <div class="btn--container justify-content-center">
+                                            <a class="action-btn"
+                                                href="{{route('admin.category.edit',[$category['id']])}}">
+                                            <i class="tio-edit"></i></a>
+                                            <a class="action-btn btn--danger btn-outline-danger" href="javascript:"
+                                                onclick="form_alert('category-{{$category['id']}}','{{ translate("Want to delete this") }}')">
+                                                <i class="tio-delete-outlined"></i>
+                                            </a>
                                         </div>
+                                        <form action="{{route('admin.category.delete',[$category['id']])}}"
+                                                method="post" id="category-{{$category['id']}}">
+                                            @csrf @method('delete')
+                                        </form>
                                         <!-- End Dropdown -->
                                     </td>
                                 </tr>
                             @endforeach
                             </tbody>
                         </table>
-                        <hr>
+                         
+                        @if(count($categories) == 0)
+                        <div class="text-center p-4">
+                            <img class="w-120px mb-3" src="{{asset('/public/assets/admin/svg/illustrations/sorry.svg')}}" alt="Image Description">
+                            <p class="mb-0">{{translate('No_data_to_show')}}</p>
+                        </div>
+                        @endif
+
                         <div class="page-area">
                             <table>
                                 <tfoot>
@@ -184,6 +188,27 @@
 @endsection
 
 @push('script_2')
+<script>
+
+        function status_change_alert(url, message, e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: message,
+                type: 'warning',
+                showCancelButton: true,
+                cancelButtonColor: 'default',
+                confirmButtonColor: '#107980',
+                cancelButtonText: 'No',
+                confirmButtonText: 'Yes',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.value) {
+                    location.href = url;
+                }
+            })
+        }
+</script>
     <script>
         $(".lang_link").click(function(e){
             e.preventDefault();

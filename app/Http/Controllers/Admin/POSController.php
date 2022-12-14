@@ -5,14 +5,19 @@ namespace App\Http\Controllers\Admin;
 use App\CentralLogics\Helpers;
 use App\Http\Controllers\Controller;
 use App\Model\Branch;
+use App\Model\BusinessSetting;
 use App\Model\Category;
+use App\Model\DeliveryMan;
 use App\Model\Order;
 use App\Model\OrderDetail;
 use App\Model\Product;
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Rap2hpoutre\FastExcel\FastExcel;
 use function App\CentralLogics\translate;
 
 class POSController extends Controller
@@ -35,7 +40,8 @@ class POSController extends Controller
         })->active()->latest()->paginate(Helpers::getPagination());
 
         $branches = Branch::all();
-        return view('admin-views.pos.index', compact('categories', 'products', 'category', 'keyword', 'branches'));
+        $users = User::all();
+        return view('admin-views.pos.index', compact('categories', 'products', 'category', 'keyword', 'branches', 'users'));
     }
 
     public function quick_view(Request $request)
@@ -113,6 +119,8 @@ class POSController extends Controller
 
     public function update_discount(Request $request)
     {
+        $total = session()->get('total');
+
         if ($request->type == 'percent' && $request->discount < 0) {
             Toastr::error(translate('Extra_discount_can_not_be_less_than_0_percent'));
             return back();
@@ -120,11 +128,19 @@ class POSController extends Controller
             Toastr::error(translate('Extra_discount_can_not_be_more_than_100_percent'));
             return back();
         }
+        elseif ($request->type == 'amount' && $request->discount > $total) {
+            Toastr::error(translate('Extra_discount_can_not_be_more_than_total_price'));
+            return back();
+        }
+
 
         $cart = $request->session()->get('cart', collect([]));
+
         $cart['extra_discount'] = $request->discount;
         $cart['extra_discount_type'] = $request->type;
         $request->session()->put('cart', $cart);
+
+        Toastr::success(translate('Discount_applied'));
         return back();
     }
 
@@ -232,11 +248,24 @@ class POSController extends Controller
     //order
     public function order_list(Request $request)
     {
+        $branches = Branch::all();
         $query_param = [];
         $search = $request['search'];
 
+        $branch_id = $request['branch_id'];
+        $start_date = $request['start_date'];
+        $end_date = $request['end_date'];
+
         Order::where(['checked' => 0])->update(['checked' => 1]);
-        $query = Order::pos()->with(['customer', 'branch']);
+        $query = Order::pos()->with(['customer', 'branch'])
+            ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                return $query->where('branch_id', $branch_id);
+            })
+            ->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                return $query->whereDate('created_at', '>=', $start_date)
+                    ->whereDate('created_at', '<=', $end_date);
+            });
+        $query_param = ['branch_id' => $branch_id, 'start_date' => $start_date,'end_date' => $end_date ];
 
         if ($request->has('search')) {
             $key = explode(' ', $request['search']);
@@ -244,7 +273,7 @@ class POSController extends Controller
                 foreach ($key as $value) {
                     $q->orWhere('id', 'like', "%{$value}%")
                         ->orWhere('order_status', 'like', "%{$value}%")
-                        ->orWhere('transaction_reference', 'like', "%{$value}%");
+                        ->orWhere('payment_status', 'like', "%{$value}%");
                 }
             });
             $query_param = ['search' => $request['search']];
@@ -252,14 +281,16 @@ class POSController extends Controller
 
         $orders = $query->latest()->paginate(Helpers::getPagination())->appends($query_param);
 
-        return view('admin-views.pos.order.list', compact('orders','search'));
+        return view('admin-views.pos.order.list', compact('orders','search', 'branches', 'branch_id', 'start_date', 'end_date'));
     }
 
     public function order_details($id)
     {
         $order = Order::with('details')->where(['id' => $id])->first();
+        $delivery_man = DeliveryMan::where(['is_active'=>1])->get();
+
         if (isset($order)) {
-            return view('admin-views.order.order-view', compact('order'));
+            return view('admin-views.order.order-view', compact('order', 'delivery_man'));
         } else {
             Toastr::info(translate('No more orders!'));
             return back();
@@ -407,5 +438,87 @@ class POSController extends Controller
     {
         session()->put($request['key'], $request['value']);
         return response()->json('', 200);
+    }
+
+    public function new_customer_store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'f_name' => 'required',
+            'l_name' => 'required',
+            'email' => 'required|email|unique:users',
+            'phone' => 'required|unique:users'
+        ], [
+            'f_name.required' => translate('first name is required'),
+            'l_name.required' => translate('last name is required'),
+            'email.required' => translate('email name is required'),
+            'phone.required' => translate('phone name is required'),
+            'email.unique' => translate('email must be unique'),
+            'phone.unique' => translate('phone must be unique'),
+        ]);
+
+        $customer = new User();
+        $customer->f_name = $request->f_name;
+        $customer->l_name = $request->l_name;
+        $customer->email = $request->email;
+        $customer->phone = $request->phone;
+        $customer->password = Hash::make('12345678');
+        $customer->save();
+        Toastr::success(translate('Customer added successfully!'));
+        return back();
+    }
+
+    public function export_orders(Request $request)
+    {
+        $query_param = [];
+        $search = $request['search'];
+
+        $branch_id = $request['branch_id'];
+        $start_date = $request['start_date'];
+        $end_date = $request['end_date'];
+
+        $query = Order::pos()->with(['customer', 'branch'])
+            ->when((!is_null($branch_id) && $branch_id != 'all'), function ($query) use ($branch_id) {
+                return $query->where('branch_id', $branch_id);
+            })
+            ->when((!is_null($start_date) && !is_null($end_date)), function ($query) use ($start_date, $end_date) {
+                return $query->whereDate('created_at', '>=', $start_date)
+                    ->whereDate('created_at', '<=', $end_date);
+            });
+
+        if ($request->has('search')) {
+            $key = explode(' ', $request['search']);
+            $query = $query->where(function ($q) use ($key) {
+                foreach ($key as $value) {
+                    $q->orWhere('id', 'like', "%{$value}%")
+                        ->orWhere('order_status', 'like', "%{$value}%")
+                        ->orWhere('payment_status', 'like', "%{$value}%");
+                }
+            });
+            $query_param = ['search' => $request['search']];
+        }
+
+       // $orders = $query->latest()->paginate(Helpers::getPagination())->appends($query_param);
+        $orders = $query->latest()->get();
+
+        $storage = [];
+        foreach($orders as $order){
+            $branch = $order->branch ? $order->branch->name : '';
+            $customer = $order->customer ? $order->customer->f_name .' '. $order->customer->l_name : 'Walking Customer';
+            $storage[] = [
+                'order_id' => $order['id'],
+                'customer' => $customer,
+                'order_amount' => $order['order_amount'],
+                'coupon_discount_amount' => $order['coupon_discount_amount'],
+                'payment_status' => $order['payment_status'],
+                'order_status' => $order['order_status'],
+                'total_tax_amount'=>$order['total_tax_amount'],
+                'payment_method'=>$order['payment_method'],
+                'order_type'=>$order['order_type'],
+                'branch'=>$branch,
+                'delivery_date'=>$order['delivery_date'],
+            ];
+        }
+
+        return (new FastExcel($storage))->download('pos-orders.xlsx');
     }
 }

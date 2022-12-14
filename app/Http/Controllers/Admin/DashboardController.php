@@ -12,8 +12,10 @@ use App\Model\OrderDetail;
 use App\Model\Product;
 use App\Model\Review;
 use App\User;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -26,6 +28,7 @@ class DashboardController extends Controller
             'description' => $id,
             'order_id' => '',
             'image' => '',
+            'type' => 'order'
         ];
 
         try {
@@ -39,10 +42,13 @@ class DashboardController extends Controller
     public function dashboard()
     {
         $top_sell = OrderDetail::with(['product'])
+            ->whereHas('order', function ($query){
+                $query->where('order_status', 'delivered');
+            })
             ->select('product_id', DB::raw('SUM(quantity) as count'))
             ->groupBy('product_id')
             ->orderBy("count", 'desc')
-            ->take(6)
+            ->take(5)
             ->get();
 
         $most_rated_products = Review::with(['product'])
@@ -52,7 +58,8 @@ class DashboardController extends Controller
             ])
             ->groupBy('product_id')
             ->orderBy("total", 'desc')
-            ->take(6)
+            ->orderBy("ratings_average", 'desc')
+            ->take(5)
             ->get();
 
         $top_customer = Order::with(['customer'])
@@ -70,12 +77,24 @@ class DashboardController extends Controller
         $data['category'] = Category::where('parent_id', 0)->count();
         $data['branch'] = Branch::count();
 
+        $data['pending_count'] = Order::where(['order_status' => 'pending'])->count();
+        $data['ongoing_count'] = Order::whereIn('order_status', ['confirmed', 'processing', 'out_for_delivery'])->count();
+        $data['delivered_count'] = Order::where(['order_status' => 'delivered'])->count();
+        $data['canceled_count'] = Order::where(['order_status' => 'canceled'])->count();
+        $data['returned_count'] = Order::where(['order_status' => 'returned'])->count();
+        $data['failed_count'] = Order::where(['order_status' => 'failed'])->count();
+
+        $data['recent_orders'] = Order::notPos()->latest()->take(5)->get(['id', 'created_at', 'order_status']);
+
+
         $data['top_sell'] = $top_sell;
         $data['most_rated_products'] = $most_rated_products;
         $data['top_customer'] = $top_customer;
 
         $from = \Carbon\Carbon::now()->startOfYear()->format('Y-m-d');
         $to = Carbon::now()->endOfYear()->format('Y-m-d');
+
+        /*earning statistics chart*/
 
         $earning = [];
         $earning_data = Order::where([
@@ -93,7 +112,27 @@ class DashboardController extends Controller
             }
         }
 
-        return view('admin-views.dashboard', compact('data', 'earning'));
+        /*order statistics chart*/
+
+        $order_statistics_chart = [];
+        $order_statistics_chart_data = Order::where(['order_status' => 'delivered'])
+            ->select(
+                DB::raw('(count(id)) as total'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month')
+            )->whereBetween('created_at', [$from, $to])->groupby('year', 'month')->get()->toArray();
+
+
+        for ($inc = 1; $inc <= 12; $inc++) {
+            $order_statistics_chart[$inc] = 0;
+            foreach ($order_statistics_chart_data as $match) {
+                if ($match['month'] == $inc) {
+                    $order_statistics_chart[$inc] = $match['total'];
+                }
+            }
+        }
+
+        //dd($order_statistics_chart_data);
+        return view('admin-views.dashboard', compact('data', 'earning', 'order_statistics_chart'));
     }
 
     public function order_stats(Request $request)
@@ -142,7 +181,7 @@ class DashboardController extends Controller
                 return $query->whereMonth('created_at', Carbon::now());
             })
             ->count();
-        $delivered = Order::where(['order_status' => 'delivered'])->notPos()
+        $delivered = Order::where(['order_status' => 'delivered'])
             ->when($today, function ($query) {
                 return $query->whereDate('created_at', Carbon::today());
             })
@@ -150,8 +189,7 @@ class DashboardController extends Controller
                 return $query->whereMonth('created_at', Carbon::now());
             })
             ->count();
-        $all = Order::notPos()
-            ->when($today, function ($query) {
+        $all = Order::when($today, function ($query) {
                 return $query->whereDate('created_at', Carbon::today());
             })
             ->when($this_month, function ($query) {
@@ -175,6 +213,15 @@ class DashboardController extends Controller
             })
             ->count();
 
+        $canceled = Order::where(['order_status' => 'canceled'])
+            ->when($today, function ($query) {
+                return $query->whereDate('created_at', Carbon::today());
+            })
+            ->when($this_month, function ($query) {
+                return $query->whereMonth('created_at', Carbon::now());
+            })
+            ->count();
+
         $data = [
             'pending' => $pending,
             'confirmed' => $confirmed,
@@ -183,10 +230,208 @@ class DashboardController extends Controller
             'delivered' => $delivered,
             'all' => $all,
             'returned' => $returned,
-            'failed' => $failed
+            'failed' => $failed,
+            'canceled' => $canceled
         ];
 
         return $data;
+    }
+
+    /**
+     * filter order statistics in week, month, year by ajax
+     */
+    public function get_order_statitics(Request $request){
+        $dateType = $request->type;
+
+        $order_data = array();
+        if($dateType == 'yearOrder') {
+            $number = 12;
+            $from = Carbon::now()->startOfYear()->format('Y-m-d');
+            $to = Carbon::now()->endOfYear()->format('Y-m-d');
+
+            $orders = Order::where(['order_status' => 'delivered'])
+            ->select(
+                DB::raw('(count(id)) as total'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month')
+            )->whereBetween('created_at', [$from, $to])->groupby('year', 'month')->get()->toArray();
+
+            for ($inc = 1; $inc <= $number; $inc++) {
+                $order_data[$inc] = 0;
+                foreach ($orders as $match) {
+                    if ($match['month'] == $inc) {
+                        $order_data[$inc] = $match['total'];
+                    }
+                }
+            }
+            $key_range = array("Jan","Feb","Mar","April","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
+
+        }elseif($dateType == 'MonthOrder') {
+            $from = date('Y-m-01');
+            $to = date('Y-m-t');
+            $number = date('d',strtotime($to));
+            $key_range = range(1, $number);
+
+            $orders = Order::where(['order_status' => 'delivered'])
+            ->select(
+                DB::raw('(count(id)) as total'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month, DAY(created_at) day')
+            )->whereBetween('created_at', [$from, $to])->groupby('day')->get()->toArray();
+
+            for ($inc = 1; $inc <= $number; $inc++) {
+                $order_data[$inc] = 0;
+                foreach ($orders as $match) {
+                    if ($match['day'] == $inc) {
+                        $order_data[$inc] = $match['total'];
+                    }
+                }
+            }
+
+        }elseif($dateType == 'WeekOrder') {
+            Carbon::setWeekStartsAt(Carbon::SUNDAY);
+            Carbon::setWeekEndsAt(Carbon::SATURDAY);
+
+            $from = Carbon::now()->startOfWeek()->format('Y-m-d 00:00:00');
+            $to = Carbon::now()->endOfWeek()->format('Y-m-d 23:59:59');
+            $date_range = CarbonPeriod::create($from, $to)->toArray();
+            $day_range = array();
+            foreach($date_range as $date){
+                $day_range[] =$date->format('d');
+            }
+            $day_range = array_flip($day_range);
+            $day_range_keys = array_keys($day_range);
+            $day_range_values = array_values($day_range);
+            $day_range_intKeys = array_map('intval', $day_range_keys);
+            $day_range = array_combine($day_range_intKeys, $day_range_values);
+
+            $orders = Order::where(['order_status' => 'delivered'])
+            ->select(
+                DB::raw('(count(id)) as total'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month, DAY(created_at) day')
+            )->whereBetween('created_at', [$from, $to])->groupby('day')->orderBy('created_at', 'ASC')->pluck('total', 'day')->toArray();
+
+            $order_data = array();
+            foreach($day_range as $day=>$value){
+                $day_value = 0;
+                $order_data[$day] = $day_value;
+            }
+
+            foreach($orders as $order_day => $order_value){
+                if(array_key_exists($order_day, $order_data)){
+                    $order_data[$order_day] = $order_value;
+                }
+            }
+            $key_range = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
+        }
+
+        $label = $key_range;
+        $order_data_final = $order_data;
+
+        $data = array(
+            'orders_label' => $label,
+            'orders' => array_values($order_data_final),
+        );
+        return response()->json($data);
+    }
+
+    /**
+     * filter earning statistics in week, month, year by ajax
+     */
+    public function get_earning_statitics(Request $request){
+        $dateType = $request->type;
+
+        $earning_data = array();
+        if($dateType == 'yearEarn') {
+            $number = 12;
+            $from = Carbon::now()->startOfYear()->format('Y-m-d');
+            $to = Carbon::now()->endOfYear()->format('Y-m-d');
+
+            $earning = Order::where([
+                'order_status' => 'delivered'
+            ])->select(
+                DB::raw('IFNULL(sum(order_amount),0) as sums'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month')
+            )->whereBetween('created_at', [$from, $to])->groupby('year', 'month')->get()->toArray();
+
+            for ($inc = 1; $inc <= $number; $inc++) {
+                $earning_data[$inc] = 0;
+                foreach ($earning as $match) {
+                    if ($match['month'] == $inc) {
+                        $earning_data[$inc] = $match['sums'];
+                    }
+                }
+            }
+            $key_range = array("Jan","Feb","Mar","April","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec");
+
+
+        }elseif($dateType == 'MonthEarn') {
+            $from = date('Y-m-01');
+            $to = date('Y-m-t');
+            $number = date('d',strtotime($to));
+            $key_range = range(1, $number);
+
+            $earning = Order::where([
+                'order_status' => 'delivered'
+            ])->select(
+                DB::raw('IFNULL(sum(order_amount),0) as sums'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month, DAY(created_at) day')
+            )->whereBetween('created_at', [$from, $to])->groupby('day')->get()->toArray();
+
+            for ($inc = 1; $inc <= $number; $inc++) {
+                $earning_data[$inc] = 0;
+                foreach ($earning as $match) {
+                    if ($match['day'] == $inc) {
+                        $earning_data[$inc] = $match['sums'];
+                    }
+                }
+            }
+
+        }elseif($dateType == 'WeekEarn') {
+            Carbon::setWeekStartsAt(Carbon::SUNDAY);
+            Carbon::setWeekEndsAt(Carbon::SATURDAY);
+
+            $from = Carbon::now()->startOfWeek()->format('Y-m-d 00:00:00');
+            $to = Carbon::now()->endOfWeek()->format('Y-m-d 23:59:59');
+            $date_range = CarbonPeriod::create($from, $to)->toArray();
+            $day_range = array();
+            foreach($date_range as $date){
+                $day_range[] =$date->format('d');
+            }
+            $day_range = array_flip($day_range);
+            $day_range_keys = array_keys($day_range);
+            $day_range_values = array_values($day_range);
+            $day_range_intKeys = array_map('intval', $day_range_keys);
+            $day_range = array_combine($day_range_intKeys, $day_range_values);
+
+            $earning = Order::where([
+                'order_status' => 'delivered'
+            ])->select(
+                DB::raw('IFNULL(sum(order_amount),0) as sums'),
+                DB::raw('YEAR(created_at) year, MONTH(created_at) month, DAY(created_at) day')
+            )->whereBetween('created_at', [$from, $to])->groupby('day')->orderBy('created_at', 'ASC')->pluck('sums', 'day')->toArray();
+
+            $earning_data = array();
+            foreach($day_range as $day=>$value){
+                $day_value = 0;
+                $earning_data[$day] = $day_value;
+            }
+
+            foreach($earning as $order_day => $order_value){
+                if(array_key_exists($order_day, $earning_data)){
+                    $earning_data[$order_day] = $order_value;
+                }
+            }
+
+            $key_range = array('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday');
+        }
+
+        $label = $key_range;
+        $earning_data_final = $earning_data;
+
+        $data = array(
+            'earning_label' => $label,
+            'earning' => array_values($earning_data_final),
+        );
+        return response()->json($data);
     }
 
 }

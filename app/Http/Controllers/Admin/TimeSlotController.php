@@ -13,6 +13,7 @@ class TimeSlotController extends Controller
     public function add_new()
     {
         $timeSlots = TimeSlot::orderBy('start_time', 'asc')->get();
+        //return $timeSlots;
         return view('admin-views.timeSlot.index', compact('timeSlots'));
     }
 
@@ -95,7 +96,7 @@ class TimeSlotController extends Controller
         ]);
 
         Toastr::success(translate('Time Slot updated successfully!'));
-        return back();
+        return redirect()->route('admin.business-settings.store.timeSlot.add-new');
     }
 
     public function status(Request $request)

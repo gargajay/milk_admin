@@ -143,4 +143,12 @@ class CouponController extends Controller
         return back();
     }
 
+    public function show($id)
+    {
+        $coupon = Coupon::where(['id' => $id])->first();
+        $currency = Helpers::currency_symbol();
+        //dd($coupon);
+        return response()->json(['coupon'=>$coupon, 'currency'=>$currency]);
+    }
+
 }

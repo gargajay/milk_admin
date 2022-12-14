@@ -20,7 +20,6 @@ class ModulePermissionMiddleware
         if (Helpers::module_permission_check($module)) {
             return $next($request);
         }
-
         Toastr::error('Access Denied !');
         return back();
     }

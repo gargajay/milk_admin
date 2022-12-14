@@ -3,11 +3,11 @@
         <tr>
             <td>{{$key+1}}</td>
             <td>
-                                        <span class="d-block font-size-sm text-body">
-                                            <a href="{{route('admin.product.view',[$review['product_id']])}}">
-                                                {{$review->product['name']}}
-                                            </a>
-                                        </span>
+                <span class="d-block font-size-sm text-body">
+                    <a href="{{route('admin.product.view',[$review['product_id']])}}">
+                        {{$review->product['name']}}
+                    </a>
+                </span>
             </td>
             <td>
                 <a href="{{route('admin.customer.view',[$review->user_id])}}">

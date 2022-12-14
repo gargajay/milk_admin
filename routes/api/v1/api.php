@@ -7,6 +7,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
     Route::group(['prefix' => 'auth', 'namespace' => 'Auth'], function () {
         Route::post('register', 'CustomerAuthController@registration');
         Route::post('login', 'CustomerAuthController@login');
+        Route::post('social-customer-login', 'CustomerAuthController@social_customer_login');
 
         Route::post('check-phone', 'CustomerAuthController@check_phone');
         Route::post('verify-phone', 'CustomerAuthController@verify_phone');
@@ -20,31 +21,6 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
 
         Route::group(['prefix' => 'delivery-man'], function () {
             Route::post('login', 'DeliveryManLoginController@login');
-        });
-    });
-
-    Route::group(['prefix' => 'delivery-man'], function () {
-        Route::get('profile', 'DeliverymanController@get_profile');
-        Route::get('current-orders', 'DeliverymanController@get_current_orders');
-        Route::get('all-orders', 'DeliverymanController@get_all_orders');
-        Route::post('record-location-data', 'DeliverymanController@record_location_data');
-        Route::get('order-delivery-history', 'DeliverymanController@get_order_history');
-        Route::put('update-order-status', 'DeliverymanController@update_order_status');
-        Route::put('update-payment-status', 'DeliverymanController@order_payment_status_update');
-        Route::get('order-details', 'DeliverymanController@get_order_details');
-        Route::get('last-location', 'DeliverymanController@get_last_location');
-        Route::put('update-fcm-token', 'DeliverymanController@update_fcm_token');
-
-        //delivery-man message
-        Route::group(['prefix' => 'message'], function () {
-            Route::post('get-message', 'ConversationController@get_order_message_for_dm');
-            Route::post('send/{sender_type}', 'ConversationController@store_message_by_order');
-        });
-
-        Route::group(['prefix' => 'reviews', 'middleware' => ['auth:api']], function () {
-            Route::get('/{delivery_man_id}', 'DeliveryManReviewController@get_reviews');
-            Route::get('rating/{delivery_man_id}', 'DeliveryManReviewController@get_rating');
-            Route::post('/submit', 'DeliveryManReviewController@submit_review');
         });
     });
 
@@ -65,7 +41,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::post('reviews/submit', 'ProductController@submit_product_review')->middleware('auth:api');
 
 
-        Route::group(['prefix' => 'favorite', 'middleware' => ['auth:api']], function () {
+        Route::group(['prefix' => 'favorite', 'middleware' => ['auth:api', 'customer_is_block']], function () {
             Route::get('/', 'ProductController@get_favorite_products');
             Route::post('/', 'ProductController@add_favorite_products');
             Route::delete('/', 'ProductController@remove_favorite_products');
@@ -87,25 +63,17 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::get('products/{category_id}/all', 'CategoryController@get_all_products');
     });
 
-    Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () 
-    {
+    Route::group(['prefix' => 'customer', 'middleware' => ['auth:api', 'customer_is_block']], function () {
         Route::get('info', 'CustomerController@info');
         Route::put('update-profile', 'CustomerController@update_profile');
         Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
+        Route::delete('unsubscribe-topic', 'CustomerController@unsubscribe_topic');
 
         Route::delete('remove-account', 'CustomerController@remove_account');
 
         Route::group(['prefix' => 'address'], function () {
             Route::get('list', 'CustomerController@address_list');
             Route::post('add', 'CustomerController@add_new_address');
-            Route::put('update/{id}', 'CustomerController@update_address');
-            Route::delete('delete', 'CustomerController@delete_address');
-        });
-
-        Route::group(['prefix' => 'mywallet'], function () {
-            Route::get('list', 'CustomerController@address_list');
-            Route::post('adding', 'CustomerController@addMoney');
-            Route::post('using', 'CustomerController@useMoney');
             Route::put('update/{id}', 'CustomerController@update_address');
             Route::delete('delete', 'CustomerController@delete_address');
         });
@@ -143,7 +111,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::get('/', 'BannerController@get_banners');
     });
 
-    Route::group(['prefix' => 'coupon', 'middleware' => 'auth:api'], function () {
+    Route::group(['prefix' => 'coupon', 'middleware' => ['auth:api', 'customer_is_block']], function () {
         Route::get('list', 'CouponController@list');
         Route::get('apply', 'CouponController@apply');
     });
@@ -160,4 +128,32 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
     });
 
     Route::post('subscribe-newsletter', 'CustomerController@subscribe_newsletter');
+
+    Route::group(['prefix' => 'delivery-man'], function () {
+        Route::group(['middleware' => 'deliveryman_is_active'], function () {
+            Route::get('profile', 'DeliverymanController@get_profile');
+            Route::get('current-orders', 'DeliverymanController@get_current_orders');
+            Route::get('all-orders', 'DeliverymanController@get_all_orders');
+            Route::post('record-location-data', 'DeliverymanController@record_location_data');
+            Route::get('order-delivery-history', 'DeliverymanController@get_order_history');
+            Route::put('update-order-status', 'DeliverymanController@update_order_status');
+            Route::put('update-payment-status', 'DeliverymanController@order_payment_status_update');
+            Route::get('order-details', 'DeliverymanController@get_order_details');
+            Route::get('last-location', 'DeliverymanController@get_last_location');
+            Route::put('update-fcm-token', 'DeliverymanController@update_fcm_token');
+        });
+
+
+        //delivery-man message
+        Route::group(['prefix' => 'message'], function () {
+            Route::post('get-message', 'ConversationController@get_order_message_for_dm');
+            Route::post('send/{sender_type}', 'ConversationController@store_message_by_order');
+        });
+
+        Route::group(['prefix' => 'reviews', 'middleware' => ['auth:api', 'customer_is_block']], function () {
+            Route::get('/{delivery_man_id}', 'DeliveryManReviewController@get_reviews');
+            Route::get('rating/{delivery_man_id}', 'DeliveryManReviewController@get_rating');
+            Route::post('/submit', 'DeliveryManReviewController@submit_review');
+        });
+    });
 });

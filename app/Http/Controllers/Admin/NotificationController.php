@@ -56,6 +56,7 @@ class NotificationController extends Controller
         $notification->save();
 
         try {
+            $notification->type = 'general';
             Helpers::send_push_notif_to_topic($notification);
         } catch (\Exception $e) {
             Toastr::warning(translate('Push notification failed!'));

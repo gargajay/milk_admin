@@ -1,34 +1,30 @@
-<!-- Header -->
-<div class="card-header">
-    <h5 class="card-header-title">
-        <i class="tio-align-to-top"></i> {{translate('top_selling_products')}}
+<div class="card-header border-0 order-header-shadow">
+    <h5 class="card-title d-flex justify-content-between flex-grow-1">
+        <span>{{translate('top_selling_products')}}</span>
+        <a href="{{route('admin.product.list')}}" class="fz-12px font-medium text-006AE5">{{translate('view_all')}}</a>
     </h5>
-    <i class="tio-gift" style="font-size: 45px"></i>
 </div>
-<!-- End Header -->
-
 <!-- Body -->
 <div class="card-body">
-    <div class="row">
+    <div class="top--selling">
         @foreach($top_sell as $key=>$item)
             @if(isset($item->product))
-                <div class="col-md-4 col-6 mt-2"
-                     onclick="location.href='{{route('admin.product.view',[$item['product_id']])}}'"
-                     style="cursor: pointer;padding-right: 6px;padding-left: 6px">
-                    <div class="grid-card">
-                        <label class="label_1">Sold : {{$item['count']}}</label>
-                        <center class="mt-4">
-                            <img style="height: 90px"
-                                 src="{{\App\CPU\ProductManager::product_image_path('thumbnail')}}/{{$item->product['thumbnail']}}"
-                                 onerror="this.src='{{asset('public/assets/back-end/img/160x160/img2.jpg')}}'"
-                                 alt="{{$item->product->name}} image">
-                        </center>
-                        <div class="text-center mt-2">
-                            <span class=""
-                                  style="font-size: 10px">{{substr($item->product['name'],0,20)}} {{strlen($item->product['name'])>20?'...':''}}</span>
-                        </div>
+                <a class="grid--card" href="{{route('admin.product.view',[$item['product_id']])}}">
+                    @if (!empty(json_decode($item->product->image,true)))
+                        <img src="{{ asset('storage/app/public/product').'/'.json_decode($item->product->image)[0]  ?? '' }}"
+                             onerror="this.src='{{asset('public/assets/admin/img/400x400/img2.jpg')}}'"
+                             alt="{{$item->product->name}} image">
+                    @else
+                        <img src="{{asset('public/assets/admin/img/160x160/img2.jpg')}}"
+                        >
+                    @endif
+                    <div class="cont pt-2">
+                        <h6 class="line--limit-2">{{$item->product['name']}}</h6>
                     </div>
-                </div>
+                    <div class="ml-auto">
+                        <span class="badge badge-soft">{{ translate('Sold') }} : {{$item['count']}}</span>
+                    </div>
+                </a>
             @endif
         @endforeach
     </div>

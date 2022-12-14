@@ -2,22 +2,7 @@
     <header id="header"
             class="navbar navbar-expand-lg navbar-fixed navbar-height navbar-flush navbar-container navbar-bordered">
         <div class="navbar-nav-wrap">
-            <div class="navbar-brand-wrapper">
-                <!-- Logo -->
-                @php($restaurant_logo=\App\Model\BusinessSetting::where(['key'=>'logo'])->first()->value)
-                <a class="navbar-brand" href="{{route('admin.dashboard')}}" aria-label="">
-                    <img class="navbar-brand-logo"
-                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                         src="{{asset('storage/app/public/restaurant/'.$restaurant_logo)}}" alt="Logo">
-                    <img class="navbar-brand-logo-mini"
-                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                         src="{{asset('storage/app/public/restaurant/'.$restaurant_logo)}}"
-                         alt="Logo">
-                </a>
-                <!-- End Logo -->
-            </div>
-
-            <div class="navbar-nav-wrap-content-left">
+            <div class="navbar-nav-wrap-content-left d-xl-none">
                 <!-- Navbar Vertical Toggle -->
                 <button type="button" class="js-navbar-vertical-aside-toggle-invoker close mr-3">
                     <i class="tio-first-page navbar-vertical-aside-toggle-short-align" data-toggle="tooltip"
@@ -33,28 +18,28 @@
             <div class="navbar-nav-wrap-content-right">
                 <!-- Navbar -->
                 <ul class="navbar-nav align-items-center flex-row">
-
-                    <li class="nav-item d-none d-sm-inline-block">
+                    <li class="nav-item mr-0">
                         <div class="hs-unfold">
-                            <div style="background:white;padding: 9px;border-radius: 5px;">
+                            <div class="p-2">
                                 @php( $local = session()->has('local')?session('local'):'en')
                                 @php($lang = \App\CentralLogics\Helpers::get_business_settings('language')??null)
-                                <div class="topbar-text dropdown disable-autohide mr-3 text-capitalize">
+                                <div class="topbar-text dropdown disable-autohide text-capitalize">
                                     @if(isset($lang) && array_key_exists('code', $lang[0]))
-                                        <a class="topbar-link dropdown-toggle" href="#" data-toggle="dropdown" style="color: black!important;">
+                                        <a class="topbar-link dropdown-toggle lang-country-flag" href="#" data-toggle="dropdown">
                                             @foreach($lang as $data)
                                                 @if($data['code']==$local)
-                                                    {{$data['name']}}
+                                                    <img src="{{asset('public/assets/admin/img/google_translate_logo.png')}}" alt=""> <span>{{$data['code']}}</span>
                                                 @endif
                                             @endforeach
                                         </a>
-                                        <ul class="dropdown-menu">
+                                        <ul class="dropdown-menu absolute">
                                             @foreach($lang as $key =>$data)
                                                 @if($data['status']==1)
                                                     <li>
-                                                        <a class="dropdown-item pb-1"
+                                                        <a class="dropdown-item pb-1 lang-country-flag"
                                                            href="{{route('admin.lang',[$data['code']])}}">
-                                                            <span style="text-transform: capitalize">{{\App\CentralLogics\Helpers::get_language_name($data['code'])}}</span>
+{{--                                                           <img src="{{asset('public/assets/admin/img/flags')}}/{{$data['code']}}.png" alt="">--}}
+                                                            <span>{{\App\CentralLogics\Helpers::get_language_name($data['code'])}}</span>
                                                         </a>
                                                     </li>
                                                 @endif
@@ -65,36 +50,39 @@
                             </div>
                         </div>
                     </li>
-                    
+
                     <li class="nav-item d-none d-sm-inline-block">
                         <!-- Notification -->
                         <div class="hs-unfold">
-                            <a class="js-hs-unfold-invoker btn btn-icon btn-ghost-secondary rounded-circle"
+                            <a class="js-hs-unfold-invoker btn btn-icon notify--icon"
                                href="{{route('admin.message.list')}}">
                                 <i class="tio-messages-outlined"></i>
+                                <!-- <img class="tio-messages-outlined" src="{{asset('/public/assets/admin/img/chat.png')}}" alt="admin/img"> -->
                                 @php($message=\App\Model\Conversation::where('checked',0)->count())
-                                @if($message!=0)
-                                    <span class="btn-status btn-sm-status btn-status-danger"></span>
-                                @endif
+                                <span class="amount">
+                                    {{$message=\App\Model\Conversation::where('checked',0)->count()}}
+                                </span>
                             </a>
                         </div>
                         <!-- End Notification -->
                     </li>
-
-                    <li class="nav-item d-none d-sm-inline-block">
-                        <!-- Notification -->
-                        <div class="hs-unfold">
-                            <a class="js-hs-unfold-invoker btn btn-icon btn-ghost-secondary rounded-circle"
-                               href="{{route('admin.order.list',['status'=>'pending'])}}">
-                                <i class="tio-shopping-cart-outlined"></i>
-                                {{--<span class="btn-status btn-sm-status btn-status-danger"></span>--}}
-                            </a>
-                        </div>
-                        <!-- End Notification -->
-                    </li>
-
 
                     <li class="nav-item">
+                        <!-- Notification -->
+                        <div class="hs-unfold">
+                            <a class="js-hs-unfold-invoker btn btn-icon notify--icon"
+                               href="{{route('admin.orders.list',['status'=>'pending'])}}">
+                                <i class="tio-shopping-cart-outlined"></i>
+                                <span class="amount">
+                                    {{\App\Model\Order::where(['checked' => 0])->count()}}
+                                </span>
+                            </a>
+                        </div>
+                        <!-- End Notification -->
+                    </li>
+
+
+                    <li class="nav-item ml-4">
                         <!-- Account -->
                         <div class="hs-unfold">
                             <a class="js-hs-unfold-invoker navbar-dropdown-account-wrapper" href="javascript:;"
@@ -102,18 +90,26 @@
                                      "target": "#accountNavbarDropdown",
                                      "type": "css-animation"
                                    }'>
-                                <div class="avatar avatar-sm avatar-circle">
-                                    <img class="avatar-img"
-                                         onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
-                                         src="{{asset('storage/app/public/admin')}}/{{auth('admin')->user()->image}}"
-                                         alt="Image Description">
-                                    <span class="avatar-status avatar-sm-status avatar-status-success"></span>
+                                   <div class="cmn--media right-dropdown-icon d-flex align-items-center">
+                                    <div class="media-body pl-0 pr-2">
+                                        <span class="card-title h5 text-right">
+                                            {{auth('admin')->user()->f_name}}
+                                            {{auth('admin')->user()->l_name}}
+                                        </span>
+                                        <span class="card-text">{{auth('admin')->user()->role->name}}</span>
+                                    </div>
+                                    <div class="avatar avatar-sm avatar-circle">
+                                        <img class="avatar-img"
+                                            onerror="this.src='{{asset('public/assets/admin/img/160x160/img1.jpg')}}'"
+                                            src="{{asset('storage/app/public/admin')}}/{{auth('admin')->user()->image}}"
+                                            alt="Image Description">
+                                        <span class="avatar-status avatar-sm-status avatar-status-success"></span>
+                                    </div>
                                 </div>
                             </a>
 
                             <div id="accountNavbarDropdown"
-                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account"
-                                 style="width: 16rem;">
+                                 class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-right navbar-dropdown-menu navbar-dropdown-account w-16rem">
                                 <div class="dropdown-item-text">
                                     <div class="media align-items-center">
                                         <div class="avatar avatar-sm avatar-circle mr-2">

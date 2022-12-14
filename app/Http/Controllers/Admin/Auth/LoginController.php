@@ -51,8 +51,6 @@ class LoginController extends Controller
             'password' => 'required|min:6'
         ]);
 
-
-
         //recaptcha validation
         $recaptcha = Helpers::get_business_settings('recaptcha');
         if (isset($recaptcha) && $recaptcha['status'] == 1) {
@@ -82,7 +80,7 @@ class LoginController extends Controller
         }
         //end recaptcha validation
 
-        if (auth('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
+        if (auth('admin')->attempt(['email' => $request->email, 'password' => $request->password, 'status' => 1], $request->remember)) {
             return redirect()->route('admin.dashboard');
         }
 

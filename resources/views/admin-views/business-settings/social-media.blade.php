@@ -1,6 +1,6 @@
 @extends('layouts.admin.app')
 
-@section('title', translate('Settings'))
+@section('title', translate('social media links'))
 
 @push('css_or_js')
 
@@ -8,85 +8,71 @@
 
 @section('content')
     <div class="content container-fluid">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{route('admin.dashboard')}}">{{translate('dashboard')}}</a></li>
-                <li class="breadcrumb-item" aria-current="page">{{translate('Social Media')}}</li>
-            </ol>
-        </nav>
+
+        <div class="page-header">
+            <h1 class="page-header-title">
+                <span class="page-header-icon">
+                    <img src="{{asset('public/assets/admin/img/social.png')}}" class="w--26" alt="">
+                </span>
+                <span>
+                    {{translate('social media Links')}}
+                </span>
+            </h1>
+        </div>
 
         <!-- Content Row -->
-        <div class="row">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        {{ translate('social_media_form')}}
+        <div class="card">
+            <div class="card-body">
+                <form>
+                    @csrf
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label for="name" class="form-label">{{translate('name')}}</label>
+                            <select class="form-control" name="name" id="name" required>
+                                <option value="zero">---{{translate('select')}}---</option>
+                                <option value="instagram">{{translate('Instagram')}}</option>
+                                <option value="facebook">{{translate('Facebook')}}</option>
+                                <option value="twitter">{{translate('Twitter')}}</option>
+                                <option value="linkedin">{{translate('LinkedIn')}}</option>
+                                <option value="pinterest">{{translate('Pinterest')}}</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="hidden" id="id">
+                            <label for="link" class="form-label {{Session::get('direction') === "rtl" ? 'mr-1' : ''}}">{{ translate('social_media_link')}}</label>
+                            <input type="text" name="link" class="form-control" id="link"
+                                    placeholder="{{translate('Enter Social Media Link')}}" required>
+                        </div>
+                        <input type="hidden" id="id">
                     </div>
-                    <div class="card-body">
-                        <form style="text-align: left;">
-                            @csrf
-                            <div class="form-group">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <label for="name" class="">{{translate('name')}}</label>
-                                        <select class="form-control" name="name" id="name" style="width: 100%" required>
-                                            <option value="zero">---{{translate('select')}}---</option>
-                                            <option value="instagram">{{translate('Instagram')}}</option>
-                                            <option value="facebook">{{translate('Facebook')}}</option>
-                                            <option value="twitter">{{translate('Twitter')}}</option>
-                                            <option value="linkedin">{{translate('LinkedIn')}}</option>
-                                            <option value="pinterest">{{translate('Pinterest')}}</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-12 mt-2">
-                                        <input type="hidden" id="id">
-                                        <label for="link" class="{{Session::get('direction') === "rtl" ? 'mr-1' : ''}}">{{ translate('social_media_link')}}</label>
-                                        <input type="text" name="link" class="form-control" id="link"
-                                               placeholder="{{translate('Enter Social Media Link')}}" required>
-                                    </div>
-                                    <div class="col-md-12">
-                                        <input type="hidden" id="id">
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="card-footer">
-                                <button id="add" class="btn btn-primary" style="color: white">{{ translate('save')}}</button>
-                                <a id="update" class="btn btn-primary"
-                                   style="display: none; color: #fff;">{{ translate('update')}}</a>
-                            </div>
-                        </form>
+                    <div class="btn--container justify-content-end mt-3">
+                        <button type="reset" class="btn btn--reset" id="reset">{{translate('reset')}}</button>
+                        <button id="add" class="btn btn--primary" style="color: white">{{ translate('submit')}}</button>
+                        <a id="update" class="btn btn--primary"
+                        style="display: none; color: #fff;">{{ translate('update')}}</a>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
 
-        <div class="row" style="margin-top: 20px">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{ translate('social_media_table')}}</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0"
-                                   style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
-                                <thead>
-                                <tr>
-                                    <th scope="col">{{ translate('sl')}}</th>
-                                    <th scope="col">{{ translate('name')}}</th>
-                                    <th scope="col">{{ translate('link')}}</th>
-                                    <th scope="col">{{ translate('status')}}</th>
-                                    <th scope="col" style="width: 120px">{{ translate('action')}}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
+        <div class="card mt-3">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-borderless mb-0" id="dataTable" width="100%" cellspacing="0"
+                            style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>{{ translate('sl')}}</th>
+                            <th>{{ translate('name')}}</th>
+                            <th>{{ translate('link')}}</th>
+                            <th>{{ translate('status')}}</th>
+                            <th class="text-center">{{ translate('action')}}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
 
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -118,13 +104,15 @@
                             html += '<td class="column_name" data-column_name="name" data-id="' + data[count].id + '">' + data[count].name + '</td>';
                             html += '<td class="column_name" data-column_name="slug" data-id="' + data[count].id + '">' + data[count].link + '</td>';
                             html += `<td class="column_name" data-column_name="status" data-id="${data[count].id}">
-                                <label class="switch">
-                                    <input type="checkbox" class="status" id="${data[count].id}" ${data[count].status == 1 ? "checked" : ""} >
-                                    <span class="slider round"></span>
+                                <label class="toggle-switch toggle-switch-sm">
+                                    <input type="checkbox" class="toggle-switch-input status" id="${data[count].id}" ${data[count].status == 1 ? "checked" : ""} >
+                                    <span class="toggle-switch-label">
+                                        <span class="toggle-switch-indicator"></span>
+                                    </span>
                                 </label>
                             </td>`;
                             // html += '<td><a type="button" class="btn btn-primary btn-xs edit" id="' + data[count].id + '"><i class="fa fa-edit text-white"></i></a> <a type="button" class="btn btn-danger btn-xs delete" id="' + data[count].id + '"><i class="fa fa-trash text-white"></i></a></td></tr>';
-                            html += '<td><a type="button" class="btn btn-primary btn-xs edit" id="' + data[count].id + '">{{translate('Edit')}}</a> </td></tr>';
+                            html += '<td><a type="button" class="action-btn edit mx-auto" id="' + data[count].id + '"><i class="tio-edit"></i></a> </td></tr>';
                         }
                         $('tbody').html(html);
                     }

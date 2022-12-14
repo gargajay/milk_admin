@@ -20,7 +20,8 @@ class Order extends Model
         'user_id'                => 'integer',
         'created_at'             => 'datetime',
         'updated_at'             => 'datetime',
-        'delivery_address'       => 'array'
+        'delivery_address'       => 'array',
+        'delivery_date'       => 'date'
     ];
 
     public function details()

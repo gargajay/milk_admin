@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -35,12 +36,25 @@ class Product extends Model
         return $this->hasMany(Review::class)->latest();
     }
 
+    public function active_reviews()
+    {
+        return $this->hasMany(Review::class)->where(['is_active' => 1])->latest();
+    }
+
     public function wishlist()
     {
         return $this->hasMany(Wishlist::class)->latest();
     }
 
     public function rating()
+    {
+        return $this->hasMany(Review::class)
+            ->where('is_active', 1)
+            ->select(DB::raw('avg(rating) average, product_id'))
+            ->groupBy('product_id');
+    }
+
+    public function all_rating()
     {
         return $this->hasMany(Review::class)
             ->select(DB::raw('avg(rating) average, product_id'))
@@ -55,4 +69,12 @@ class Product extends Model
             }]);
         });
     }
+
+    public function order_details()
+    {
+        return $this->hasMany(OrderDetail::class);
+    }
+
+
+
 }

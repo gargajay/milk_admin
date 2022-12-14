@@ -17,7 +17,10 @@ class ConversationController extends Controller
     public function list()
     {
         $conversations = DB::table('conversations')->latest()->get();
-        return view('admin-views.messages.index', compact('conversations'));
+
+        $conversation_count = Conversation::distinct('user_id')->count();
+        return view('admin-views.messages.index', compact('conversations', 'conversation_count'));
+
     }
 
     public function view($user_id)
@@ -69,6 +72,7 @@ class ConversationController extends Controller
             'description' => Str::limit($request->reply??'', 500),
             'order_id' => '',
             'image' => '',
+            'type' => 'message'
         ];
         try {
             Helpers::send_push_notif_to_device($fcm_token, $data);

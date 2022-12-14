@@ -1,12 +1,10 @@
-<!-- Header -->
-<div class="card-header">
-    <h5 class="card-header-title">
-        <i class="tio-company"></i> {{translate('top_store_by_order_received')}}
-    </h5>
-    <i class="tio-award-outlined" style="font-size: 45px"></i>
-</div>
 <!-- End Header -->
-
+<div class="card-header border-0 order-header-shadow">
+    <h5 class="card-title d-flex justify-content-between flex-grow-1">
+        <span>{{translate('top_store_by_order_received')}}</span>
+        <a href="" class="fz-12px font-medium text-006AE5">{{translate('view_all')}}</a>
+    </h5>
+</div>
 <!-- Body -->
 <div class="card-body">
     <div class="row">
