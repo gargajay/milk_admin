@@ -63,7 +63,8 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::get('products/{category_id}/all', 'CategoryController@get_all_products');
     });
 
-    Route::group(['prefix' => 'customer', 'middleware' => ['auth:api', 'customer_is_block']], function () {
+    Route::group(['prefix' => 'customer', 'middleware' => ['auth:api', 'customer_is_block']], function () 
+    {
         Route::get('info', 'CustomerController@info');
         Route::put('update-profile', 'CustomerController@update_profile');
         Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
@@ -127,6 +128,16 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
         Route::get('geocode-api', 'MapApiController@geocode_api');
     });
 
+      // wallet
+
+    Route::group(['prefix' => 'mywallet'], function () {
+        Route::get('list', 'CustomerController@address_list');
+        Route::post('adding', 'CustomerController@addMoney');
+        Route::post('using', 'CustomerController@useMoney');
+        Route::put('update/{id}', 'CustomerController@update_address');
+        Route::delete('delete', 'CustomerController@delete_address');
+    });
+
     Route::post('subscribe-newsletter', 'CustomerController@subscribe_newsletter');
 
     Route::group(['prefix' => 'delivery-man'], function () {
@@ -143,15 +154,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
             Route::put('update-fcm-token', 'DeliverymanController@update_fcm_token');
         });
 
-        // wallet
-
-        Route::group(['prefix' => 'mywallet'], function () {
-            Route::get('list', 'CustomerController@address_list');
-            Route::post('adding', 'CustomerController@addMoney');
-            Route::post('using', 'CustomerController@useMoney');
-            Route::put('update/{id}', 'CustomerController@update_address');
-            Route::delete('delete', 'CustomerController@delete_address');
-        });
+      
 
 
         //delivery-man message
