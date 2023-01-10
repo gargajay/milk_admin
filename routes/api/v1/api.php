@@ -79,6 +79,14 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
             Route::delete('delete', 'CustomerController@delete_address');
         });
 
+        Route::group(['prefix' => 'mywallet'], function () {
+            Route::get('list', 'CustomerController@walletList');
+            Route::post('adding', 'CustomerController@addMoney');
+            Route::post('using', 'CustomerController@useMoney');
+            Route::put('update/{id}', 'CustomerController@update_address');
+            Route::delete('delete', 'CustomerController@delete_address');
+        });
+
         Route::group(['prefix' => 'order'], function () {
             Route::get('list', 'OrderController@get_order_list');
             Route::get('details', 'OrderController@get_order_details');
@@ -130,13 +138,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
 
       // wallet
 
-    Route::group(['prefix' => 'mywallet'], function () {
-        Route::get('list', 'CustomerController@address_list');
-        Route::post('adding', 'CustomerController@addMoney');
-        Route::post('using', 'CustomerController@useMoney');
-        Route::put('update/{id}', 'CustomerController@update_address');
-        Route::delete('delete', 'CustomerController@delete_address');
-    });
+  
 
     Route::post('subscribe-newsletter', 'CustomerController@subscribe_newsletter');
 

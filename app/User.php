@@ -5,13 +5,18 @@ namespace App;
 use App\Model\CustomerAddress;
 use App\Model\FavoriteProduct;
 use App\Model\Order;
+use App\Model\WalletHistory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use Laravel\Passport\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, Notifiable;
+
+
+    protected $appends = ['wallet_amount'];
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +26,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name','f_name', 'l_name', 'phone', 'email', 'password','self_ref_code','reference_code'
     ];
+
+    
 
     /**
      * The attributes that should be hidden for arrays.
@@ -61,5 +68,10 @@ class User extends Authenticatable
             $total_amount += $order->order_amount;
         }
         return $total_amount;
+    }
+
+    public function getWalletAmountAttribute(){
+     $uID = Auth::user()->id ?? 0;
+      return   WalletHistory::where('user_id',$uID)->sum('amount');
     }
 }

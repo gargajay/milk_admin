@@ -9,6 +9,7 @@ use App\Mail\EmailVerification;
 use App\Model\BusinessSetting;
 use App\Model\EmailVerifications;
 use App\Model\PhoneVerification;
+use App\Model\WalletHistory;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerAuthController extends Controller
 {
@@ -143,6 +145,7 @@ class CustomerAuthController extends Controller
 
     public function registration(Request $request)
     {
+        $refAmount = 50;
         $validator = Validator::make($request->all(), [
             'f_name' => 'required',
             'l_name' => 'required',
@@ -160,6 +163,19 @@ class CustomerAuthController extends Controller
         $temporary_token = Str::random(40);
         $self_ref_code = Str::random(20);
 
+        if(!empty($request->ref_code))
+        {
+           $refedUser =  User::where('self_ref_code',$request->ref_code)->first();
+           if(empty($refedUser))
+           {
+            $errors = [];
+            $errors[] = ['code' => 'auth-001', 'message' => 'Invalid Refer code.'];
+            return response()->json([
+                'errors' => $errors
+            ], 401);
+           }
+        }
+
         $user = User::create([
             'f_name' => $request->f_name,
             'l_name' => $request->l_name,
@@ -170,6 +186,36 @@ class CustomerAuthController extends Controller
             'self_ref_code' => $self_ref_code
 
         ]);
+
+
+        if(!empty($request->ref_code))
+        {
+           $refedUser =  User::where('self_ref_code',$request->ref_code)->first();
+           if(!empty($refedUser))
+           {
+            $wallet =  new WalletHistory();
+   
+            $wallet->user_id = $refedUser->id;
+            $wallet->amount = $refAmount;
+            $wallet->transaction_id = $request->transaction_id;
+            $wallet->type_id = WalletHistory::TYPE_ADDED;
+            $wallet->info = 'Refer to user '. $request->f_name;
+   
+            if($wallet->save())
+            {
+               $key = $wallet->id.$wallet->user_id."579";
+               $wallet->verifyToken = base64_encode($key);
+               $wallet->save();
+   
+            }
+           }else{
+            $errors = [];
+            $errors[] = ['code' => 'auth-001', 'message' => 'Invalid Refer code.'];
+            return response()->json([
+                'errors' => $errors
+            ], 401);
+           }
+        }
 
         $phone_verification = Helpers::get_business_settings('phone_verification');
         $email_verification = Helpers::get_business_settings('email_verification');
