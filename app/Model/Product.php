@@ -9,6 +9,69 @@ use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
+
+    protected $appends = ['product_type','days'];
+
+    const TYPE_ONETIME = 1;
+    const TYPE_DAILY = 2;
+    const TYPE_CUSTOM = 3;
+
+    const DAY_SUNDAY = 1;
+    const DAY_MONDAY = 2;
+    const DAY_TUESDAY = 3;
+    const DAY_WEDNESSDAY = 4;
+    const DAY_THURSDAY = 5;
+    const DAY_FRIDAY = 6;
+    const DAY_SATURDAY = 7;
+
+
+    public  function getDays($id = null)
+    {
+        $list = array(
+            self::DAY_SUNDAY => "Sun",
+            self::DAY_MONDAY=> "Mon",
+            self::DAY_TUESDAY=> "Tue",
+            self::DAY_WEDNESSDAY=> "Wed",
+            self::DAY_THURSDAY=> "Thu",
+            self::DAY_FRIDAY=> "Fri",
+            self::DAY_SATURDAY=> "Sat",
+        );
+        if ($id === null)
+            return $list;
+        return isset($list[$id]) ? $list[$id] : 'Not Defined';
+    }
+
+
+    public  function getType($id = null)
+    {
+        $list = array(
+            self::TYPE_ONETIME => "Onetime",
+            self::TYPE_DAILY=> "Daily",
+            self::TYPE_CUSTOM=> "Custom",
+        );
+        if ($id === null)
+            return $list;
+        return isset($list[$id]) ? $list[$id] : 'Not Defined';
+    }
+
+
+  public function  getProductTypeAttribute()
+  {
+    return $this->getType();
+  }
+
+  public function  getDaysAttribute()
+  {
+    return $this->getDays();
+  }
+
+
+    
+    
+
+
+    
+
     protected $casts = [
         'tax'         => 'float',
         'price'       => 'float',

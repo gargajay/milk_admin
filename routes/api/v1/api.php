@@ -83,8 +83,8 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>'localization'], function (
             Route::get('list', 'CustomerController@walletList');
             Route::post('adding', 'CustomerController@addMoney');
             Route::post('using', 'CustomerController@useMoney');
-            Route::put('update/{id}', 'CustomerController@update_address');
-            Route::delete('delete', 'CustomerController@delete_address');
+            // Route::put('update/{id}', 'CustomerController@update_address');
+            // Route::delete('delete', 'CustomerController@delete_address');
         });
 
         Route::group(['prefix' => 'order'], function () {
