@@ -4,9 +4,12 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Category extends Model
 {
+    protected $appends = ['wallet_amount'];
+
     protected $casts = [
         'parent_id' => 'integer',
         'position' => 'integer',
@@ -49,4 +52,9 @@ class Category extends Model
             }]);
         });
     }
+
+    public function getWalletAmountAttribute(){
+        $uID = Auth::user()->id ?? 0;
+         return   WalletHistory::where('user_id',$uID)->sum('amount');
+       }
 }

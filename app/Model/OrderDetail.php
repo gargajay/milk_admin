@@ -26,4 +26,12 @@ class OrderDetail extends Model
     {
         return $this->belongsTo(Order::class, 'order_id');
     }
+
+    public function getDaysAttribute($value="")
+    {
+        if($value!=""){
+            return json_decode($value);
+        }
+        return  $value;
+    }
 }

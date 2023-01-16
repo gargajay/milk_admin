@@ -112,7 +112,8 @@ class OrderController extends Controller
                     'variant' => json_encode($c['variant']),
                     'variation' => json_encode($c['variation']),
                     'is_stock_decreased' => 1,
-
+                    'type' =>$c['type'] ?? 0 ,
+                    'days'=>$c['days'] ? json_encode($c['days']):json_encode([]),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];

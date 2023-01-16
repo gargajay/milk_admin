@@ -294,7 +294,7 @@ class CustomerController extends Controller
              return response()->json(['message' => 'Added balance sucessfully'], 200);
  
           }else{
-             return response()->json(['message' => $wallet->error], 200);
+             return response()->json(['message' => $wallet->error], 400);
  
           }
  

@@ -5,12 +5,13 @@ namespace App\Model;
 use App\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
 
-    protected $appends = ['product_type','days'];
+    protected $appends = ['product_type','days','wallet_amount'];
 
     const TYPE_ONETIME = 1;
     const TYPE_DAILY = 2;
@@ -137,6 +138,11 @@ class Product extends Model
     {
         return $this->hasMany(OrderDetail::class);
     }
+
+    public function getWalletAmountAttribute(){
+        $uID = Auth::user()->id ?? 0;
+         return   WalletHistory::where('user_id',$uID)->sum('amount');
+       }
 
 
 
